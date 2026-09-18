@@ -24,6 +24,6 @@ export default function MachineDebug({model,controls,orbit}){
     });
    }cache.current={key,picks};
   }
-  window.__MACHINE_DEBUG__={id:model.config.id,errors:model.errors,offsets:{...model.offsets},angles:{...model.angles},rpm:model.rpm,spindleAngle:model.spindleAngle,active:controls.held.current,orbitEnabled:orbit.current?.enabled,camera:camera.position.toArray(),picks:cache.current.picks,nodes:Object.fromEntries(Object.entries({...model.lookup,...model.pivots}).map(([name,node])=>[name,{parent:node.parent?.name,world:node.getWorldPosition(new Vector3()).toArray(),quaternion:node.getWorldQuaternion(new Quaternion()).toArray()}]))};
+  window.__MACHINE_DEBUG__={id:model.config.id,indexSteps:model.indexSteps,emergency:model.emergency,errors:model.errors,offsets:{...model.offsets},angles:{...model.angles},rpm:model.rpm,spindleAngle:model.spindleAngle,active:controls.held.current,orbitEnabled:orbit.current?.enabled,camera:camera.position.toArray(),picks:cache.current.picks,nodes:Object.fromEntries(Object.entries({...model.lookup,...model.pivots}).map(([name,node])=>[name,{parent:node.parent?.name,world:node.getWorldPosition(new Vector3()).toArray(),quaternion:node.getWorldQuaternion(new Quaternion()).toArray()}]))};
  });return null;
 }

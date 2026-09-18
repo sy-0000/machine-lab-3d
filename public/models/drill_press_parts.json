@@ -15,7 +15,7 @@
         0
       ],
       "pivotWorld": [
-        0.0,
+        0,
         0.5608,
         0.1422
       ],
@@ -42,13 +42,18 @@
       ],
       "rotationLimitDegrees": [
         -115,
-        35
+        0
       ],
       "drives": "Quill.position.y",
       "drivenTravelMeters": [
         -0.085,
-        0.0
-      ]
+        0
+      ],
+      "feedPerRadian": 0.04234905442271303,
+      "springReturn": {
+        "speed": 2.5,
+        "holdDirection": -1
+      }
     },
     "Quill": {
       "type": "linearTranslation",
@@ -59,21 +64,21 @@
       ],
       "travelMeters": [
         -0.085,
-        0.0
+        0
       ]
     },
     "TableAssembly": {
-      "type": "manualTransformPendingVerification",
+      "type": "linearTranslation",
       "axis": [
         0,
         1,
         0
       ],
       "travelMeters": [
-        -0.32,
+        -0.2,
         0.18
       ],
-      "note": "The mesh includes a table and support collar, but no reliable lift handwheel was found."
+      "note": "教學行程下限收至 -0.20，避免工作臺降入底座／地面。"
     },
     "TableRotationPivot": {
       "type": "rotationPendingVerification",
@@ -101,11 +106,10 @@
     "Workpiece_MOUNT": "Empty placeholder; workpiece not present in source mesh."
   },
   "manualReview": [
-    "Confirm the precise boundary between spindle, chuck, and drill bit in a DCC tool.",
-    "Confirm whether HeadSideRod is a belt-tension lever or another control.",
-    "Confirm whether the original table can rotate or slide vertically in the intended lesson.",
-    "Add or model the missing table-lift handwheel, vise, and workpiece if those interactions are required.",
-    "SurfaceDetailsAndLabels contains small source shells distributed across the machine and remains static."
+    "已閱讀 drillingREADME.md；握柄按住向下進給，放開彈簧回位。",
+    "SwitchLever 作主軸啟停開關；工作臺 Y 行程為 -0.20～0.18，收窄下限避免穿入底座。",
+    "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
+    "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。"
   ],
   "validation": {
     "sourceFile": "drill_press_-__interkrenn_maschinen_tb_145.glb",
@@ -140,5 +144,20 @@
         0.23992673307657242
       ]
     ]
-  }
+  },
+  "additions": [
+    {
+      "name": "QuillExtension",
+      "kind": "sleeve",
+      "top": [
+        0,
+        0.592,
+        0.1421577
+      ],
+      "bottomY": 0.55,
+      "radius": 0.021,
+      "drives": "quill",
+      "color": "#aeb9bd"
+    }
+  ]
 }

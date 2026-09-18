@@ -1,4 +1,4 @@
-import {Box3,Group,Vector3,Quaternion,Mesh,CylinderGeometry,MeshStandardMaterial} from 'three';
+import {Box3,Group,Vector3,Quaternion,Mesh,CylinderGeometry,BoxGeometry,MeshStandardMaterial} from 'three';
 import {prepareModel as prepareLathe,disposeModel,disposeHighlights} from '../lathe.js';
 const v=a=>new Vector3(...a);
 export const clamp=(x,[lo,hi])=>Math.max(lo,Math.min(hi,Number.isFinite(x)?x:0));
@@ -16,6 +16,24 @@ export function prepareMachine(scene,config) {
  const lookup={};scene.traverse(n=>{if(n.name){if(lookup[n.name])throw Error(`重複節點名稱：${n.name}`);lookup[n.name]=n;}});
  const errors=[],audit=[],controls={},pivots={},initial={},materials=new Map();
  const requireNode=name=>{const node=lookup[name];audit.push({name,found:!!node,parent:node?.parent?.name||null});if(!node)errors.push(`找不到 JSON 節點：${name}`);return node;};
+ if(config.neutralMaterials){const old=new Set();scene.traverse(node=>{if(!node.isMesh)return;old.add(node.material);if(!node.geometry.attributes.normal)node.geometry.computeVertexNormals();node.material=new MeshStandardMaterial({color:node.name.startsWith('Table_')?'#87969b':'#63837d',roughness:.55,metalness:.35});});old.forEach(m=>m.dispose());}
+ // Explicit, reviewed node lists only. Preserve world pose while rebuilding functional parents.
+ for(const def of [...(config.groups||[]),...(config.extraGroups||[])]){
+  const group=new Group();group.name=def.name;scene.add(group);group.position.copy(scene.worldToLocal(v(def.pivot||[0,0,0])));group.updateWorldMatrix(true,true);
+  if(def.parent){const parent=requireNode(def.parent);if(!parent)throw Error(`缺少群組父節點：${def.parent}`);parent.attach(group);}
+  lookup[def.name]=group;
+  for(const name of def.objects){const object=requireNode(name);if(!object)continue;object.updateWorldMatrix(true,true);const before=object.matrixWorld.clone();group.attach(object);object.updateWorldMatrix(true,true);const error=Math.max(...before.elements.map((value,index)=>Math.abs(value-object.matrixWorld.elements[index])));audit.push({name,parent:def.name,attachmentError:error});if(error>1e-6)throw Error(`群組掛接改變世界座標：${name}`);}
+ }
+ for(const def of config.additions||[]){
+  const group=new Group();group.name=def.name;scene.add(group);lookup[def.name]=group;
+  if(def.kind==='pedal'){
+   group.position.fromArray(def.position);const bar=new Mesh(new CylinderGeometry(def.radius,def.radius,def.length,32),new MeshStandardMaterial({color:def.color,roughness:.6,metalness:.45}));bar.rotation.z=Math.PI/2;group.add(bar);
+   for(const x of [-def.length/2+.08,def.length/2-.08]){const arm=new Mesh(new BoxGeometry(.035,.025,.15),new MeshStandardMaterial({color:'#313c40',metalness:.6,roughness:.6}));arm.position.set(x,0,-.06);group.add(arm);}
+  }else if(def.kind==='sleeve'){
+   const cylinder=new Mesh(new CylinderGeometry(def.radius,def.radius,1,32),new MeshStandardMaterial({color:def.color,metalness:.75,roughness:.3}));group.add(cylinder);group.userData.sleeve=def;
+   const length=def.top[1]-def.bottomY;group.position.set(def.top[0],def.top[1]-length/2,def.top[2]);cylinder.scale.y=length;
+  }
+ }
  for(const name of new Set(config.references))requireNode(name);
  for(const name of [...(config.safety?[config.safety.tool,...config.safety.targets]:[]),...(config.demoWorkpiece?[config.demoWorkpiece.mount]:[])])requireNode(name);
  for(const {parent,child}of config.relationships||[]){if(lookup[child]&&lookup[parent]&&!descendant(lookup[child],lookup[parent]))errors.push(`階層不符：${child} 應隸屬 ${parent}`);}
@@ -45,6 +63,7 @@ export function prepareMachine(scene,config) {
  };
  for(const a of config.axes){if(legacy&&!legacy.availability[a.id])a.enabled=false;const node=requireNode(a.node);if(node)initial[a.node]={position:node.position.clone(),quaternion:node.quaternion.clone()};}
  for(const w of config.wheels)register(w,'wheel');
+ for(const action of config.actions||[])register(action,action.type);
  register(config.spindle,'spindle');if(config.lever)register(config.lever,'lever');if(config.toggle)register(config.toggle,'toggle');
  scene.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});
  scene.updateWorldMatrix(true,true);
@@ -57,7 +76,7 @@ export function prepareMachine(scene,config) {
 export function resetMachine(m) {
  if(m.workpiece){m.workpiece.removeFromParent();m.workpiece.geometry.dispose();m.workpiece.material.dispose();m.workpiece=null;}
  for(const [node,s] of m.restTransforms){node.position.copy(s.position);node.quaternion.copy(s.quaternion);node.scale.copy(s.scale);}
- m.offsets=Object.fromEntries(m.config.axes.map(a=>[a.id,0]));m.angles=Object.fromEntries(m.config.wheels.map(w=>[w.id,0]));m.rpm=0;m.spindleAngle=0;m.leverAngle=0;m.running=false;m.moved=false;m.active=null;m.hover=null;
+ m.offsets=Object.fromEntries(m.config.axes.map(a=>[a.id,0]));m.angles=Object.fromEntries(m.config.wheels.map(w=>[w.id,0]));m.indexSteps=0;m.emergency=false;m.rpm=0;m.spindleAngle=0;m.leverAngle=0;m.running=false;m.moved=false;m.active=null;m.hover=null;
  setHighlight(m,null);m.scene.updateWorldMatrix(true,true);
 }
 function rotate(m,node,axis,angle){const object=m.pivots[node];if(object)object.quaternion.copy(m.initial[node].quaternion).multiply(new Quaternion().setFromAxisAngle(v(axis).normalize(),angle));}
@@ -65,6 +84,7 @@ export function setAxis(m,key,value){
  const a=m.config.axes.find(a=>a.id===key),object=a&&m.lookup[a.node];if(!object||!a.enabled)return;
  const next=clamp(Number(value),a.range);if(next!==m.offsets[key]&&m.rpm>0)m.moved=true;
  m.offsets[key]=next;object.position.copy(m.initial[a.node].position).addScaledVector(v(a.axis).normalize(),next);
+ for(const def of m.config.additions||[])if(def.kind==='sleeve'&&def.drives===key){const group=m.lookup[def.name],length=def.top[1]-def.bottomY-next;group.position.y=def.top[1]-length/2;group.children[0].scale.y=length;}
  m.scene.updateWorldMatrix(true,true);
 }
 export function turnControl(m,key,direction,delta,teaching=false){
@@ -89,6 +109,7 @@ export function setAxisAndWheel(m,key,value,teaching=false){
  }
 }
 export function stepMachine(m,running,rpm,dt){
+ if(m.emergency){running=false;m.rpm=0;}
  const lever=m.config.lever;let delay=0;
  if(lever){const target=running?lever.runAngle:0,rate=Math.abs(lever.runAngle)/lever.duration,remaining=Math.abs(target-m.leverAngle);if(running)delay=Math.min(dt,remaining/rate);m.leverAngle+=Math.sign(target-m.leverAngle)*Math.min(remaining,dt*rate);rotate(m,lever.node,lever.axis,m.leverAngle);}
  const target=running?clamp(rpm,[0,m.config.maxRpm]):0,time=Math.max(0,dt-delay),old=m.rpm;
@@ -99,7 +120,16 @@ export function stepMachine(m,running,rpm,dt){
  rotate(m,m.config.spindle.node,m.config.spindle.axis,m.spindleAngle);
  m.running=running;m.scene.updateWorldMatrix(true,true);
 }
+export function stepReturn(m,heldKey,dt){
+ let returning=false;
+ for(const w of m.config.wheels){if(!w.springReturn||w.id===heldKey||m.angles[w.id]===0)continue;const current=m.angles[w.id],next=current-Math.sign(current)*Math.min(Math.abs(current),w.springReturn.speed*dt);m.angles[w.id]=next;setAxis(m,w.drives,next*w.ratio);rotate(m,w.node,w.axis,next);returning=returning||next!==0;}
+ return returning;
+}
+export function indexTool(m){const action=m.config.actions?.find(a=>a.type==='index');if(!action)return;m.indexSteps=(m.indexSteps+1)%8;rotate(m,action.node,action.axis,m.indexSteps*action.step);m.scene.updateWorldMatrix(true,true);}
+export function emergencyStop(m){m.emergency=true;m.running=false;m.rpm=0;const action=m.config.actions?.find(a=>a.type==='emergency');if(action){const n=m.lookup[action.node];n.position.y=m.initial[action.node].position.y-.025;}m.active=null;}
+export function releaseEmergency(m){m.emergency=false;const action=m.config.actions?.find(a=>a.type==='emergency');if(action)m.lookup[action.node].position.copy(m.initial[action.node].position);}
 export function safetyStatus(m){
+ if(m.emergency)return {level:'danger',text:'緊急煞車已鎖定：主軸已立即停止，解除後才可重新啟動。'};
  const s=m.config.safety;
  if(!s)return {level:m.rpm>0&&m.moved?'caution':'',text:m.rpm>0&&m.moved?'請注意：主軸正在旋轉，機構已進入操作狀態。':'缺少已確認的刀具／工件／夾具距離設定，接近偵測未啟用。'};
  m.scene.updateWorldMatrix(true,true);

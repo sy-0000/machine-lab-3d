@@ -1,5 +1,6 @@
 [
   {
+    "manifestAudit": null,
     "id": "lathe",
     "model": "lathe_16k20_dark_green_no_backboard.glb",
     "config": "lathe_parts.json",
@@ -7,6 +8,81 @@
     "meshCount": 172,
     "errors": [],
     "audit": [
+      {
+        "name": "ToolHeightAssembly",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "Object_103",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_103",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_149",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_149",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_150",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_150",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_152",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_152",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_154",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_154",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_156",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_156",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "Object_157",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_157",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
       {
         "name": "Object_93",
         "found": true,
@@ -78,26 +154,6 @@
         "parent": "CarriageAssembly"
       },
       {
-        "name": "Object_129",
-        "found": true,
-        "parent": "CarriageAssembly"
-      },
-      {
-        "name": "Object_131",
-        "found": true,
-        "parent": "CarriageAssembly"
-      },
-      {
-        "name": "Object_133",
-        "found": true,
-        "parent": "CarriageAssembly"
-      },
-      {
-        "name": "Object_135",
-        "found": true,
-        "parent": "CarriageAssembly"
-      },
-      {
         "name": "Object_137",
         "found": true,
         "parent": "CarriageAssembly"
@@ -118,11 +174,6 @@
         "parent": "CrossSlideAssembly"
       },
       {
-        "name": "Object_103",
-        "found": true,
-        "parent": "CrossSlideAssembly"
-      },
-      {
         "name": "Object_147",
         "found": true,
         "parent": "CrossSlideAssembly"
@@ -133,34 +184,39 @@
         "parent": "CrossSlideAssembly"
       },
       {
+        "name": "Object_103",
+        "found": true,
+        "parent": "ToolIndexPivot"
+      },
+      {
         "name": "Object_149",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_150",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_152",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_154",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_156",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_157",
         "found": true,
-        "parent": "ToolHeightAssembly"
+        "parent": "ToolIndexPivot"
       },
       {
         "name": "Object_64",
@@ -248,12 +304,22 @@
         "parent": "TailstockHandwheelHandle"
       },
       {
-        "name": "Object_12",
+        "name": "Object_129",
         "found": true,
         "parent": "StartLeverRod"
       },
       {
-        "name": "Object_38",
+        "name": "Object_131",
+        "found": true,
+        "parent": "StartLeverRod"
+      },
+      {
+        "name": "Object_133",
+        "found": true,
+        "parent": "StartLeverRod"
+      },
+      {
+        "name": "Object_135",
         "found": true,
         "parent": "StartLeverHandle"
       },
@@ -318,6 +384,16 @@
         "parent": "TailstockAssembly"
       },
       {
+        "name": "ToolIndexPivot",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "FootBrake",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
         "name": "SpindlePivot",
         "found": true,
         "parent": "Scene"
@@ -325,7 +401,7 @@
       {
         "name": "StartLeverPivot",
         "found": true,
-        "parent": "Scene"
+        "parent": "CarriageAssembly"
       }
     ],
     "axes": [
@@ -368,8 +444,8 @@
           0
         ],
         "range": [
-          -0.015,
-          0.035
+          0,
+          0.06
         ],
         "label": "Z軸／刀具高度",
         "enabled": true
@@ -383,7 +459,7 @@
           0
         ],
         "range": [
-          -0.12,
+          -0.55,
           0.04
         ],
         "label": "尾座位置",
@@ -493,10 +569,10 @@
       ]
     },
     "notes": [
-      "Object_117 無獨立凸出握把；外緣握持面與輪身依原始三角形分區，未新增握把。",
-      "實際輪面在 XY 平面，因此使用 Z 軸；Object_107 包含與輪身連成一體的握把桿，Object_109 是末端球形握把。",
-      "側向調節旋鈕的外觀已確認；高度連動是教學配置，原模型沒有機構語意，需實機教師確認。Object_143 支座保持固定。",
-      "Object_10 為固定支座；此拉桿依位置與外觀指定為啟停教學控制，須人工確認實機用途。"
+      "刀座本體 Object_103 與上方壓板／螺絲整組升降；Object_101／147 留在底座。",
+      "刀座每次點擊沿模型 Y 軸順時針 45°，累計八次一圈。",
+      "尾座負行程擴至 -0.55 模型單位，需注意與刀座接近。",
+      "右側長桿改作主軸啟停；腳踏煞車為依使用者要求新增的教學幾何，急停後需解除。"
     ],
     "sourceHierarchy": [
       {
@@ -1601,69 +1677,2776 @@
     ]
   },
   {
+    "manifestAudit": {
+      "count": 422,
+      "missing": []
+    },
     "id": "milling",
-    "model": "milling_machine_interactive.glb",
-    "config": "parts-map.json",
-    "nodeCount": 79,
-    "meshCount": 60,
-    "errors": [
-      "找不到 JSON 節點：Worktable_X_Slide"
-    ],
+    "model": "deliver_milling_machine_split/milling_machine_split.glb",
+    "config": "milling_split_controls.json",
+    "nodeCount": 422,
+    "meshCount": 422,
+    "errors": [],
     "audit": [
       {
-        "name": "X_Handwheel_Left_Group",
+        "name": "Head_Part_000",
         "found": true,
-        "parent": "X_Axis_Table"
+        "parent": null
       },
       {
-        "name": "X_Handwheel_Right_Group",
-        "found": true,
-        "parent": "X_Axis_Table"
+        "name": "Head_Part_000",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
       },
       {
-        "name": "Y_Handwheel_Group",
+        "name": "Head_Part_001",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_001",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_002",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_002",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_003",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_003",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_004",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_004",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_005",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_005",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_006",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_006",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_007",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_007",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_008",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_008",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_009",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_009",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_010",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_010",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_011",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_011",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_012",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_012",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_013",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_013",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_014",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_014",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_015",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_015",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_016",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_016",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_017",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_017",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_018",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_018",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_019",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_019",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_020",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_020",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_021",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_021",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_022",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_022",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_023",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_023",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_024",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_024",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_025",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_025",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_026",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_026",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_027",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_027",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_028",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_028",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_029",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_029",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_030",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_030",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_031",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_031",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_032",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_032",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_033",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_033",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_034",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_034",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_035",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_035",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_036",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_036",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_037",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_037",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_038",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_038",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_039",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_039",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_040",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_040",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_041",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_041",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_042",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_042",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_043",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_043",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_044",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_044",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_045",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_045",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_046",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_046",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_047",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_047",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_048",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_048",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_049",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_049",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_050",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_050",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_051",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_051",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_052",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_052",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_053",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_053",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_054",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_054",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_055",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_055",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_056",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_056",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_057",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_057",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_058",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_058",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_059",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_059",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_060",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_060",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_061",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_061",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_062",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_062",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_063",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_063",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_064",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_064",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_065",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_065",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_066",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_066",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_067",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_067",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_068",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_068",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_069",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_069",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_070",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_070",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_071",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_071",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_072",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_072",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_073",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_073",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_074",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_074",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_075",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_075",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_076",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_076",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_077",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_077",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_078",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_078",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_079",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_079",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_080",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_080",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_081",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_081",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_082",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_082",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_083",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_083",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_084",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_084",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_085",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_085",
+        "parent": "Head_Assembly",
+        "attachmentError": 0
+      },
+      {
+        "name": "Knee_Z_Slide",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_006",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_006",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_077",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_077",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_084",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_084",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_094",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_094",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_101",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_101",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_118",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_118",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_119",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_119",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_120",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_120",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_121",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_121",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_122",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_122",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_123",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_123",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_124",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_124",
+        "parent": "Y_Axis_Saddle",
+        "attachmentError": 0
+      },
+      {
+        "name": "Y_Axis_Saddle",
+        "found": true,
+        "parent": "Knee_Z_Slide"
+      },
+      {
+        "name": "Table_Part_004",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_004",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_015",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_015",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_016",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_016",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_017",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_017",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_018",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_018",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_019",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_019",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_020",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_020",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_021",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_021",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_022",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_022",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_023",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_023",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_024",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_024",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_025",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_025",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_026",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_026",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_027",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_027",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_028",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_028",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_029",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_029",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_030",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_030",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_031",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_031",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_032",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_032",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_033",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_033",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_034",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_034",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_035",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_035",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_036",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_036",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_037",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_037",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_038",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_038",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_039",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_039",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_040",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_040",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_041",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_041",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_042",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_042",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_043",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_043",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_044",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_044",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_045",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_045",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_046",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_046",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_049",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_049",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_050",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_050",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_051",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_051",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_052",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_052",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_053",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_053",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_054",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_054",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_055",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_055",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_060",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_060",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_061",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_061",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_062",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_062",
+        "parent": "X_Axis_Table",
+        "attachmentError": 0
+      },
+      {
+        "name": "X_Axis_Table",
         "found": true,
         "parent": "Y_Axis_Saddle"
       },
       {
-        "name": "Z_Handwheel_Group",
+        "name": "Table_Part_001",
         "found": true,
-        "parent": "MillingMachine"
+        "parent": null
       },
       {
-        "name": "Spindle_Rotor_Group",
+        "name": "Table_Part_001",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_003",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_003",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_006",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_006",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_008",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_008",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_011",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_011",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_012",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_012",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_014",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_014",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_048",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_048",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_058",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_058",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_059",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_059",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_064",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_064",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_067",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_067",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_068",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_068",
+        "parent": "X_Handwheel_Left_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "X_Axis_Table",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Table_Part_000",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_000",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_002",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_002",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_005",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_005",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_007",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_007",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_009",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_009",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_010",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_010",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_013",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_013",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_047",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_047",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_056",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_056",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_057",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_057",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_063",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_063",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_065",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_065",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Table_Part_066",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Table_Part_066",
+        "parent": "X_Handwheel_Right_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Y_Axis_Saddle",
+        "found": true,
+        "parent": "Knee_Z_Slide"
+      },
+      {
+        "name": "Bottom_Part_002",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_002",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_003",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_003",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_004",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_004",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_007",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_007",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_011",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_011",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_012",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_012",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_013",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_013",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_092",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_092",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_105",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_105",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_106",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_106",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_125",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_125",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_126",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_126",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_127",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_127",
+        "parent": "Y_Handwheel_Group",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Assembly",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_020",
         "found": true,
         "parent": "Head_Assembly"
       },
       {
-        "name": "Knee_Z_Slide",
-        "found": true,
-        "parent": "MillingMachine"
+        "name": "Head_Part_020",
+        "parent": "Spindle_Rotor_Group",
+        "attachmentError": 0
       },
       {
-        "name": "Y_Axis_Saddle",
+        "name": "Head_Assembly",
         "found": true,
-        "parent": "Knee_Z_Slide"
+        "parent": null
       },
       {
-        "name": "X_Axis_Table",
+        "name": "Head_Part_071",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_071",
+        "parent": "MillingSwitch",
+        "attachmentError": 0
+      },
+      {
+        "name": "Head_Part_000",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_001",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_002",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_003",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_004",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_005",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_006",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_007",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_008",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_009",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_010",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_011",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_012",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_013",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_014",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_015",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_016",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_017",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_018",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_019",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_020",
+        "found": true,
+        "parent": "Spindle_Rotor_Group"
+      },
+      {
+        "name": "Head_Part_021",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_022",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_023",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_024",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_025",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_026",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_027",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_028",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_029",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_030",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_031",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_032",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_033",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_034",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_035",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_036",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_037",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_038",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_039",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_040",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_041",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_042",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_043",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_044",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_045",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_046",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_047",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_048",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_049",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_050",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_051",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_052",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_053",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_054",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_055",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_056",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_057",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_058",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_059",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_060",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_061",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_062",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_063",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_064",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_065",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_066",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_067",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_068",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_069",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_070",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_071",
+        "found": true,
+        "parent": "MillingSwitch"
+      },
+      {
+        "name": "Head_Part_072",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_073",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_074",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_075",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_076",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_077",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_078",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_079",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_080",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_081",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_082",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_083",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_084",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_085",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Bottom_Part_006",
         "found": true,
         "parent": "Y_Axis_Saddle"
       },
       {
-        "name": "Worktable_X_Slide",
-        "found": false,
-        "parent": null
+        "name": "Bottom_Part_077",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
       },
       {
-        "name": "Workholding",
+        "name": "Bottom_Part_084",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_094",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_101",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_118",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_119",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_120",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_121",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_122",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_123",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Bottom_Part_124",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Table_Part_004",
         "found": true,
         "parent": "X_Axis_Table"
       },
       {
-        "name": "Knee_Z_Slide",
+        "name": "Table_Part_015",
         "found": true,
-        "parent": "MillingMachine"
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_016",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_017",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_018",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_019",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_020",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_021",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_022",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_023",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_024",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_025",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_026",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_027",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_028",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_029",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_030",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_031",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_032",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_033",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_034",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_035",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_036",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_037",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_038",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_039",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_040",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_041",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_042",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_043",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_044",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_045",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_046",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_049",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_050",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_051",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_052",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_053",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_054",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_055",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_060",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_061",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_062",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Table_Part_001",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_003",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_006",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_008",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_011",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_012",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_014",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_048",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_058",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_059",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_064",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_067",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_068",
+        "found": true,
+        "parent": "X_Handwheel_Left_Group"
+      },
+      {
+        "name": "Table_Part_000",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_002",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_005",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_007",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_009",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_010",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_013",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_047",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_056",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_057",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_063",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_065",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Table_Part_066",
+        "found": true,
+        "parent": "X_Handwheel_Right_Group"
+      },
+      {
+        "name": "Bottom_Part_002",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_003",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_004",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_007",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_011",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_012",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_013",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_092",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_105",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_106",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_125",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_126",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "Bottom_Part_127",
+        "found": true,
+        "parent": "Y_Handwheel_Group"
+      },
+      {
+        "name": "X_Axis_Table",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
       },
       {
         "name": "Y_Axis_Saddle",
@@ -1671,9 +4454,9 @@
         "parent": "Knee_Z_Slide"
       },
       {
-        "name": "X_Axis_Table",
+        "name": "Knee_Z_Slide",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": null
       },
       {
         "name": "X_Handwheel_Left_Group",
@@ -1733,25 +4516,6 @@
         "attachmentError": 0
       },
       {
-        "name": "Z_Handwheel_Group",
-        "found": true,
-        "parent": "MillingMachine"
-      },
-      {
-        "name": "Z_Handwheel_Group",
-        "pivot": [
-          -0.580015,
-          0.499931,
-          0.260787
-        ],
-        "axis": [
-          0,
-          0,
-          1
-        ],
-        "attachmentError": 0
-      },
-      {
         "name": "Spindle_Rotor_Group",
         "found": true,
         "parent": "Head_Assembly"
@@ -1759,32 +4523,37 @@
       {
         "name": "Spindle_Rotor_Group",
         "pivot": [
-          0.35703,
-          1.776645,
-          0
+          0.05942299962043762,
+          1.06830894947052,
+          0.008926999755203724
         ],
         "axis": [
-          1,
           0,
+          1,
           0
         ],
         "attachmentError": 0
+      },
+      {
+        "name": "MillingSwitch",
+        "found": true,
+        "parent": "Head_Assembly"
       }
     ],
     "axes": [
       {
-        "id": "Knee_Z_Slide",
-        "node": "Knee_Z_Slide",
+        "id": "X_Axis_Table",
+        "node": "X_Axis_Table",
         "axis": [
           0,
-          1,
-          0
+          0,
+          1
         ],
         "range": [
-          -0.35,
-          0.35
+          -0.4,
+          0.4
         ],
-        "label": "Z 軸／工作臺升降",
+        "label": "X 軸／工作臺進給",
         "enabled": true
       },
       {
@@ -1796,25 +4565,25 @@
           0
         ],
         "range": [
-          -0.25,
-          0.25
+          -0.15,
+          0.15
         ],
         "label": "Y 軸／鞍座進給",
         "enabled": true
       },
       {
-        "id": "X_Axis_Table",
-        "node": "X_Axis_Table",
+        "id": "Knee_Z_Slide",
+        "node": "Knee_Z_Slide",
         "axis": [
           0,
-          0,
-          1
+          1,
+          0
         ],
         "range": [
-          -0.55,
-          0.55
+          -0.15,
+          0.18
         ],
-        "label": "X 軸／工作臺進給",
+        "label": "Z 軸／工作臺升降",
         "enabled": true
       }
     ],
@@ -1832,11 +4601,10 @@
           0,
           1
         ],
-        "label": "X 軸左手輪",
         "drives": "X_Axis_Table",
-        "ratio": null,
-        "speed": 2.4,
-        "needsCalibration": true
+        "label": "X 軸左手輪",
+        "ratio": 0.018,
+        "speed": 2.4
       },
       {
         "id": "X_Handwheel_Right_Group",
@@ -1851,11 +4619,10 @@
           0,
           1
         ],
-        "label": "X 軸右手輪",
         "drives": "X_Axis_Table",
-        "ratio": null,
-        "speed": 2.4,
-        "needsCalibration": true
+        "label": "X 軸右手輪",
+        "ratio": 0.018,
+        "speed": 2.4
       },
       {
         "id": "Y_Handwheel_Group",
@@ -1870,546 +4637,2155 @@
           0,
           0
         ],
-        "label": "Y 軸手輪",
         "drives": "Y_Axis_Saddle",
-        "ratio": null,
-        "speed": 2.4,
-        "needsCalibration": true
-      },
-      {
-        "id": "Z_Handwheel_Group",
-        "node": "Z_Handwheel_Group",
-        "pivot": [
-          -0.580015,
-          0.499931,
-          0.260787
-        ],
-        "axis": [
-          0,
-          0,
-          1
-        ],
-        "label": "Z 軸手輪",
-        "drives": "Knee_Z_Slide",
-        "ratio": null,
-        "speed": 2.4,
-        "needsCalibration": true
+        "label": "Y 軸手輪",
+        "ratio": 0.0075,
+        "speed": 2.4
       }
     ],
     "spindle": {
       "node": "Spindle_Rotor_Group",
       "axis": [
-        1,
         0,
+        1,
         0
       ],
       "pivot": [
-        0.35703,
-        1.776645,
-        0
+        0.05942299962043762,
+        1.06830894947052,
+        0.008926999755203724
+      ],
+      "required": [
+        "Head_Part_020"
+      ],
+      "exclude": [
+        "Head_Part_001",
+        "Head_Part_034"
       ]
     },
     "notes": [
-      "未提供銑床模型使用說明 .md。",
-      "缺少可辨識的刀具、刀把、虎鉗及工件；空掛點不代表已有實體零件。",
-      "膝座鑄件仍固定；Z 軸只帶動 JSON 已定義的滑座階層。",
-      "Y／Z 手輪用途及主軸 X 軸為原 JSON 的中信心設定，需人工校正。",
-      "行程為原 JSON 的教學預設，非實機規格。",
-      "JSON 未指定每圈進給量；手輪進給需先選擇教學比例。"
+      "使用新拆件模型：422 個獨立零件，無內嵌材質／UV；本版配置中性工業材質與法線。",
+      "逐件畫面與幾何對照確認 X／Y 手輪；修正舊 X 左輪會帶動齒輪箱外殼的問題。",
+      "下端主軸改為 Head_Part_020 沿 Y 旋轉；舊版上方刻度面板保持固定。",
+      "開關使用上方電氣盒突出的 Head_Part_071，作教學啟停控制。",
+      "舊 Z 手輪對照實際為床身標牌，已移除錯誤互動；Z 升降使用滑桿。",
+      "導程與縮限後行程為教學值，非製造商校正資料；未建立不存在的刀具或虎鉗。"
     ],
     "sourceHierarchy": [
       {
         "index": 0,
-        "name": "MillingMachine",
-        "children": [
-          "Frame_Static",
-          "Head_Assembly",
-          "Knee_Z_Slide",
-          "Z_Handwheel_Group",
-          "Controls",
-          "Accessories"
-        ]
+        "name": "Bach_Top_Part_000",
+        "children": []
       },
       {
         "index": 1,
-        "name": "Frame_Static",
-        "children": [
-          "Column_Ram_Static_Mat03",
-          "Column_Ram_Static_Mat04",
-          "Column_Ram_Static_Mat05",
-          "Column_Ram_Static_Mat06",
-          "Column_Ram_Static_Mat07",
-          "Column_Ram_Static_Mat08",
-          "Column_Ram_Static_Mat09",
-          "Machine_Base_Knee_Static_Mat10",
-          "Machine_Base_Knee_Static_Mat11",
-          "Machine_Base_Knee_Static_Mat07",
-          "Machine_Base_Knee_Static_Mat12",
-          "Machine_Base_Knee_Static_Mat13",
-          "Machine_Base_Knee_Static_Mat14",
-          "Machine_Base_Knee_Static_Mat15",
-          "Machine_Base_Knee_Static_Mat16",
-          "Machine_Base_Knee_Static_Mat17",
-          "Machine_Base_Knee_Static_Mat18",
-          "Machine_Base_Knee_Static_Mat19",
-          "Machine_Base_Knee_Static_Mat20",
-          "Machine_Base_Knee_Static_Mat21",
-          "Machine_Base_Knee_Static_Mat22",
-          "Machine_Base_Knee_Static_Mat23",
-          "Machine_Base_Knee_Static_Mat24"
-        ]
+        "name": "Bach_Top_Part_001",
+        "children": []
       },
       {
         "index": 2,
-        "name": "Head_Assembly",
-        "children": [
-          "Spindle_Rotor_Group",
-          "Headstock_Static_Mat25",
-          "Headstock_Static_Mat26",
-          "Headstock_Static_Mat27",
-          "Headstock_Static_Mat28",
-          "Headstock_Static_Mat07",
-          "Headstock_Static_Mat30",
-          "Headstock_Static_Mat31",
-          "Headstock_Static_Mat32",
-          "Headstock_Static_Mat33",
-          "Head_Labels_Static_Mat39",
-          "Head_Labels_Static_Mat03",
-          "Head_Labels_Static_Mat40",
-          "Head_Labels_Static_Mat41",
-          "Head_Labels_Static_Mat42",
-          "Head_Labels_Static_Mat43",
-          "Head_Labels_Static_Mat44"
-        ]
+        "name": "Bach_Top_Part_002",
+        "children": []
       },
       {
         "index": 3,
-        "name": "Spindle_Rotor_Group",
-        "children": [
-          "Tool_Holder_Missing",
-          "Spindle_Rotor_Mat26",
-          "Spindle_Rotor_Mat29"
-        ]
+        "name": "Bach_Top_Part_003",
+        "children": []
       },
       {
         "index": 4,
-        "name": "Tool_Holder_Missing",
-        "children": [
-          "Cutting_Tool_Missing"
-        ]
+        "name": "Bach_Top_Part_004",
+        "children": []
       },
       {
         "index": 5,
-        "name": "Cutting_Tool_Missing",
+        "name": "Bach_Top_Part_005",
         "children": []
       },
       {
         "index": 6,
-        "name": "Knee_Z_Slide",
-        "children": [
-          "Y_Axis_Saddle"
-        ]
+        "name": "Bach_Top_Part_006",
+        "children": []
       },
       {
         "index": 7,
-        "name": "Y_Axis_Saddle",
-        "children": [
-          "X_Axis_Table",
-          "Y_Handwheel_Group"
-        ]
+        "name": "Bach_Top_Part_007",
+        "children": []
       },
       {
         "index": 8,
-        "name": "X_Axis_Table",
-        "children": [
-          "X_Handwheel_Left_Group",
-          "X_Handwheel_Right_Group",
-          "Workholding",
-          "Worktable_X_Slide_Mat34",
-          "Worktable_X_Slide_Mat35",
-          "Worktable_X_Slide_Mat07",
-          "Worktable_X_Slide_Mat36",
-          "Worktable_X_Slide_Mat37"
-        ]
+        "name": "Bach_Top_Part_008",
+        "children": []
       },
       {
         "index": 9,
-        "name": "X_Handwheel_Left_Group",
-        "children": [
-          "X_Left_Wheel_Mat34",
-          "X_Left_Handle_Mat34",
-          "X_Left_Wheel_Mat07",
-          "X_Left_Wheel_Mat36"
-        ]
+        "name": "Bach_Top_Part_009",
+        "children": []
       },
       {
         "index": 10,
-        "name": "X_Handwheel_Right_Group",
-        "children": [
-          "X_Right_Wheel_Mat34",
-          "X_Right_Wheel_Mat35",
-          "X_Right_Handle_Mat35",
-          "X_Right_Wheel_Mat07"
-        ]
+        "name": "Bach_Top_Part_010",
+        "children": []
       },
       {
         "index": 11,
-        "name": "Y_Handwheel_Group",
-        "children": [
-          "Y_Handwheel_Wheel_Mat11",
-          "Y_Handwheel_Handle_Mat11",
-          "Y_Handwheel_Wheel_Mat07"
-        ]
+        "name": "Bach_Top_Part_011",
+        "children": []
       },
       {
         "index": 12,
-        "name": "Z_Handwheel_Group",
-        "children": [
-          "Z_Handwheel_Wheel_Mat17",
-          "Z_Handwheel_Handle_Mat20"
-        ]
+        "name": "Bach_Top_Part_012",
+        "children": []
       },
       {
         "index": 13,
-        "name": "Workholding",
-        "children": [
-          "Vise_Missing"
-        ]
+        "name": "Bach_Top_Part_013",
+        "children": []
       },
       {
         "index": 14,
-        "name": "Vise_Missing",
-        "children": [
-          "Workpiece_Missing"
-        ]
+        "name": "Bach_Top_Part_014",
+        "children": []
       },
       {
         "index": 15,
-        "name": "Workpiece_Missing",
+        "name": "Bach_Top_Part_015",
         "children": []
       },
       {
         "index": 16,
-        "name": "Controls",
-        "children": [
-          "Start_Lever_Missing"
-        ]
+        "name": "Bach_Top_Part_016",
+        "children": []
       },
       {
         "index": 17,
-        "name": "Start_Lever_Missing",
+        "name": "Bach_Top_Part_017",
         "children": []
       },
       {
         "index": 18,
-        "name": "Accessories",
-        "children": [
-          "Work_Light_Static_Mat38"
-        ]
+        "name": "Bach_Top_Part_018",
+        "children": []
       },
       {
         "index": 19,
-        "name": "Column_Ram_Static_Mat03",
+        "name": "Bach_Top_Part_019",
         "children": []
       },
       {
         "index": 20,
-        "name": "Column_Ram_Static_Mat04",
+        "name": "Bach_Top_Part_020",
         "children": []
       },
       {
         "index": 21,
-        "name": "Column_Ram_Static_Mat05",
+        "name": "Bach_Top_Part_021",
         "children": []
       },
       {
         "index": 22,
-        "name": "Column_Ram_Static_Mat06",
+        "name": "Bach_Top_Part_022",
         "children": []
       },
       {
         "index": 23,
-        "name": "Column_Ram_Static_Mat07",
+        "name": "Bach_Top_Part_023",
         "children": []
       },
       {
         "index": 24,
-        "name": "Column_Ram_Static_Mat08",
+        "name": "Bach_Top_Part_024",
         "children": []
       },
       {
         "index": 25,
-        "name": "Column_Ram_Static_Mat09",
+        "name": "Bach_Top_Part_025",
         "children": []
       },
       {
         "index": 26,
-        "name": "Machine_Base_Knee_Static_Mat10",
+        "name": "Bottom_Part_000",
         "children": []
       },
       {
         "index": 27,
-        "name": "Machine_Base_Knee_Static_Mat11",
+        "name": "Bottom_Part_001",
         "children": []
       },
       {
         "index": 28,
-        "name": "Y_Handwheel_Wheel_Mat11",
+        "name": "Bottom_Part_002",
         "children": []
       },
       {
         "index": 29,
-        "name": "Y_Handwheel_Handle_Mat11",
+        "name": "Bottom_Part_003",
         "children": []
       },
       {
         "index": 30,
-        "name": "Machine_Base_Knee_Static_Mat07",
+        "name": "Bottom_Part_004",
         "children": []
       },
       {
         "index": 31,
-        "name": "Y_Handwheel_Wheel_Mat07",
+        "name": "Bottom_Part_005",
         "children": []
       },
       {
         "index": 32,
-        "name": "Machine_Base_Knee_Static_Mat12",
+        "name": "Bottom_Part_006",
         "children": []
       },
       {
         "index": 33,
-        "name": "Machine_Base_Knee_Static_Mat13",
+        "name": "Bottom_Part_007",
         "children": []
       },
       {
         "index": 34,
-        "name": "Machine_Base_Knee_Static_Mat14",
+        "name": "Bottom_Part_008",
         "children": []
       },
       {
         "index": 35,
-        "name": "Machine_Base_Knee_Static_Mat15",
+        "name": "Bottom_Part_009",
         "children": []
       },
       {
         "index": 36,
-        "name": "Machine_Base_Knee_Static_Mat16",
+        "name": "Bottom_Part_010",
         "children": []
       },
       {
         "index": 37,
-        "name": "Z_Handwheel_Wheel_Mat17",
+        "name": "Bottom_Part_011",
         "children": []
       },
       {
         "index": 38,
-        "name": "Machine_Base_Knee_Static_Mat17",
+        "name": "Bottom_Part_012",
         "children": []
       },
       {
         "index": 39,
-        "name": "Machine_Base_Knee_Static_Mat18",
+        "name": "Bottom_Part_013",
         "children": []
       },
       {
         "index": 40,
-        "name": "Machine_Base_Knee_Static_Mat19",
+        "name": "Bottom_Part_014",
         "children": []
       },
       {
         "index": 41,
-        "name": "Machine_Base_Knee_Static_Mat20",
+        "name": "Bottom_Part_015",
         "children": []
       },
       {
         "index": 42,
-        "name": "Z_Handwheel_Handle_Mat20",
+        "name": "Bottom_Part_016",
         "children": []
       },
       {
         "index": 43,
-        "name": "Machine_Base_Knee_Static_Mat21",
+        "name": "Bottom_Part_017",
         "children": []
       },
       {
         "index": 44,
-        "name": "Machine_Base_Knee_Static_Mat22",
+        "name": "Bottom_Part_018",
         "children": []
       },
       {
         "index": 45,
-        "name": "Machine_Base_Knee_Static_Mat23",
+        "name": "Bottom_Part_019",
         "children": []
       },
       {
         "index": 46,
-        "name": "Machine_Base_Knee_Static_Mat24",
+        "name": "Bottom_Part_020",
         "children": []
       },
       {
         "index": 47,
-        "name": "Headstock_Static_Mat25",
+        "name": "Bottom_Part_021",
         "children": []
       },
       {
         "index": 48,
-        "name": "Headstock_Static_Mat26",
+        "name": "Bottom_Part_022",
         "children": []
       },
       {
         "index": 49,
-        "name": "Spindle_Rotor_Mat26",
+        "name": "Bottom_Part_023",
         "children": []
       },
       {
         "index": 50,
-        "name": "Headstock_Static_Mat27",
+        "name": "Bottom_Part_024",
         "children": []
       },
       {
         "index": 51,
-        "name": "Headstock_Static_Mat28",
+        "name": "Bottom_Part_025",
         "children": []
       },
       {
         "index": 52,
-        "name": "Spindle_Rotor_Mat29",
+        "name": "Bottom_Part_026",
         "children": []
       },
       {
         "index": 53,
-        "name": "Headstock_Static_Mat07",
+        "name": "Bottom_Part_027",
         "children": []
       },
       {
         "index": 54,
-        "name": "Headstock_Static_Mat30",
+        "name": "Bottom_Part_028",
         "children": []
       },
       {
         "index": 55,
-        "name": "Headstock_Static_Mat31",
+        "name": "Bottom_Part_029",
         "children": []
       },
       {
         "index": 56,
-        "name": "Headstock_Static_Mat32",
+        "name": "Bottom_Part_030",
         "children": []
       },
       {
         "index": 57,
-        "name": "Headstock_Static_Mat33",
+        "name": "Bottom_Part_031",
         "children": []
       },
       {
         "index": 58,
-        "name": "X_Left_Wheel_Mat34",
+        "name": "Bottom_Part_032",
         "children": []
       },
       {
         "index": 59,
-        "name": "X_Right_Wheel_Mat34",
+        "name": "Bottom_Part_033",
         "children": []
       },
       {
         "index": 60,
-        "name": "X_Left_Handle_Mat34",
+        "name": "Bottom_Part_034",
         "children": []
       },
       {
         "index": 61,
-        "name": "Worktable_X_Slide_Mat34",
+        "name": "Bottom_Part_035",
         "children": []
       },
       {
         "index": 62,
-        "name": "Worktable_X_Slide_Mat35",
+        "name": "Bottom_Part_036",
         "children": []
       },
       {
         "index": 63,
-        "name": "X_Right_Wheel_Mat35",
+        "name": "Bottom_Part_037",
         "children": []
       },
       {
         "index": 64,
-        "name": "X_Right_Handle_Mat35",
+        "name": "Bottom_Part_038",
         "children": []
       },
       {
         "index": 65,
-        "name": "Worktable_X_Slide_Mat07",
+        "name": "Bottom_Part_039",
         "children": []
       },
       {
         "index": 66,
-        "name": "X_Right_Wheel_Mat07",
+        "name": "Bottom_Part_040",
         "children": []
       },
       {
         "index": 67,
-        "name": "X_Left_Wheel_Mat07",
+        "name": "Bottom_Part_041",
         "children": []
       },
       {
         "index": 68,
-        "name": "X_Left_Wheel_Mat36",
+        "name": "Bottom_Part_042",
         "children": []
       },
       {
         "index": 69,
-        "name": "Worktable_X_Slide_Mat36",
+        "name": "Bottom_Part_043",
         "children": []
       },
       {
         "index": 70,
-        "name": "Worktable_X_Slide_Mat37",
+        "name": "Bottom_Part_044",
         "children": []
       },
       {
         "index": 71,
-        "name": "Work_Light_Static_Mat38",
+        "name": "Bottom_Part_045",
         "children": []
       },
       {
         "index": 72,
-        "name": "Head_Labels_Static_Mat39",
+        "name": "Bottom_Part_046",
         "children": []
       },
       {
         "index": 73,
-        "name": "Head_Labels_Static_Mat03",
+        "name": "Bottom_Part_047",
         "children": []
       },
       {
         "index": 74,
-        "name": "Head_Labels_Static_Mat40",
+        "name": "Bottom_Part_048",
         "children": []
       },
       {
         "index": 75,
-        "name": "Head_Labels_Static_Mat41",
+        "name": "Bottom_Part_049",
         "children": []
       },
       {
         "index": 76,
-        "name": "Head_Labels_Static_Mat42",
+        "name": "Bottom_Part_050",
         "children": []
       },
       {
         "index": 77,
-        "name": "Head_Labels_Static_Mat43",
+        "name": "Bottom_Part_051",
         "children": []
       },
       {
         "index": 78,
-        "name": "Head_Labels_Static_Mat44",
+        "name": "Bottom_Part_052",
+        "children": []
+      },
+      {
+        "index": 79,
+        "name": "Bottom_Part_053",
+        "children": []
+      },
+      {
+        "index": 80,
+        "name": "Bottom_Part_054",
+        "children": []
+      },
+      {
+        "index": 81,
+        "name": "Bottom_Part_055",
+        "children": []
+      },
+      {
+        "index": 82,
+        "name": "Bottom_Part_056",
+        "children": []
+      },
+      {
+        "index": 83,
+        "name": "Bottom_Part_057",
+        "children": []
+      },
+      {
+        "index": 84,
+        "name": "Bottom_Part_058",
+        "children": []
+      },
+      {
+        "index": 85,
+        "name": "Bottom_Part_059",
+        "children": []
+      },
+      {
+        "index": 86,
+        "name": "Bottom_Part_060",
+        "children": []
+      },
+      {
+        "index": 87,
+        "name": "Bottom_Part_061",
+        "children": []
+      },
+      {
+        "index": 88,
+        "name": "Bottom_Part_062",
+        "children": []
+      },
+      {
+        "index": 89,
+        "name": "Bottom_Part_063",
+        "children": []
+      },
+      {
+        "index": 90,
+        "name": "Bottom_Part_064",
+        "children": []
+      },
+      {
+        "index": 91,
+        "name": "Bottom_Part_065",
+        "children": []
+      },
+      {
+        "index": 92,
+        "name": "Bottom_Part_066",
+        "children": []
+      },
+      {
+        "index": 93,
+        "name": "Bottom_Part_067",
+        "children": []
+      },
+      {
+        "index": 94,
+        "name": "Bottom_Part_068",
+        "children": []
+      },
+      {
+        "index": 95,
+        "name": "Bottom_Part_069",
+        "children": []
+      },
+      {
+        "index": 96,
+        "name": "Bottom_Part_070",
+        "children": []
+      },
+      {
+        "index": 97,
+        "name": "Bottom_Part_071",
+        "children": []
+      },
+      {
+        "index": 98,
+        "name": "Bottom_Part_072",
+        "children": []
+      },
+      {
+        "index": 99,
+        "name": "Bottom_Part_073",
+        "children": []
+      },
+      {
+        "index": 100,
+        "name": "Bottom_Part_074",
+        "children": []
+      },
+      {
+        "index": 101,
+        "name": "Bottom_Part_075",
+        "children": []
+      },
+      {
+        "index": 102,
+        "name": "Bottom_Part_076",
+        "children": []
+      },
+      {
+        "index": 103,
+        "name": "Bottom_Part_077",
+        "children": []
+      },
+      {
+        "index": 104,
+        "name": "Bottom_Part_078",
+        "children": []
+      },
+      {
+        "index": 105,
+        "name": "Bottom_Part_079",
+        "children": []
+      },
+      {
+        "index": 106,
+        "name": "Bottom_Part_080",
+        "children": []
+      },
+      {
+        "index": 107,
+        "name": "Bottom_Part_081",
+        "children": []
+      },
+      {
+        "index": 108,
+        "name": "Bottom_Part_082",
+        "children": []
+      },
+      {
+        "index": 109,
+        "name": "Bottom_Part_083",
+        "children": []
+      },
+      {
+        "index": 110,
+        "name": "Bottom_Part_084",
+        "children": []
+      },
+      {
+        "index": 111,
+        "name": "Bottom_Part_085",
+        "children": []
+      },
+      {
+        "index": 112,
+        "name": "Bottom_Part_086",
+        "children": []
+      },
+      {
+        "index": 113,
+        "name": "Bottom_Part_087",
+        "children": []
+      },
+      {
+        "index": 114,
+        "name": "Bottom_Part_088",
+        "children": []
+      },
+      {
+        "index": 115,
+        "name": "Bottom_Part_089",
+        "children": []
+      },
+      {
+        "index": 116,
+        "name": "Bottom_Part_090",
+        "children": []
+      },
+      {
+        "index": 117,
+        "name": "Bottom_Part_091",
+        "children": []
+      },
+      {
+        "index": 118,
+        "name": "Bottom_Part_092",
+        "children": []
+      },
+      {
+        "index": 119,
+        "name": "Bottom_Part_093",
+        "children": []
+      },
+      {
+        "index": 120,
+        "name": "Bottom_Part_094",
+        "children": []
+      },
+      {
+        "index": 121,
+        "name": "Bottom_Part_095",
+        "children": []
+      },
+      {
+        "index": 122,
+        "name": "Bottom_Part_096",
+        "children": []
+      },
+      {
+        "index": 123,
+        "name": "Bottom_Part_097",
+        "children": []
+      },
+      {
+        "index": 124,
+        "name": "Bottom_Part_098",
+        "children": []
+      },
+      {
+        "index": 125,
+        "name": "Bottom_Part_099",
+        "children": []
+      },
+      {
+        "index": 126,
+        "name": "Bottom_Part_100",
+        "children": []
+      },
+      {
+        "index": 127,
+        "name": "Bottom_Part_101",
+        "children": []
+      },
+      {
+        "index": 128,
+        "name": "Bottom_Part_102",
+        "children": []
+      },
+      {
+        "index": 129,
+        "name": "Bottom_Part_103",
+        "children": []
+      },
+      {
+        "index": 130,
+        "name": "Bottom_Part_104",
+        "children": []
+      },
+      {
+        "index": 131,
+        "name": "Bottom_Part_105",
+        "children": []
+      },
+      {
+        "index": 132,
+        "name": "Bottom_Part_106",
+        "children": []
+      },
+      {
+        "index": 133,
+        "name": "Bottom_Part_107",
+        "children": []
+      },
+      {
+        "index": 134,
+        "name": "Bottom_Part_108",
+        "children": []
+      },
+      {
+        "index": 135,
+        "name": "Bottom_Part_109",
+        "children": []
+      },
+      {
+        "index": 136,
+        "name": "Bottom_Part_110",
+        "children": []
+      },
+      {
+        "index": 137,
+        "name": "Bottom_Part_111",
+        "children": []
+      },
+      {
+        "index": 138,
+        "name": "Bottom_Part_112",
+        "children": []
+      },
+      {
+        "index": 139,
+        "name": "Bottom_Part_113",
+        "children": []
+      },
+      {
+        "index": 140,
+        "name": "Bottom_Part_114",
+        "children": []
+      },
+      {
+        "index": 141,
+        "name": "Bottom_Part_115",
+        "children": []
+      },
+      {
+        "index": 142,
+        "name": "Bottom_Part_116",
+        "children": []
+      },
+      {
+        "index": 143,
+        "name": "Bottom_Part_117",
+        "children": []
+      },
+      {
+        "index": 144,
+        "name": "Bottom_Part_118",
+        "children": []
+      },
+      {
+        "index": 145,
+        "name": "Bottom_Part_119",
+        "children": []
+      },
+      {
+        "index": 146,
+        "name": "Bottom_Part_120",
+        "children": []
+      },
+      {
+        "index": 147,
+        "name": "Bottom_Part_121",
+        "children": []
+      },
+      {
+        "index": 148,
+        "name": "Bottom_Part_122",
+        "children": []
+      },
+      {
+        "index": 149,
+        "name": "Bottom_Part_123",
+        "children": []
+      },
+      {
+        "index": 150,
+        "name": "Bottom_Part_124",
+        "children": []
+      },
+      {
+        "index": 151,
+        "name": "Bottom_Part_125",
+        "children": []
+      },
+      {
+        "index": 152,
+        "name": "Bottom_Part_126",
+        "children": []
+      },
+      {
+        "index": 153,
+        "name": "Bottom_Part_127",
+        "children": []
+      },
+      {
+        "index": 154,
+        "name": "Head_Part_000",
+        "children": []
+      },
+      {
+        "index": 155,
+        "name": "Head_Part_001",
+        "children": []
+      },
+      {
+        "index": 156,
+        "name": "Head_Part_002",
+        "children": []
+      },
+      {
+        "index": 157,
+        "name": "Head_Part_003",
+        "children": []
+      },
+      {
+        "index": 158,
+        "name": "Head_Part_004",
+        "children": []
+      },
+      {
+        "index": 159,
+        "name": "Head_Part_005",
+        "children": []
+      },
+      {
+        "index": 160,
+        "name": "Head_Part_006",
+        "children": []
+      },
+      {
+        "index": 161,
+        "name": "Head_Part_007",
+        "children": []
+      },
+      {
+        "index": 162,
+        "name": "Head_Part_008",
+        "children": []
+      },
+      {
+        "index": 163,
+        "name": "Head_Part_009",
+        "children": []
+      },
+      {
+        "index": 164,
+        "name": "Head_Part_010",
+        "children": []
+      },
+      {
+        "index": 165,
+        "name": "Head_Part_011",
+        "children": []
+      },
+      {
+        "index": 166,
+        "name": "Head_Part_012",
+        "children": []
+      },
+      {
+        "index": 167,
+        "name": "Head_Part_013",
+        "children": []
+      },
+      {
+        "index": 168,
+        "name": "Head_Part_014",
+        "children": []
+      },
+      {
+        "index": 169,
+        "name": "Head_Part_015",
+        "children": []
+      },
+      {
+        "index": 170,
+        "name": "Head_Part_016",
+        "children": []
+      },
+      {
+        "index": 171,
+        "name": "Head_Part_017",
+        "children": []
+      },
+      {
+        "index": 172,
+        "name": "Head_Part_018",
+        "children": []
+      },
+      {
+        "index": 173,
+        "name": "Head_Part_019",
+        "children": []
+      },
+      {
+        "index": 174,
+        "name": "Head_Part_020",
+        "children": []
+      },
+      {
+        "index": 175,
+        "name": "Head_Part_021",
+        "children": []
+      },
+      {
+        "index": 176,
+        "name": "Head_Part_022",
+        "children": []
+      },
+      {
+        "index": 177,
+        "name": "Head_Part_023",
+        "children": []
+      },
+      {
+        "index": 178,
+        "name": "Head_Part_024",
+        "children": []
+      },
+      {
+        "index": 179,
+        "name": "Head_Part_025",
+        "children": []
+      },
+      {
+        "index": 180,
+        "name": "Head_Part_026",
+        "children": []
+      },
+      {
+        "index": 181,
+        "name": "Head_Part_027",
+        "children": []
+      },
+      {
+        "index": 182,
+        "name": "Head_Part_028",
+        "children": []
+      },
+      {
+        "index": 183,
+        "name": "Head_Part_029",
+        "children": []
+      },
+      {
+        "index": 184,
+        "name": "Head_Part_030",
+        "children": []
+      },
+      {
+        "index": 185,
+        "name": "Head_Part_031",
+        "children": []
+      },
+      {
+        "index": 186,
+        "name": "Head_Part_032",
+        "children": []
+      },
+      {
+        "index": 187,
+        "name": "Head_Part_033",
+        "children": []
+      },
+      {
+        "index": 188,
+        "name": "Head_Part_034",
+        "children": []
+      },
+      {
+        "index": 189,
+        "name": "Head_Part_035",
+        "children": []
+      },
+      {
+        "index": 190,
+        "name": "Head_Part_036",
+        "children": []
+      },
+      {
+        "index": 191,
+        "name": "Head_Part_037",
+        "children": []
+      },
+      {
+        "index": 192,
+        "name": "Head_Part_038",
+        "children": []
+      },
+      {
+        "index": 193,
+        "name": "Head_Part_039",
+        "children": []
+      },
+      {
+        "index": 194,
+        "name": "Head_Part_040",
+        "children": []
+      },
+      {
+        "index": 195,
+        "name": "Head_Part_041",
+        "children": []
+      },
+      {
+        "index": 196,
+        "name": "Head_Part_042",
+        "children": []
+      },
+      {
+        "index": 197,
+        "name": "Head_Part_043",
+        "children": []
+      },
+      {
+        "index": 198,
+        "name": "Head_Part_044",
+        "children": []
+      },
+      {
+        "index": 199,
+        "name": "Head_Part_045",
+        "children": []
+      },
+      {
+        "index": 200,
+        "name": "Head_Part_046",
+        "children": []
+      },
+      {
+        "index": 201,
+        "name": "Head_Part_047",
+        "children": []
+      },
+      {
+        "index": 202,
+        "name": "Head_Part_048",
+        "children": []
+      },
+      {
+        "index": 203,
+        "name": "Head_Part_049",
+        "children": []
+      },
+      {
+        "index": 204,
+        "name": "Head_Part_050",
+        "children": []
+      },
+      {
+        "index": 205,
+        "name": "Head_Part_051",
+        "children": []
+      },
+      {
+        "index": 206,
+        "name": "Head_Part_052",
+        "children": []
+      },
+      {
+        "index": 207,
+        "name": "Head_Part_053",
+        "children": []
+      },
+      {
+        "index": 208,
+        "name": "Head_Part_054",
+        "children": []
+      },
+      {
+        "index": 209,
+        "name": "Head_Part_055",
+        "children": []
+      },
+      {
+        "index": 210,
+        "name": "Head_Part_056",
+        "children": []
+      },
+      {
+        "index": 211,
+        "name": "Head_Part_057",
+        "children": []
+      },
+      {
+        "index": 212,
+        "name": "Head_Part_058",
+        "children": []
+      },
+      {
+        "index": 213,
+        "name": "Head_Part_059",
+        "children": []
+      },
+      {
+        "index": 214,
+        "name": "Head_Part_060",
+        "children": []
+      },
+      {
+        "index": 215,
+        "name": "Head_Part_061",
+        "children": []
+      },
+      {
+        "index": 216,
+        "name": "Head_Part_062",
+        "children": []
+      },
+      {
+        "index": 217,
+        "name": "Head_Part_063",
+        "children": []
+      },
+      {
+        "index": 218,
+        "name": "Head_Part_064",
+        "children": []
+      },
+      {
+        "index": 219,
+        "name": "Head_Part_065",
+        "children": []
+      },
+      {
+        "index": 220,
+        "name": "Head_Part_066",
+        "children": []
+      },
+      {
+        "index": 221,
+        "name": "Head_Part_067",
+        "children": []
+      },
+      {
+        "index": 222,
+        "name": "Head_Part_068",
+        "children": []
+      },
+      {
+        "index": 223,
+        "name": "Head_Part_069",
+        "children": []
+      },
+      {
+        "index": 224,
+        "name": "Head_Part_070",
+        "children": []
+      },
+      {
+        "index": 225,
+        "name": "Head_Part_071",
+        "children": []
+      },
+      {
+        "index": 226,
+        "name": "Head_Part_072",
+        "children": []
+      },
+      {
+        "index": 227,
+        "name": "Head_Part_073",
+        "children": []
+      },
+      {
+        "index": 228,
+        "name": "Head_Part_074",
+        "children": []
+      },
+      {
+        "index": 229,
+        "name": "Head_Part_075",
+        "children": []
+      },
+      {
+        "index": 230,
+        "name": "Head_Part_076",
+        "children": []
+      },
+      {
+        "index": 231,
+        "name": "Head_Part_077",
+        "children": []
+      },
+      {
+        "index": 232,
+        "name": "Head_Part_078",
+        "children": []
+      },
+      {
+        "index": 233,
+        "name": "Head_Part_079",
+        "children": []
+      },
+      {
+        "index": 234,
+        "name": "Head_Part_080",
+        "children": []
+      },
+      {
+        "index": 235,
+        "name": "Head_Part_081",
+        "children": []
+      },
+      {
+        "index": 236,
+        "name": "Head_Part_082",
+        "children": []
+      },
+      {
+        "index": 237,
+        "name": "Head_Part_083",
+        "children": []
+      },
+      {
+        "index": 238,
+        "name": "Head_Part_084",
+        "children": []
+      },
+      {
+        "index": 239,
+        "name": "Head_Part_085",
+        "children": []
+      },
+      {
+        "index": 240,
+        "name": "Table_Part_000",
+        "children": []
+      },
+      {
+        "index": 241,
+        "name": "Table_Part_001",
+        "children": []
+      },
+      {
+        "index": 242,
+        "name": "Table_Part_002",
+        "children": []
+      },
+      {
+        "index": 243,
+        "name": "Table_Part_003",
+        "children": []
+      },
+      {
+        "index": 244,
+        "name": "Table_Part_004",
+        "children": []
+      },
+      {
+        "index": 245,
+        "name": "Table_Part_005",
+        "children": []
+      },
+      {
+        "index": 246,
+        "name": "Table_Part_006",
+        "children": []
+      },
+      {
+        "index": 247,
+        "name": "Table_Part_007",
+        "children": []
+      },
+      {
+        "index": 248,
+        "name": "Table_Part_008",
+        "children": []
+      },
+      {
+        "index": 249,
+        "name": "Table_Part_009",
+        "children": []
+      },
+      {
+        "index": 250,
+        "name": "Table_Part_010",
+        "children": []
+      },
+      {
+        "index": 251,
+        "name": "Table_Part_011",
+        "children": []
+      },
+      {
+        "index": 252,
+        "name": "Table_Part_012",
+        "children": []
+      },
+      {
+        "index": 253,
+        "name": "Table_Part_013",
+        "children": []
+      },
+      {
+        "index": 254,
+        "name": "Table_Part_014",
+        "children": []
+      },
+      {
+        "index": 255,
+        "name": "Table_Part_015",
+        "children": []
+      },
+      {
+        "index": 256,
+        "name": "Table_Part_016",
+        "children": []
+      },
+      {
+        "index": 257,
+        "name": "Table_Part_017",
+        "children": []
+      },
+      {
+        "index": 258,
+        "name": "Table_Part_018",
+        "children": []
+      },
+      {
+        "index": 259,
+        "name": "Table_Part_019",
+        "children": []
+      },
+      {
+        "index": 260,
+        "name": "Table_Part_020",
+        "children": []
+      },
+      {
+        "index": 261,
+        "name": "Table_Part_021",
+        "children": []
+      },
+      {
+        "index": 262,
+        "name": "Table_Part_022",
+        "children": []
+      },
+      {
+        "index": 263,
+        "name": "Table_Part_023",
+        "children": []
+      },
+      {
+        "index": 264,
+        "name": "Table_Part_024",
+        "children": []
+      },
+      {
+        "index": 265,
+        "name": "Table_Part_025",
+        "children": []
+      },
+      {
+        "index": 266,
+        "name": "Table_Part_026",
+        "children": []
+      },
+      {
+        "index": 267,
+        "name": "Table_Part_027",
+        "children": []
+      },
+      {
+        "index": 268,
+        "name": "Table_Part_028",
+        "children": []
+      },
+      {
+        "index": 269,
+        "name": "Table_Part_029",
+        "children": []
+      },
+      {
+        "index": 270,
+        "name": "Table_Part_030",
+        "children": []
+      },
+      {
+        "index": 271,
+        "name": "Table_Part_031",
+        "children": []
+      },
+      {
+        "index": 272,
+        "name": "Table_Part_032",
+        "children": []
+      },
+      {
+        "index": 273,
+        "name": "Table_Part_033",
+        "children": []
+      },
+      {
+        "index": 274,
+        "name": "Table_Part_034",
+        "children": []
+      },
+      {
+        "index": 275,
+        "name": "Table_Part_035",
+        "children": []
+      },
+      {
+        "index": 276,
+        "name": "Table_Part_036",
+        "children": []
+      },
+      {
+        "index": 277,
+        "name": "Table_Part_037",
+        "children": []
+      },
+      {
+        "index": 278,
+        "name": "Table_Part_038",
+        "children": []
+      },
+      {
+        "index": 279,
+        "name": "Table_Part_039",
+        "children": []
+      },
+      {
+        "index": 280,
+        "name": "Table_Part_040",
+        "children": []
+      },
+      {
+        "index": 281,
+        "name": "Table_Part_041",
+        "children": []
+      },
+      {
+        "index": 282,
+        "name": "Table_Part_042",
+        "children": []
+      },
+      {
+        "index": 283,
+        "name": "Table_Part_043",
+        "children": []
+      },
+      {
+        "index": 284,
+        "name": "Table_Part_044",
+        "children": []
+      },
+      {
+        "index": 285,
+        "name": "Table_Part_045",
+        "children": []
+      },
+      {
+        "index": 286,
+        "name": "Table_Part_046",
+        "children": []
+      },
+      {
+        "index": 287,
+        "name": "Table_Part_047",
+        "children": []
+      },
+      {
+        "index": 288,
+        "name": "Table_Part_048",
+        "children": []
+      },
+      {
+        "index": 289,
+        "name": "Table_Part_049",
+        "children": []
+      },
+      {
+        "index": 290,
+        "name": "Table_Part_050",
+        "children": []
+      },
+      {
+        "index": 291,
+        "name": "Table_Part_051",
+        "children": []
+      },
+      {
+        "index": 292,
+        "name": "Table_Part_052",
+        "children": []
+      },
+      {
+        "index": 293,
+        "name": "Table_Part_053",
+        "children": []
+      },
+      {
+        "index": 294,
+        "name": "Table_Part_054",
+        "children": []
+      },
+      {
+        "index": 295,
+        "name": "Table_Part_055",
+        "children": []
+      },
+      {
+        "index": 296,
+        "name": "Table_Part_056",
+        "children": []
+      },
+      {
+        "index": 297,
+        "name": "Table_Part_057",
+        "children": []
+      },
+      {
+        "index": 298,
+        "name": "Table_Part_058",
+        "children": []
+      },
+      {
+        "index": 299,
+        "name": "Table_Part_059",
+        "children": []
+      },
+      {
+        "index": 300,
+        "name": "Table_Part_060",
+        "children": []
+      },
+      {
+        "index": 301,
+        "name": "Table_Part_061",
+        "children": []
+      },
+      {
+        "index": 302,
+        "name": "Table_Part_062",
+        "children": []
+      },
+      {
+        "index": 303,
+        "name": "Table_Part_063",
+        "children": []
+      },
+      {
+        "index": 304,
+        "name": "Table_Part_064",
+        "children": []
+      },
+      {
+        "index": 305,
+        "name": "Table_Part_065",
+        "children": []
+      },
+      {
+        "index": 306,
+        "name": "Table_Part_066",
+        "children": []
+      },
+      {
+        "index": 307,
+        "name": "Table_Part_067",
+        "children": []
+      },
+      {
+        "index": 308,
+        "name": "Table_Part_068",
+        "children": []
+      },
+      {
+        "index": 309,
+        "name": "Light_Part_000",
+        "children": []
+      },
+      {
+        "index": 310,
+        "name": "Light_Part_001",
+        "children": []
+      },
+      {
+        "index": 311,
+        "name": "Light_Part_002",
+        "children": []
+      },
+      {
+        "index": 312,
+        "name": "Light_Part_003",
+        "children": []
+      },
+      {
+        "index": 313,
+        "name": "Light_Part_004",
+        "children": []
+      },
+      {
+        "index": 314,
+        "name": "Light_Part_005",
+        "children": []
+      },
+      {
+        "index": 315,
+        "name": "Light_Part_006",
+        "children": []
+      },
+      {
+        "index": 316,
+        "name": "Light_Part_007",
+        "children": []
+      },
+      {
+        "index": 317,
+        "name": "Light_Part_008",
+        "children": []
+      },
+      {
+        "index": 318,
+        "name": "Light_Part_009",
+        "children": []
+      },
+      {
+        "index": 319,
+        "name": "Light_Part_010",
+        "children": []
+      },
+      {
+        "index": 320,
+        "name": "Light_Part_011",
+        "children": []
+      },
+      {
+        "index": 321,
+        "name": "Light_Part_012",
+        "children": []
+      },
+      {
+        "index": 322,
+        "name": "Light_Part_013",
+        "children": []
+      },
+      {
+        "index": 323,
+        "name": "Light_Part_014",
+        "children": []
+      },
+      {
+        "index": 324,
+        "name": "Light_Part_015",
+        "children": []
+      },
+      {
+        "index": 325,
+        "name": "Light_Part_016",
+        "children": []
+      },
+      {
+        "index": 326,
+        "name": "Light_Part_017",
+        "children": []
+      },
+      {
+        "index": 327,
+        "name": "Light_Part_018",
+        "children": []
+      },
+      {
+        "index": 328,
+        "name": "Light_Part_019",
+        "children": []
+      },
+      {
+        "index": 329,
+        "name": "Light_Part_020",
+        "children": []
+      },
+      {
+        "index": 330,
+        "name": "Light_Part_021",
+        "children": []
+      },
+      {
+        "index": 331,
+        "name": "Light_Part_022",
+        "children": []
+      },
+      {
+        "index": 332,
+        "name": "Signs_Togther_01_Part_000",
+        "children": []
+      },
+      {
+        "index": 333,
+        "name": "Signs_Togther_01_Part_001",
+        "children": []
+      },
+      {
+        "index": 334,
+        "name": "Signs_Togther_01_Part_002",
+        "children": []
+      },
+      {
+        "index": 335,
+        "name": "Signs_Togther_01_Part_003",
+        "children": []
+      },
+      {
+        "index": 336,
+        "name": "Signs_Togther_01_Part_004",
+        "children": []
+      },
+      {
+        "index": 337,
+        "name": "Signs_Togther_01_Part_005",
+        "children": []
+      },
+      {
+        "index": 338,
+        "name": "Signs_Togther_01_Part_006",
+        "children": []
+      },
+      {
+        "index": 339,
+        "name": "Signs_Togther_01_Part_007",
+        "children": []
+      },
+      {
+        "index": 340,
+        "name": "Signs_Togther_01_Part_008",
+        "children": []
+      },
+      {
+        "index": 341,
+        "name": "Signs_Togther_01_Part_009",
+        "children": []
+      },
+      {
+        "index": 342,
+        "name": "Signs_Togther_01_Part_010",
+        "children": []
+      },
+      {
+        "index": 343,
+        "name": "Signs_Togther_01_Part_011",
+        "children": []
+      },
+      {
+        "index": 344,
+        "name": "Signs_Togther_01_Part_012",
+        "children": []
+      },
+      {
+        "index": 345,
+        "name": "Signs_Togther_01_Part_013",
+        "children": []
+      },
+      {
+        "index": 346,
+        "name": "Signs_Togther_01_Part_014",
+        "children": []
+      },
+      {
+        "index": 347,
+        "name": "Signs_Togther_01_Part_015",
+        "children": []
+      },
+      {
+        "index": 348,
+        "name": "Signs_Togther_01_Part_016",
+        "children": []
+      },
+      {
+        "index": 349,
+        "name": "Signs_Togther_01_Part_017",
+        "children": []
+      },
+      {
+        "index": 350,
+        "name": "Signs_Togther_01_Part_018",
+        "children": []
+      },
+      {
+        "index": 351,
+        "name": "Signs_Togther_01_Part_019",
+        "children": []
+      },
+      {
+        "index": 352,
+        "name": "Signs_Togther_01_Part_020",
+        "children": []
+      },
+      {
+        "index": 353,
+        "name": "Signs_Togther_01_Part_021",
+        "children": []
+      },
+      {
+        "index": 354,
+        "name": "Signs_Togther_01_Part_022",
+        "children": []
+      },
+      {
+        "index": 355,
+        "name": "Signs_Togther_01_Part_023",
+        "children": []
+      },
+      {
+        "index": 356,
+        "name": "Signs_Togther_01_Part_024",
+        "children": []
+      },
+      {
+        "index": 357,
+        "name": "Signs_Togther_01_Part_025",
+        "children": []
+      },
+      {
+        "index": 358,
+        "name": "Signs_Togther_01_Part_026",
+        "children": []
+      },
+      {
+        "index": 359,
+        "name": "Signs_Togther_01_Part_027",
+        "children": []
+      },
+      {
+        "index": 360,
+        "name": "Signs_Togther_01_Part_028",
+        "children": []
+      },
+      {
+        "index": 361,
+        "name": "Signs_Togther_01_Part_029",
+        "children": []
+      },
+      {
+        "index": 362,
+        "name": "Signs_Togther_01_Part_030",
+        "children": []
+      },
+      {
+        "index": 363,
+        "name": "Signs_Togther_01_Part_031",
+        "children": []
+      },
+      {
+        "index": 364,
+        "name": "Signs_Togther_01_Part_032",
+        "children": []
+      },
+      {
+        "index": 365,
+        "name": "Signs_Togther_01_Part_033",
+        "children": []
+      },
+      {
+        "index": 366,
+        "name": "Signs_Togther_01_Part_034",
+        "children": []
+      },
+      {
+        "index": 367,
+        "name": "Signs_Togther_01_Part_035",
+        "children": []
+      },
+      {
+        "index": 368,
+        "name": "Signs_Togther_01_Part_036",
+        "children": []
+      },
+      {
+        "index": 369,
+        "name": "Signs_Togther_01_Part_037",
+        "children": []
+      },
+      {
+        "index": 370,
+        "name": "Signs_Togther_01_Part_038",
+        "children": []
+      },
+      {
+        "index": 371,
+        "name": "Signs_Togther_01_Part_039",
+        "children": []
+      },
+      {
+        "index": 372,
+        "name": "Signs_Togther_01_Part_040",
+        "children": []
+      },
+      {
+        "index": 373,
+        "name": "Signs_Togther_01_Part_041",
+        "children": []
+      },
+      {
+        "index": 374,
+        "name": "Signs_Togther_01_Part_042",
+        "children": []
+      },
+      {
+        "index": 375,
+        "name": "Signs_Togther_01_Part_043",
+        "children": []
+      },
+      {
+        "index": 376,
+        "name": "Signs_Togther_01_Part_044",
+        "children": []
+      },
+      {
+        "index": 377,
+        "name": "Signs_Togther_01_Part_045",
+        "children": []
+      },
+      {
+        "index": 378,
+        "name": "Signs_Togther_01_Part_046",
+        "children": []
+      },
+      {
+        "index": 379,
+        "name": "Signs_Togther_01_Part_047",
+        "children": []
+      },
+      {
+        "index": 380,
+        "name": "Signs_Togther_01_Part_048",
+        "children": []
+      },
+      {
+        "index": 381,
+        "name": "Signs_Togther_01_Part_049",
+        "children": []
+      },
+      {
+        "index": 382,
+        "name": "Signs_Togther_01_Part_050",
+        "children": []
+      },
+      {
+        "index": 383,
+        "name": "Signs_Togther_01_Part_051",
+        "children": []
+      },
+      {
+        "index": 384,
+        "name": "Signs_Togther_01_Part_052",
+        "children": []
+      },
+      {
+        "index": 385,
+        "name": "Signs_Togther_01_Part_053",
+        "children": []
+      },
+      {
+        "index": 386,
+        "name": "Signs_Togther_01_Part_054",
+        "children": []
+      },
+      {
+        "index": 387,
+        "name": "Signs_Togther_01_Part_055",
+        "children": []
+      },
+      {
+        "index": 388,
+        "name": "Signs_Togther_01_Part_056",
+        "children": []
+      },
+      {
+        "index": 389,
+        "name": "Signs_Togther_01_Part_057",
+        "children": []
+      },
+      {
+        "index": 390,
+        "name": "Signs_Togther_01_Part_058",
+        "children": []
+      },
+      {
+        "index": 391,
+        "name": "Signs_Togther_01_Part_059",
+        "children": []
+      },
+      {
+        "index": 392,
+        "name": "Signs_Togther_01_Part_060",
+        "children": []
+      },
+      {
+        "index": 393,
+        "name": "Signs_Togther_01_Part_061",
+        "children": []
+      },
+      {
+        "index": 394,
+        "name": "Signs_Togther_01_Part_062",
+        "children": []
+      },
+      {
+        "index": 395,
+        "name": "Signs_Togther_01_Part_063",
+        "children": []
+      },
+      {
+        "index": 396,
+        "name": "Signs_Togther_01_Part_064",
+        "children": []
+      },
+      {
+        "index": 397,
+        "name": "Signs_Togther_01_Part_065",
+        "children": []
+      },
+      {
+        "index": 398,
+        "name": "Signs_Togther_01_Part_066",
+        "children": []
+      },
+      {
+        "index": 399,
+        "name": "Signs_Togther_01_Part_067",
+        "children": []
+      },
+      {
+        "index": 400,
+        "name": "Signs_Togther_01_Part_068",
+        "children": []
+      },
+      {
+        "index": 401,
+        "name": "Signs_Togther_01_Part_069",
+        "children": []
+      },
+      {
+        "index": 402,
+        "name": "Signs_Togther_01_Part_070",
+        "children": []
+      },
+      {
+        "index": 403,
+        "name": "Signs_Togther_01_Part_071",
+        "children": []
+      },
+      {
+        "index": 404,
+        "name": "Signs_Togther_01_Part_072",
+        "children": []
+      },
+      {
+        "index": 405,
+        "name": "Signs_Togther_01_Part_073",
+        "children": []
+      },
+      {
+        "index": 406,
+        "name": "Signs_Togther_01_Part_074",
+        "children": []
+      },
+      {
+        "index": 407,
+        "name": "Signs_Togther_01_Part_075",
+        "children": []
+      },
+      {
+        "index": 408,
+        "name": "Signs_Togther_01_Part_076",
+        "children": []
+      },
+      {
+        "index": 409,
+        "name": "Signs_Togther_01_Part_077",
+        "children": []
+      },
+      {
+        "index": 410,
+        "name": "Signs_Togther_01_Part_078",
+        "children": []
+      },
+      {
+        "index": 411,
+        "name": "Signs_Togther_01_Part_079",
+        "children": []
+      },
+      {
+        "index": 412,
+        "name": "Signs_Togther_01_Part_080",
+        "children": []
+      },
+      {
+        "index": 413,
+        "name": "Signs_Togther_01_Part_081",
+        "children": []
+      },
+      {
+        "index": 414,
+        "name": "Signs_Togther_01_Part_082",
+        "children": []
+      },
+      {
+        "index": 415,
+        "name": "Signs_Togther_01_Part_083",
+        "children": []
+      },
+      {
+        "index": 416,
+        "name": "Signs_Togther_01_Part_084",
+        "children": []
+      },
+      {
+        "index": 417,
+        "name": "Signs_Togther_01_Part_085",
+        "children": []
+      },
+      {
+        "index": 418,
+        "name": "Signs_Togther_01_Part_086",
+        "children": []
+      },
+      {
+        "index": 419,
+        "name": "Signs_Togther_01_Part_087",
+        "children": []
+      },
+      {
+        "index": 420,
+        "name": "Signs_Togther_01_Part_088",
+        "children": []
+      },
+      {
+        "index": 421,
+        "name": "Signs_Togther_01_Part_089",
         "children": []
       }
     ]
   },
   {
+    "manifestAudit": null,
     "id": "drill",
     "model": "drill_press_interactive.glb",
     "config": "drill_press_parts.json",
@@ -2561,11 +6937,11 @@
           0
         ],
         "range": [
-          -0.32,
+          -0.2,
           0.18
         ],
-        "label": "工作臺高度（待確認）",
-        "enabled": false
+        "label": "工作臺高度",
+        "enabled": true
       }
     ],
     "wheels": [
@@ -2586,11 +6962,15 @@
         "drives": "quill",
         "angleRange": [
           -2.007128639793479,
-          0.6108652381980153
+          0
         ],
-        "ratio": null,
+        "ratio": 0.04234905442271303,
+        "springReturn": {
+          "speed": 2.5,
+          "holdDirection": -1
+        },
         "speed": 1,
-        "needsCalibration": true
+        "needsCalibration": false
       }
     ],
     "spindle": {
@@ -2615,12 +6995,10 @@
       ]
     },
     "notes": [
-      "未提供鑽床模型使用說明 .md。",
-      "原模型沒有工作臺升降手輪、虎鉗與工件，掛點為空節點。",
-      "工作臺升降與旋轉在 JSON 標為待確認，本版不啟用。",
-      "進給手柄角度與套筒零點關係尚未定義；進給連動需先選擇教學比例。",
-      "主軸／夾頭／鑽頭幾何分界及 HeadSideRod 用途仍需人工確認。",
-      "表面標籤維持原檔靜止狀態。"
+      "已閱讀 drillingREADME.md；握柄按住向下進給，放開彈簧回位。",
+      "SwitchLever 作主軸啟停開關；工作臺 Y 行程為 -0.20～0.18，收窄下限避免穿入底座。",
+      "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
+      "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。"
     ],
     "sourceHierarchy": [
       {

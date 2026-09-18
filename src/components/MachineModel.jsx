@@ -1,7 +1,7 @@
 import {useEffect,useLayoutEffect,useRef} from 'react';
 import {useFrame,useThree} from '@react-three/fiber';
 import {Raycaster,Vector2} from 'three';
-import {controlFor,setHighlight,stepMachine,turnControl} from '../machines/runtime';
+import {controlFor,setHighlight,stepMachine,turnControl,stepReturn} from '../machines/runtime';
 export default function MachineModel({model,controls,orbit}) {
  const {gl,camera,invalidate}=useThree(),latest=useRef(controls),previousActive=useRef(false),elapsed=useRef(0),published=useRef('');
  latest.current=controls;
@@ -18,10 +18,10 @@ export default function MachineModel({model,controls,orbit}) {
    const key=hit(e),part=model.controls[key];if(!part)return;
    if(e.button!==0&&e.button!==2)return;if(part.type!=='wheel'&&e.button!==0)return;
    e.preventDefault();e.stopImmediatePropagation();update(key,e.clientX,e.clientY);
-   if(e.pointerType==='touch'&&armed!==key){armed=key;return;}
+   if(e.pointerType==='touch'&&part.type==='wheel'&&!part.springReturn&&armed!==key){armed=key;return;}
    if(part.needsCalibration&&!latest.current.teaching)return;
    pointer=e.pointerId;canvas.setPointerCapture(pointer);if(orbit.current)orbit.current.enabled=false;
-   if(part.type==='wheel'){const direction=e.button===2?1:-1;latest.current.held.current={key,direction};model.active=key;turnControl(model,key,direction,.025,latest.current.teaching);}else latest.current.toggle();
+   if(part.type==='wheel'){const direction=e.button===2?1:-1;latest.current.held.current={key,direction};model.active=key;turnControl(model,key,direction,.025,latest.current.teaching);}else if(part.type==='index')latest.current.index();else if(part.type==='emergency')latest.current.brake();else latest.current.toggle();
    canvas.style.cursor='grabbing';latest.current.refresh();update(key,e.clientX,e.clientY);
   }
   function move(e){if(pointer!==null){e.stopImmediatePropagation();return;}const key=hit(e);canvas.style.cursor=key?'grab':'';update(key,e.clientX,e.clientY);}
@@ -36,8 +36,9 @@ export default function MachineModel({model,controls,orbit}) {
  useFrame((_,delta)=>{
   const c=latest.current,held=c.held.current,dt=previousActive.current?delta:0;
   if(held){if(orbit.current)orbit.current.enabled=false;model.active=held.key;turnControl(model,held.key,held.direction,dt,c.teaching);}
+  const returning=stepReturn(model,held?.key,dt);
   stepMachine(model,c.running,c.rpm,dt);
-  const active=!!held||c.running||model.rpm>0||model.leverAngle!==0;
+  const active=returning||!!held||c.running||model.rpm>0||model.leverAngle!==0;
   elapsed.current+=delta;const signature=JSON.stringify([Math.round(model.rpm),model.leverAngle,model.offsets,model.angles]);
   if(signature!==published.current&&(elapsed.current>.08||!active)){elapsed.current=0;published.current=signature;c.refresh();}
   previousActive.current=active;if(active)invalidate();

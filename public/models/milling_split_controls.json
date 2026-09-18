@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 2,
+  "model": "deliver_milling_machine_split/milling_machine_split.glb",
+  "groups": [
+    {
+      "name": "Head_Assembly",
+      "objects": [
+        "Head_Part_000",
+        "Head_Part_001",
+        "Head_Part_002",
+        "Head_Part_003",
+        "Head_Part_004",
+        "Head_Part_005",
+        "Head_Part_006",
+        "Head_Part_007",
+        "Head_Part_008",
+        "Head_Part_009",
+        "Head_Part_010",
+        "Head_Part_011",
+        "Head_Part_012",
+        "Head_Part_013",
+        "Head_Part_014",
+        "Head_Part_015",
+        "Head_Part_016",
+        "Head_Part_017",
+        "Head_Part_018",
+        "Head_Part_019",
+        "Head_Part_020",
+        "Head_Part_021",
+        "Head_Part_022",
+        "Head_Part_023",
+        "Head_Part_024",
+        "Head_Part_025",
+        "Head_Part_026",
+        "Head_Part_027",
+        "Head_Part_028",
+        "Head_Part_029",
+        "Head_Part_030",
+        "Head_Part_031",
+        "Head_Part_032",
+        "Head_Part_033",
+        "Head_Part_034",
+        "Head_Part_035",
+        "Head_Part_036",
+        "Head_Part_037",
+        "Head_Part_038",
+        "Head_Part_039",
+        "Head_Part_040",
+        "Head_Part_041",
+        "Head_Part_042",
+        "Head_Part_043",
+        "Head_Part_044",
+        "Head_Part_045",
+        "Head_Part_046",
+        "Head_Part_047",
+        "Head_Part_048",
+        "Head_Part_049",
+        "Head_Part_050",
+        "Head_Part_051",
+        "Head_Part_052",
+        "Head_Part_053",
+        "Head_Part_054",
+        "Head_Part_055",
+        "Head_Part_056",
+        "Head_Part_057",
+        "Head_Part_058",
+        "Head_Part_059",
+        "Head_Part_060",
+        "Head_Part_061",
+        "Head_Part_062",
+        "Head_Part_063",
+        "Head_Part_064",
+        "Head_Part_065",
+        "Head_Part_066",
+        "Head_Part_067",
+        "Head_Part_068",
+        "Head_Part_069",
+        "Head_Part_070",
+        "Head_Part_071",
+        "Head_Part_072",
+        "Head_Part_073",
+        "Head_Part_074",
+        "Head_Part_075",
+        "Head_Part_076",
+        "Head_Part_077",
+        "Head_Part_078",
+        "Head_Part_079",
+        "Head_Part_080",
+        "Head_Part_081",
+        "Head_Part_082",
+        "Head_Part_083",
+        "Head_Part_084",
+        "Head_Part_085"
+      ]
+    },
+    {
+      "name": "Knee_Z_Slide",
+      "objects": []
+    },
+    {
+      "name": "Y_Axis_Saddle",
+      "parent": "Knee_Z_Slide",
+      "objects": [
+        "Bottom_Part_006",
+        "Bottom_Part_077",
+        "Bottom_Part_084",
+        "Bottom_Part_094",
+        "Bottom_Part_101",
+        "Bottom_Part_118",
+        "Bottom_Part_119",
+        "Bottom_Part_120",
+        "Bottom_Part_121",
+        "Bottom_Part_122",
+        "Bottom_Part_123",
+        "Bottom_Part_124"
+      ]
+    },
+    {
+      "name": "X_Axis_Table",
+      "parent": "Y_Axis_Saddle",
+      "objects": [
+        "Table_Part_004",
+        "Table_Part_015",
+        "Table_Part_016",
+        "Table_Part_017",
+        "Table_Part_018",
+        "Table_Part_019",
+        "Table_Part_020",
+        "Table_Part_021",
+        "Table_Part_022",
+        "Table_Part_023",
+        "Table_Part_024",
+        "Table_Part_025",
+        "Table_Part_026",
+        "Table_Part_027",
+        "Table_Part_028",
+        "Table_Part_029",
+        "Table_Part_030",
+        "Table_Part_031",
+        "Table_Part_032",
+        "Table_Part_033",
+        "Table_Part_034",
+        "Table_Part_035",
+        "Table_Part_036",
+        "Table_Part_037",
+        "Table_Part_038",
+        "Table_Part_039",
+        "Table_Part_040",
+        "Table_Part_041",
+        "Table_Part_042",
+        "Table_Part_043",
+        "Table_Part_044",
+        "Table_Part_045",
+        "Table_Part_046",
+        "Table_Part_049",
+        "Table_Part_050",
+        "Table_Part_051",
+        "Table_Part_052",
+        "Table_Part_053",
+        "Table_Part_054",
+        "Table_Part_055",
+        "Table_Part_060",
+        "Table_Part_061",
+        "Table_Part_062"
+      ]
+    },
+    {
+      "name": "X_Handwheel_Left_Group",
+      "parent": "X_Axis_Table",
+      "objects": [
+        "Table_Part_001",
+        "Table_Part_003",
+        "Table_Part_006",
+        "Table_Part_008",
+        "Table_Part_011",
+        "Table_Part_012",
+        "Table_Part_014",
+        "Table_Part_048",
+        "Table_Part_058",
+        "Table_Part_059",
+        "Table_Part_064",
+        "Table_Part_067",
+        "Table_Part_068"
+      ]
+    },
+    {
+      "name": "X_Handwheel_Right_Group",
+      "parent": "X_Axis_Table",
+      "objects": [
+        "Table_Part_000",
+        "Table_Part_002",
+        "Table_Part_005",
+        "Table_Part_007",
+        "Table_Part_009",
+        "Table_Part_010",
+        "Table_Part_013",
+        "Table_Part_047",
+        "Table_Part_056",
+        "Table_Part_057",
+        "Table_Part_063",
+        "Table_Part_065",
+        "Table_Part_066"
+      ]
+    },
+    {
+      "name": "Y_Handwheel_Group",
+      "parent": "Y_Axis_Saddle",
+      "objects": [
+        "Bottom_Part_002",
+        "Bottom_Part_003",
+        "Bottom_Part_004",
+        "Bottom_Part_007",
+        "Bottom_Part_011",
+        "Bottom_Part_012",
+        "Bottom_Part_013",
+        "Bottom_Part_092",
+        "Bottom_Part_105",
+        "Bottom_Part_106",
+        "Bottom_Part_125",
+        "Bottom_Part_126",
+        "Bottom_Part_127"
+      ]
+    },
+    {
+      "name": "Spindle_Rotor_Group",
+      "parent": "Head_Assembly",
+      "objects": [
+        "Head_Part_020"
+      ]
+    },
+    {
+      "name": "MillingSwitch",
+      "parent": "Head_Assembly",
+      "objects": [
+        "Head_Part_071"
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "id": "X_Axis_Table",
+      "node": "X_Axis_Table",
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        -0.4,
+        0.4
+      ],
+      "label": "X 軸／工作臺進給",
+      "enabled": true
+    },
+    {
+      "id": "Y_Axis_Saddle",
+      "node": "Y_Axis_Saddle",
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -0.15,
+        0.15
+      ],
+      "label": "Y 軸／鞍座進給",
+      "enabled": true
+    },
+    {
+      "id": "Knee_Z_Slide",
+      "node": "Knee_Z_Slide",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        -0.15,
+        0.18
+      ],
+      "label": "Z 軸／工作臺升降",
+      "enabled": true
+    }
+  ],
+  "wheels": [
+    {
+      "id": "X_Handwheel_Left_Group",
+      "node": "X_Handwheel_Left_Group",
+      "pivot": [
+        -0.030288,
+        0.706218,
+        -0.729364
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "drives": "X_Axis_Table",
+      "label": "X 軸左手輪",
+      "ratio": 0.018,
+      "speed": 2.4
+    },
+    {
+      "id": "X_Handwheel_Right_Group",
+      "node": "X_Handwheel_Right_Group",
+      "pivot": [
+        -0.060988,
+        0.710102,
+        0.692064
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "drives": "X_Axis_Table",
+      "label": "X 軸右手輪",
+      "ratio": 0.018,
+      "speed": 2.4
+    },
+    {
+      "id": "Y_Handwheel_Group",
+      "node": "Y_Handwheel_Group",
+      "pivot": [
+        0.393986,
+        0.554001,
+        0.006382
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "drives": "Y_Axis_Saddle",
+      "label": "Y 軸手輪",
+      "ratio": 0.0075,
+      "speed": 2.4
+    }
+  ],
+  "spindle": {
+    "node": "Spindle_Rotor_Group",
+    "axis": [
+      0,
+      1,
+      0
+    ],
+    "pivot": [
+      0.05942299962043762,
+      1.06830894947052,
+      0.008926999755203724
+    ],
+    "required": [
+      "Head_Part_020"
+    ],
+    "exclude": [
+      "Head_Part_001",
+      "Head_Part_034"
+    ]
+  },
+  "toggle": {
+    "node": "MillingSwitch",
+    "label": "銑床主軸電源開關"
+  },
+  "maxRpm": 2500,
+  "neutralMaterials": true,
+  "notes": [
+    "使用新拆件模型：422 個獨立零件，無內嵌材質／UV；本版配置中性工業材質與法線。",
+    "逐件畫面與幾何對照確認 X／Y 手輪；修正舊 X 左輪會帶動齒輪箱外殼的問題。",
+    "下端主軸改為 Head_Part_020 沿 Y 旋轉；舊版上方刻度面板保持固定。",
+    "開關使用上方電氣盒突出的 Head_Part_071，作教學啟停控制。",
+    "舊 Z 手輪對照實際為床身標牌，已移除錯誤互動；Z 升降使用滑桿。",
+    "導程與縮限後行程為教學值，非製造商校正資料；未建立不存在的刀具或虎鉗。"
+  ],
+  "provenance": {
+    "manifest": "deliver_milling_machine_split/milling_machine_split_manifest.json",
+    "readmes": [
+      "millingREADME.md",
+      "deliver_milling_machine_split/README.txt"
+    ],
+    "evidence": "reports/v2-*.png and split-correspondence.json; explicit reviewed membership, not proximity grouping"
+  }
+}

@@ -128,20 +128,24 @@
     },
     "startLever": {
       "objectNames": [
-        "Object_12",
-        "Object_38"
+        "Object_129",
+        "Object_131",
+        "Object_133",
+        "Object_135"
       ],
       "rodObjects": [
-        "Object_12"
+        "Object_129",
+        "Object_131",
+        "Object_133"
       ],
       "handleObjects": [
-        "Object_38"
+        "Object_135"
       ],
-      "axis": "z",
+      "axis": "x",
       "pivot": [
-        -0.4023504,
-        0.3522738,
-        0.3674505
+        0.31396687,
+        0.526,
+        0.274422
       ],
       "pivotName": "StartLeverPivot",
       "label": "主軸啟動拉桿",
@@ -149,9 +153,10 @@
         "點擊切換啟動／停止"
       ],
       "stopAngle": 0,
-      "runAngle": -0.65,
+      "runAngle": -0.6,
       "duration": 0.3,
-      "note": "Object_10 為固定支座；此拉桿依位置與外觀指定為啟停教學控制，須人工確認實機用途。"
+      "note": "依使用者指定改用縱向手輪右側長桿；Object_127／137 短桿保持固定。",
+      "parent": "CarriageAssembly"
     }
   },
   "mechanisms": {
@@ -171,10 +176,6 @@
         "Object_123",
         "Object_125",
         "Object_127",
-        "Object_129",
-        "Object_131",
-        "Object_133",
-        "Object_135",
         "Object_137",
         "Object_139",
         "Object_141"
@@ -184,7 +185,6 @@
     "CrossSlideAssembly": {
       "objects": [
         "Object_101",
-        "Object_103",
         "Object_147",
         "Object_143"
       ],
@@ -192,6 +192,7 @@
     },
     "ToolHeightAssembly": {
       "objects": [
+        "Object_103",
         "Object_149",
         "Object_150",
         "Object_152",
@@ -242,8 +243,8 @@
       "axis": "y",
       "label": "Z軸／刀具高度",
       "range": [
-        -0.015,
-        0.035
+        0,
+        0.06
       ],
       "hint": "只升降上方刀座與刀具；教學連動"
     },
@@ -252,7 +253,7 @@
       "axis": "x",
       "label": "尾座位置",
       "range": [
-        -0.12,
+        -0.55,
         0.04
       ],
       "hint": "沿床身調整尾座本體"
@@ -269,10 +270,10 @@
     }
   },
   "manualReview": [
-    "Object_117 無獨立凸出握把；外緣握持面與輪身依原始三角形分區，未新增握把。",
-    "實際輪面在 XY 平面，因此使用 Z 軸；Object_107 包含與輪身連成一體的握把桿，Object_109 是末端球形握把。",
-    "側向調節旋鈕的外觀已確認；高度連動是教學配置，原模型沒有機構語意，需實機教師確認。Object_143 支座保持固定。",
-    "Object_10 為固定支座；此拉桿依位置與外觀指定為啟停教學控制，須人工確認實機用途。"
+    "刀座本體 Object_103 與上方壓板／螺絲整組升降；Object_101／147 留在底座。",
+    "刀座每次點擊沿模型 Y 軸順時針 45°，累計八次一圈。",
+    "尾座負行程擴至 -0.55 模型單位，需注意與刀座接近。",
+    "右側長桿改作主軸啟停；腳踏煞車為依使用者要求新增的教學幾何，急停後需解除。"
   ],
   "safety": {
     "tool": "ToolHeightAssembly",
@@ -297,5 +298,59 @@
       0,
       0
     ]
-  }
+  },
+  "extraGroups": [
+    {
+      "name": "ToolIndexPivot",
+      "parent": "ToolHeightAssembly",
+      "pivot": [
+        0.0803634,
+        0.7797539,
+        0.0566564
+      ],
+      "objects": [
+        "Object_103",
+        "Object_149",
+        "Object_150",
+        "Object_152",
+        "Object_154",
+        "Object_156",
+        "Object_157"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "toolIndex",
+      "node": "ToolIndexPivot",
+      "type": "index",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "step": -0.7853981633974483,
+      "label": "刀座右轉 45°"
+    },
+    {
+      "id": "footBrake",
+      "node": "FootBrake",
+      "type": "emergency",
+      "label": "腳踏緊急煞車"
+    }
+  ],
+  "additions": [
+    {
+      "name": "FootBrake",
+      "kind": "pedal",
+      "position": [
+        0.15,
+        0.16,
+        0.43
+      ],
+      "length": 1.25,
+      "radius": 0.018,
+      "color": "#df654a"
+    }
+  ]
 }

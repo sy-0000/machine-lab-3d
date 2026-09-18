@@ -56,7 +56,7 @@ export function prepareModel(scene, definitions = null) {
     availability[key]=wheelOk&&handleOk&&availability[AXES[def.key].name];
     pivot.userData={interactivePart:availability[key],controlKey:key};
   }
-  const lever=make('StartLeverPivot',scene,LATHE_PARTS.startLever.pivot);
+  const lever=make('StartLeverPivot',nodes[LATHE_PARTS.startLever.parent]||scene,LATHE_PARTS.startLever.pivot);
   availability.startLever=attach(LATHE_PARTS.startLever.rodObjects,make('StartLeverRod',lever,LATHE_PARTS.startLever.pivot),'startLever');
   availability.startLever=attach(LATHE_PARTS.startLever.handleObjects,make('StartLeverHandle',lever,LATHE_PARTS.startLever.pivot),'startLever')&&availability.startLever;
   availability.spindle=availability.spindle&&availability.startLever;lever.userData={interactivePart:availability.startLever&&availability.spindle,controlKey:'startLever'};
