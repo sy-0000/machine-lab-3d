@@ -384,12 +384,22 @@
         "parent": "TailstockAssembly"
       },
       {
+        "name": "TailTravelWheel",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
         "name": "ToolIndexPivot",
         "found": true,
         "parent": "ToolHeightAssembly"
       },
       {
         "name": "FootBrake",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
+        "name": "LeftSelectorPivot",
         "found": true,
         "parent": "Scene"
       },
@@ -414,7 +424,7 @@
           0
         ],
         "range": [
-          -0.24,
+          -0.14,
           0.38
         ],
         "label": "X軸／縱向進給",
@@ -459,7 +469,7 @@
           0
         ],
         "range": [
-          -0.55,
+          -0.278,
           0.04
         ],
         "label": "尾座位置",
@@ -474,7 +484,7 @@
           0
         ],
         "range": [
-          -0.08,
+          -0.11,
           0
         ],
         "label": "尾座套筒",
@@ -553,6 +563,20 @@
         "drives": "quill",
         "ratio": 0.008,
         "speed": 2.4
+      },
+      {
+        "id": "tailTravel",
+        "node": "TailTravelWheel",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "背面尾座位置手輪",
+        "drives": "tail",
+        "ratio": 0.018,
+        "speed": 2.4,
+        "generated": true
       }
     ],
     "spindle": {
@@ -569,10 +593,10 @@
       ]
     },
     "notes": [
-      "刀座本體 Object_103 與上方壓板／螺絲整組升降；Object_101／147 留在底座。",
-      "刀座每次點擊沿模型 Y 軸順時針 45°，累計八次一圈。",
-      "尾座負行程擴至 -0.55 模型單位，需注意與刀座接近。",
-      "右側長桿改作主軸啟停；腳踏煞車為依使用者要求新增的教學幾何，急停後需解除。"
+      "已移除燈、圖紙架及其支柱、主軸黃色護蓋。",
+      "左側拉桿以右側單桿外型複製，限定 60／90／120／150 度；未虛構變速齒輪機構。",
+      "外撥／內撥啟動主軸相反方向；中位停止。",
+      "背面新增尾座位置手輪，尾座位置行程 -0.278～0.04；套筒可伸至 -0.11。"
     ],
     "sourceHierarchy": [
       {
@@ -1682,7 +1706,7 @@
       "missing": []
     },
     "id": "milling",
-    "model": "deliver_milling_machine_split/milling_machine_split.glb",
+    "model": "deliver_milling_machine_split/milling_machine_textured.glb",
     "config": "milling_split_controls.json",
     "nodeCount": 422,
     "meshCount": 422,
@@ -3544,6 +3568,21 @@
         "attachmentError": 0
       },
       {
+        "name": "Head_Assembly",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_023",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_023",
+        "parent": "MillingStartLever",
+        "attachmentError": 0
+      },
+      {
         "name": "Head_Part_000",
         "found": true,
         "parent": "Head_Assembly"
@@ -3661,7 +3700,7 @@
       {
         "name": "Head_Part_023",
         "found": true,
-        "parent": "Head_Assembly"
+        "parent": "MillingStartLever"
       },
       {
         "name": "Head_Part_024",
@@ -4516,6 +4555,11 @@
         "attachmentError": 0
       },
       {
+        "name": "ZLiftWheel",
+        "found": true,
+        "parent": "Knee_Z_Slide"
+      },
+      {
         "name": "Spindle_Rotor_Group",
         "found": true,
         "parent": "Head_Assembly"
@@ -4533,6 +4577,11 @@
           0
         ],
         "attachmentError": 0
+      },
+      {
+        "name": "MillingStartLever",
+        "found": true,
+        "parent": "Head_Assembly"
       },
       {
         "name": "MillingSwitch",
@@ -4641,6 +4690,20 @@
         "label": "Y 軸手輪",
         "ratio": 0.0075,
         "speed": 2.4
+      },
+      {
+        "id": "zLift",
+        "node": "ZLiftWheel",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "label": "Z 軸升降手輪",
+        "drives": "Knee_Z_Slide",
+        "ratio": 0.009,
+        "speed": 2.4,
+        "generated": true
       }
     ],
     "spindle": {
@@ -4664,12 +4727,11 @@
       ]
     },
     "notes": [
-      "使用新拆件模型：422 個獨立零件，無內嵌材質／UV；本版配置中性工業材質與法線。",
-      "逐件畫面與幾何對照確認 X／Y 手輪；修正舊 X 左輪會帶動齒輪箱外殼的問題。",
-      "下端主軸改為 Head_Part_020 沿 Y 旋轉；舊版上方刻度面板保持固定。",
-      "開關使用上方電氣盒突出的 Head_Part_071，作教學啟停控制。",
-      "舊 Z 手輪對照實際為床身標牌，已移除錯誤互動；Z 升降使用滑桿。",
-      "導程與縮限後行程為教學值，非製造商校正資料；未建立不存在的刀具或虎鉗。"
+      "已從原始 GLB 逐面恢復 UV、法線與貼圖材質，保留 422 個獨立零件。",
+      "新增 Z 升降教學手輪，與工作臺升降連動；原合併膝座鑄件保持固定。",
+      "Head_Part_023 握桿依使用者要求作主軸啟停，既有機身開關仍可操作。",
+      "手輪導程、握桿用途及新增手輪尺寸仍為教學配置。",
+      "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。"
     ],
     "sourceHierarchy": [
       {
@@ -6794,6 +6856,26 @@
     "errors": [],
     "audit": [
       {
+        "name": "TableClampHandle",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "TableAssembly",
+        "found": true,
+        "parent": "DrillPress"
+      },
+      {
+        "name": "TableSurfaceDetail",
+        "found": true,
+        "parent": "StaticAccessories"
+      },
+      {
+        "name": "TableAssembly",
+        "found": true,
+        "parent": "DrillPress"
+      },
+      {
         "name": "SpindleAssembly",
         "found": true,
         "parent": "Quill"
@@ -6998,7 +7080,8 @@
       "已閱讀 drillingREADME.md；握柄按住向下進給，放開彈簧回位。",
       "SwitchLever 作主軸啟停開關；工作臺 Y 行程為 -0.20～0.18，收窄下限避免穿入底座。",
       "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
-      "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。"
+      "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。",
+      "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。"
     ],
     "sourceHierarchy": [
       {

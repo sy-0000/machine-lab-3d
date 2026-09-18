@@ -1,0 +1,19 @@
+{
+  "matchedBaseColorTiles": [
+    [
+      "Back_1018",
+      "101"
+    ],
+    [
+      "Back_1022",
+      "102"
+    ]
+  ],
+  "fallbackPaintMaterials": [
+    "Back_1019",
+    "Back_1024",
+    "Back_1021",
+    "Back_1020"
+  ],
+  "note": "Four source base-color tiles absent; retain their original normal maps with matched paint color."
+}

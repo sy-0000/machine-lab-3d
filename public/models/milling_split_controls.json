@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "model": "deliver_milling_machine_split/milling_machine_split.glb",
+  "model": "deliver_milling_machine_split/milling_machine_textured.glb",
   "groups": [
     {
       "name": "Head_Assembly",
@@ -234,6 +234,18 @@
       "objects": [
         "Head_Part_071"
       ]
+    },
+    {
+      "name": "MillingStartLever",
+      "parent": "Head_Assembly",
+      "pivot": [
+        0.315,
+        1.748,
+        0.11
+      ],
+      "objects": [
+        "Head_Part_023"
+      ]
     }
   ],
   "axes": [
@@ -337,6 +349,20 @@
       "label": "Y 軸手輪",
       "ratio": 0.0075,
       "speed": 2.4
+    },
+    {
+      "id": "zLift",
+      "node": "ZLiftWheel",
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "label": "Z 軸升降手輪",
+      "drives": "Knee_Z_Slide",
+      "ratio": 0.009,
+      "speed": 2.4,
+      "generated": true
     }
   ],
   "spindle": {
@@ -364,14 +390,13 @@
     "label": "銑床主軸電源開關"
   },
   "maxRpm": 2500,
-  "neutralMaterials": true,
+  "neutralMaterials": false,
   "notes": [
-    "使用新拆件模型：422 個獨立零件，無內嵌材質／UV；本版配置中性工業材質與法線。",
-    "逐件畫面與幾何對照確認 X／Y 手輪；修正舊 X 左輪會帶動齒輪箱外殼的問題。",
-    "下端主軸改為 Head_Part_020 沿 Y 旋轉；舊版上方刻度面板保持固定。",
-    "開關使用上方電氣盒突出的 Head_Part_071，作教學啟停控制。",
-    "舊 Z 手輪對照實際為床身標牌，已移除錯誤互動；Z 升降使用滑桿。",
-    "導程與縮限後行程為教學值，非製造商校正資料；未建立不存在的刀具或虎鉗。"
+    "已從原始 GLB 逐面恢復 UV、法線與貼圖材質，保留 422 個獨立零件。",
+    "新增 Z 升降教學手輪，與工作臺升降連動；原合併膝座鑄件保持固定。",
+    "Head_Part_023 握桿依使用者要求作主軸啟停，既有機身開關仍可操作。",
+    "手輪導程、握桿用途及新增手輪尺寸仍為教學配置。",
+    "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。"
   ],
   "provenance": {
     "manifest": "deliver_milling_machine_split/milling_machine_split_manifest.json",
@@ -380,5 +405,35 @@
       "deliver_milling_machine_split/README.txt"
     ],
     "evidence": "reports/v2-*.png and split-correspondence.json; explicit reviewed membership, not proximity grouping"
+  },
+  "additions": [
+    {
+      "name": "ZLiftWheel",
+      "kind": "handwheel",
+      "position": [
+        0.43,
+        0.4,
+        -0.22
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "radius": 0.075,
+      "parent": "Knee_Z_Slide",
+      "mountLength": 0.18
+    }
+  ],
+  "lever": {
+    "node": "MillingStartLever",
+    "axis": [
+      1,
+      0,
+      0
+    ],
+    "runAngle": 0.5,
+    "duration": 0.25,
+    "label": "銑床啟動握桿"
   }
 }

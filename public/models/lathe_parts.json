@@ -144,19 +144,20 @@
       "axis": "x",
       "pivot": [
         0.31396687,
-        0.526,
+        0.506273,
         0.274422
       ],
       "pivotName": "StartLeverPivot",
-      "label": "主軸啟動拉桿",
+      "label": "主軸正反轉拉桿",
       "help": [
         "點擊切換啟動／停止"
       ],
       "stopAngle": 0,
-      "runAngle": -0.6,
+      "runAngle": 0.6,
       "duration": 0.3,
       "note": "依使用者指定改用縱向手輪右側長桿；Object_127／137 短桿保持固定。",
-      "parent": "CarriageAssembly"
+      "parent": "CarriageAssembly",
+      "bidirectional": true
     }
   },
   "mechanisms": {
@@ -223,7 +224,7 @@
       "axis": "x",
       "label": "X軸／縱向進給",
       "range": [
-        -0.24,
+        -0.14,
         0.38
       ],
       "hint": "帶動大溜板、橫向滑座與刀座"
@@ -253,7 +254,7 @@
       "axis": "x",
       "label": "尾座位置",
       "range": [
-        -0.55,
+        -0.278,
         0.04
       ],
       "hint": "沿床身調整尾座本體"
@@ -263,17 +264,17 @@
       "axis": "x",
       "label": "尾座套筒",
       "range": [
-        -0.08,
+        -0.11,
         0
       ],
       "hint": "負值伸向主軸，0 為載入時收回位置"
     }
   },
   "manualReview": [
-    "刀座本體 Object_103 與上方壓板／螺絲整組升降；Object_101／147 留在底座。",
-    "刀座每次點擊沿模型 Y 軸順時針 45°，累計八次一圈。",
-    "尾座負行程擴至 -0.55 模型單位，需注意與刀座接近。",
-    "右側長桿改作主軸啟停；腳踏煞車為依使用者要求新增的教學幾何，急停後需解除。"
+    "已移除燈、圖紙架及其支柱、主軸黃色護蓋。",
+    "左側拉桿以右側單桿外型複製，限定 60／90／120／150 度；未虛構變速齒輪機構。",
+    "外撥／內撥啟動主軸相反方向；中位停止。",
+    "背面新增尾座位置手輪，尾座位置行程 -0.278～0.04；套筒可伸至 -0.11。"
   ],
   "safety": {
     "tool": "ToolHeightAssembly",
@@ -337,6 +338,25 @@
       "node": "FootBrake",
       "type": "emergency",
       "label": "腳踏緊急煞車"
+    },
+    {
+      "id": "gearSelector",
+      "node": "LeftSelectorPivot",
+      "type": "detent",
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "label": "左側四段拉桿",
+      "degrees": [
+        60,
+        90,
+        120,
+        150
+      ],
+      "homeIndex": 1,
+      "referenceDegrees": 90
     }
   ],
   "additions": [
@@ -351,6 +371,68 @@
       "length": 1.25,
       "radius": 0.018,
       "color": "#df654a"
+    },
+    {
+      "name": "TailTravelWheel",
+      "kind": "handwheel",
+      "position": [
+        0.81,
+        0.65,
+        -0.3
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "radius": 0.065,
+      "gripSide": -1,
+      "parent": "TailstockAssembly",
+      "mountLength": 0.18
+    },
+    {
+      "name": "LeftSelectorPivot",
+      "kind": "cloneLever",
+      "position": [
+        -0.8534345030784607,
+        0.7801784574985504,
+        0.2213396206498146
+      ],
+      "sourcePivot": [
+        -0.439510241150856,
+        0.7425269186496735,
+        0.20025336742401123
+      ],
+      "sources": [
+        "Object_28",
+        "Object_30"
+      ],
+      "initialDegrees": 90,
+      "sourceDegrees": 132.24297891434964
+    }
+  ],
+  "removeNodes": [
+    "DetailItem_Infomatin_Board",
+    "DetailItem_Lamp",
+    "Object_193",
+    "Object_195",
+    "Object_34",
+    "Object_36"
+  ],
+  "extraWheels": [
+    {
+      "id": "tailTravel",
+      "node": "TailTravelWheel",
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "label": "背面尾座位置手輪",
+      "drives": "tail",
+      "ratio": 0.018,
+      "speed": 2.4,
+      "generated": true
     }
   ]
 }

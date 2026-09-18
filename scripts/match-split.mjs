@@ -3,7 +3,7 @@ import {Vector3} from 'three';
 import {loadSource} from './model-source.mjs';
 const root=new URL('../public/models/',import.meta.url);
 const old=(await loadSource(new URL('../todelete/models-v1/milling_machine_interactive.glb',import.meta.url))).scene;
-const fresh=(await loadSource(new URL('deliver_milling_machine_split/milling_machine_split.glb',root))).scene;
+const fresh=(await loadSource(new URL('../todelete/models-v2/milling_machine_split.glb',import.meta.url))).scene;
 const map=new Map(),p=new Vector3();
 function triangles(mesh,visit){const a=mesh.geometry.attributes.position,idx=mesh.geometry.index,count=idx?.count||a.count;for(let i=0;i<count;i+=3){let x=0,y=0,z=0;for(let k=0;k<3;k++){p.fromBufferAttribute(a,idx?idx.getX(i+k):i+k).applyMatrix4(mesh.matrixWorld);x+=p.x;y+=p.y;z+=p.z;}visit([x/3,y/3,z/3].map(v=>Math.round(v*100000)).join(','));}}
 old.updateMatrixWorld(true);fresh.updateMatrixWorld(true);

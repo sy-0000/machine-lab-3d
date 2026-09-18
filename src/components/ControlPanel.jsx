@@ -6,8 +6,10 @@ export default function ControlPanel({controls:c,model}){
  const release=()=>c.stopInput();
  return <aside className="panel"><span className="eyebrow">MACHINE CONTROL</span><h2>操作控制台</h2><fieldset disabled={!model}>
   <div className="button-row"><button className="primary" onClick={c.start} disabled={c.running||model?.emergency||!model?.pivots[model?.config.spindle.node]}>▶ 啟動主軸</button><button onClick={c.stop} disabled={!c.running}>■ 停止主軸</button></div>
+  {model?.config.lever?.bidirectional&&<div className="button-row"><button disabled={model.emergency} onClick={()=>c.start(1)}>外撥／正轉</button><button disabled={model.emergency} onClick={()=>c.start(-1)}>內撥／反轉</button></div>}
+  {model?.config.actions?.filter(a=>a.type==='detent').map(a=><label key={a.id}>{a.label}<select aria-label={a.label} value={model.detents[a.id]} onChange={e=>c.detent(a.id,Number(e.target.value))}>{a.degrees.map((angle,index)=><option key={angle} value={index}>{angle}°</option>)}</select></label>)}
   <label className="range-label" htmlFor="rpm">設定轉速 <output>{c.rpm} RPM</output></label><input id="rpm" type="range" min="0" max={model?.config.maxRpm||2000} step="10" value={c.rpm} onChange={e=>c.setRpm(e.target.value)}/>
-  <p className="tool-lock">實際轉速：{Math.round(model?.rpm||0)} RPM<br/>{model?.rpm>0?'運轉中':c.running?'啟動中／待轉':'已停止'}</p>
+  <p className="tool-lock">實際轉速：{Math.round(model?.rpm||0)} RPM<br/>{model?.rpm>0?(model.direction===-1?'反轉運轉中':'正轉運轉中'):c.running?'啟動中／待轉':'已停止'}</p>
   {model?.config.actions?.some(a=>a.type==='index')&&<button onClick={c.index}>刀座右轉 45°（目前 {model.indexSteps*45}°）</button>}
   {model?.config.actions?.some(a=>a.type==='emergency')&&<div className="button-row"><button onClick={c.brake}>腳踏緊急煞車</button><button disabled={!model.emergency} onClick={c.releaseBrake}>解除煞車</button></div>}
   <div className="divider"/><h3>進給與位置</h3>

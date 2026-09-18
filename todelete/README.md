@@ -10,3 +10,5 @@
 
 第一版完整內容另已由 Git 標籤 v1.0.0 保存。node_modules、瀏覽器測試引擎及 npm 快取是本機執行／測試工具，未列為廢棄模型。dist 為 build 產物，不必編輯，部署前重新 npm run build。
 `legacy-analysis/` 保存早期幾何分析工具與對應截圖，已非網站或測試依賴；相對路徑僅保留歷史，需還原原位置才能重跑。
+
+第三版：models-v2 保存無 UV 的原拆件銑床，新材質 GLB 已放在 public/models。材質還原腳本會讀取 models-v1、models-v2 與 original-milling-textures；網站及測試執行不需要這些封存來源，但刪除後不能重新執行來源轉換。configure-v3 是一次性遷移，不可重跑覆蓋正式 JSON。
