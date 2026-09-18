@@ -1,0 +1,75 @@
+import {test,expect} from '@playwright/test';
+import {readFileSync}from 'node:fs';
+const MODEL='lathe_16k20_dark_green_no_backboard.glb';
+const snap=page=>page.evaluate(()=>window.__LATHE_DEBUG__);
+async function open(page){await page.setViewportSize({width:1440,height:1900});await page.goto('/?inspect=1');await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:30000});await page.waitForFunction(()=>window.__LATHE_DEBUG__?.inputReady);}
+async function point(page,key){await expect.poll(async()=>(await snap(page)).picks[key]?.length||0).toBeGreaterThan(0);return(await snap(page)).picks[key][0];}
+async function reset(page){await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();await expect.poll(async()=>Object.values((await snap(page)).angles).every(x=>x===0)).toBe(true);}
+test('new real GLB only, complete mapping, hover tooltip and inspector',async({page})=>{
+ const requests=[],errors=[];page.on('request',r=>{if(r.url().endsWith('.glb'))requests.push(r.url());});page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ await open(page);expect(requests.length).toBe(1);expect(requests[0]).toContain(MODEL);const data=await snap(page);expect(data.missing).toEqual([]);expect(data.sourceCount).toBe(182);expect(data.attachments.every(x=>x.error<1e-6)).toBe(true);
+ for(const [key,label] of [['carriageHandwheel','縱向進給手輪'],['crossSlideHandwheel','橫向進給手輪'],['heightHandwheel','高度調整手輪'],['tailstockHandwheel','尾座手輪'],['startLever','主軸啟動拉桿']]){const p=await point(page,key);await page.mouse.move(p.x,p.y);await expect(page.getByRole('tooltip')).toContainText(label);expect((await snap(page)).orbitEnabled).toBe(true);}
+ await page.mouse.move(20,20);await expect(page.getByRole('tooltip')).toHaveCount(0);
+ await page.getByText('零件檢查器',{exact:true}).click();const p=await point(page,'carriageHandwheel');await page.mouse.click(p.x,p.y);await expect(page.locator('.debug-panel')).toContainText('Object_117');await expect(page.locator('.debug-panel')).toContainText('世界中心');await expect(page.locator('.debug-panel')).toContainText('CarriageHandwheelPivot');
+ await page.getByText('零件檢查器',{exact:true}).click();await reset(page);await page.screenshot({path:'test-results/desktop-new-model.png',fullPage:true});expect(errors).toEqual([]);
+});
+test('all four wheels: left negative, right positive, linked slider, camera fixed and immediate release',async({page})=>{
+ await open(page);
+ for(const [key,axis]of [['carriageHandwheel','x'],['crossSlideHandwheel','y'],['heightHandwheel','z'],['tailstockHandwheel','quill']]){
+  await reset(page);let p=await point(page,key);await page.mouse.move(p.x,p.y);await page.mouse.down({button:'left'});
+  await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(false);const camera=(await snap(page)).camera;
+  await expect.poll(async()=>(await snap(page)).angles[key]).toBeLessThan(-0.1);
+  // Pointer movement must not change the rotation direction.
+  await page.mouse.move(p.x+15,p.y+15);await page.mouse.up({button:'left'});
+  await expect.poll(async()=>(await snap(page)).interaction.pressed).toBe(false);const left=(await snap(page)).angles[key];expect(left).toBeLessThan(0);expect(Number(await page.locator(`#${axis}`).inputValue())).toBeLessThan(0);
+  expect((await snap(page)).camera).toEqual(camera);await page.waitForTimeout(150);expect((await snap(page)).angles[key]).toBe(left);
+  p=await point(page,key);await page.mouse.move(p.x,p.y);await page.mouse.down({button:'right'});await expect.poll(async()=>(await snap(page)).angles[key]).toBeGreaterThan(left);await page.mouse.up({button:'right'});await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);
+ }
+});
+test('context menu suppressed only over wheels; cancel, lost capture, blur and reset restore camera',async({page})=>{
+ await open(page);let p=await point(page,'carriageHandwheel');
+ const cancelled=await page.locator('canvas').evaluate((canvas,p)=>{const event=new MouseEvent('contextmenu',{clientX:p.x,clientY:p.y,bubbles:true,cancelable:true});canvas.dispatchEvent(event);return event.defaultPrevented;},p);expect(cancelled).toBe(true);
+ const normal=await page.locator('canvas').evaluate(canvas=>{const r=canvas.getBoundingClientRect();const event=new MouseEvent('contextmenu',{clientX:r.left+10,clientY:r.top+100,bubbles:true,cancelable:true});canvas.dispatchEvent(event);return event.defaultPrevented;});expect(normal).toBe(false);
+ expect(await page.locator('header').evaluate(el=>{const e=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});el.dispatchEvent(e);return e.defaultPrevented;})).toBe(false);
+ for(const type of ['pointercancel','lostpointercapture','blur','reset']){
+  p=await point(page,'carriageHandwheel');await page.mouse.move(p.x,p.y);await page.mouse.down();await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(false);
+  if(type==='blur')await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+  else if(type==='reset'){await page.getByRole('button',{name:'↺ 重設操作與視角'}).focus();await page.keyboard.press('Enter');}
+  else await page.locator('canvas').dispatchEvent(type,{pointerId:1,pointerType:'mouse'});
+  await expect.poll(async()=>(await snap(page)).interaction.pressed).toBe(false);await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);await page.mouse.up();
+ }
+});
+test('lever and panel synchronize, spindle isolated, workpiece interlocked, reset restores model',async({page})=>{
+ await open(page);await page.getByRole('button',{name:'裝上示範工件'}).click();const initial=await snap(page),p=await point(page,'startLever');await page.mouse.click(p.x,p.y);
+ await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeDisabled();await expect.poll(async()=>(await snap(page)).drive.actualRpm).toBeGreaterThan(0);
+ await expect(page.getByRole('button',{name:'卸下示範工件'})).toBeDisabled();const running=await snap(page);expect(running.nodes.Object_22.quaternion).toEqual(initial.nodes.Object_22.quaternion);expect(running.nodes.ChuckAssembly.quaternion).toEqual(running.nodes.SpindlePivot.quaternion);expect(running.nodes.WorkpieceMount.quaternion).toEqual(running.nodes.SpindlePivot.quaternion);
+ await page.getByRole('button',{name:'■ 停止主軸'}).click();await expect.poll(async()=>(await snap(page)).drive.actualRpm).toBe(0);await expect(page.getByRole('button',{name:'卸下示範工件'})).toBeEnabled();
+ const stopped=(await snap(page)).nodes.SpindlePivot.rotation[0];await page.waitForTimeout(150);expect((await snap(page)).nodes.SpindlePivot.rotation[0]).toBe(stopped);
+ await page.locator('#z').fill('0.03');await page.locator('#x').fill('0.2');await page.locator('#quill').fill('-0.06');await reset(page);
+ const home=await snap(page);for(const key of ['x','y','z','tail','quill'])expect(home.offsets[key]).toBe(0);expect(home.drive.leverAngle).toBe(0);expect(home.orbitEnabled).toBe(true);
+});
+test('mobile first touch shows help, second press operates; reverse direction selector and touch cancel',async({page,context})=>{
+ await open(page);await page.setViewportSize({width:390,height:844});await page.locator('canvas').scrollIntoViewIfNeeded();await page.waitForTimeout(250);
+ const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+ const p=await point(page,'carriageHandwheel');await touch('touchStart',[{...p,id:7}]);await touch('touchEnd',[]);await expect(page.getByRole('tooltip')).toContainText('縱向進給手輪');expect((await snap(page)).angles.carriageHandwheel).toBe(0);
+ await touch('touchStart',[{...p,id:8}]);await expect.poll(async()=>(await snap(page)).angles.carriageHandwheel).toBeLessThan(0);await touch('touchCancel',[]);await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);
+ const before=(await snap(page)).angles.carriageHandwheel;
+ await page.getByRole('button',{name:'觸控向右 ↷'}).click();await page.locator('canvas').scrollIntoViewIfNeeded();
+ const right=await point(page,'carriageHandwheel');
+ await touch('touchStart',[{...right,id:9}]);await touch('touchEnd',[]);
+ await touch('touchStart',[{...right,id:10}]);await expect.poll(async()=>(await snap(page)).angles.carriageHandwheel).toBeGreaterThan(before);await touch('touchEnd',[]);
+ await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:'test-results/mobile-new-model.png',fullPage:true});
+});
+test('missing one handwheel handle only disables its function',async({page})=>{
+ const b=readFileSync(new URL(`../public/models/${MODEL}`,import.meta.url));const jsonLength=b.readUInt32LE(12),json=JSON.parse(b.subarray(20,20+jsonLength).toString());json.nodes.find(n=>n.name==='Object_109').name='Missing109';const str=Buffer.from(JSON.stringify(json));const padding=Buffer.alloc(Math.ceil(str.length/4)*4,0x20);str.copy(padding);const binary=b.subarray(20+jsonLength+8);const out=Buffer.alloc(28+padding.length+binary.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(padding.length,12);out.writeUInt32LE(0x4e4f534a,16);padding.copy(out,20);out.writeUInt32LE(binary.length,20+padding.length);out.writeUInt32LE(0x004e4942,24+padding.length);binary.copy(out,28+padding.length);
+ await page.route(`**/${MODEL}`,r=>r.fulfill({contentType:'model/gltf-binary',body:out}));await open(page);await expect(page.locator('#y')).toBeDisabled();await expect(page.locator('#x')).toBeEnabled();await expect(page.getByRole('alert')).toContainText('Object_109');
+});
+test('missing GLB gives a clear error, no fallback synthetic model',async({page})=>{await page.route(`**/${MODEL}`,r=>r.fulfill({status:404,body:'missing'}));await page.goto('/');await expect(page.getByText('無法載入車床')).toBeVisible();await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeDisabled();});
+
+test('world-space yellow/red warnings survive smooth stop and reset',async({page})=>{
+ await open(page);await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).drive.actualRpm).toBeGreaterThan(100);
+ await page.locator('#x').fill('-0.01');await expect(page.locator('.notice')).toHaveClass(/caution/);
+ await page.locator('#x').fill('-0.24');await expect(page.locator('.notice')).toHaveClass(/danger/);
+ await reset(page);await expect(page.locator('.notice')).toHaveText('● 目前無警告');
+});

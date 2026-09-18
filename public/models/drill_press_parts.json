@@ -1,0 +1,144 @@
+{
+  "model": "Interkrenn Maschinen TB 145 drill press",
+  "units": "meters",
+  "coordinateSystem": {
+    "up": "+Y",
+    "right": "+X",
+    "front": "-Z"
+  },
+  "interactions": {
+    "SpindleAssembly": {
+      "type": "continuousRotation",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "pivotWorld": [
+        0.0,
+        0.5608,
+        0.1422
+      ],
+      "includes": [
+        "Spindle",
+        "Chuck",
+        "DrillBit"
+      ],
+      "exclude": [
+        "HeadHousing"
+      ]
+    },
+    "FeedHandlePivot": {
+      "type": "dragRotation",
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "pivotWorld": [
+        0.0949,
+        0.5928,
+        0.1182
+      ],
+      "rotationLimitDegrees": [
+        -115,
+        35
+      ],
+      "drives": "Quill.position.y",
+      "drivenTravelMeters": [
+        -0.085,
+        0.0
+      ]
+    },
+    "Quill": {
+      "type": "linearTranslation",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "travelMeters": [
+        -0.085,
+        0.0
+      ]
+    },
+    "TableAssembly": {
+      "type": "manualTransformPendingVerification",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "travelMeters": [
+        -0.32,
+        0.18
+      ],
+      "note": "The mesh includes a table and support collar, but no reliable lift handwheel was found."
+    },
+    "TableRotationPivot": {
+      "type": "rotationPendingVerification",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "rotationLimitDegrees": [
+        -180,
+        180
+      ]
+    },
+    "SwitchLever": {
+      "type": "clickToggle",
+      "states": [
+        "off",
+        "on"
+      ]
+    }
+  },
+  "mounts": {
+    "TableLiftHandwheel_MOUNT": "Empty placeholder; component not identifiable in source mesh.",
+    "Vise_MOUNT": "Empty placeholder; vise not present in source mesh.",
+    "Workpiece_MOUNT": "Empty placeholder; workpiece not present in source mesh."
+  },
+  "manualReview": [
+    "Confirm the precise boundary between spindle, chuck, and drill bit in a DCC tool.",
+    "Confirm whether HeadSideRod is a belt-tension lever or another control.",
+    "Confirm whether the original table can rotate or slide vertically in the intended lesson.",
+    "Add or model the missing table-lift handwheel, vise, and workpiece if those interactions are required.",
+    "SurfaceDetailsAndLabels contains small source shells distributed across the machine and remains static."
+  ],
+  "validation": {
+    "sourceFile": "drill_press_-__interkrenn_maschinen_tb_145.glb",
+    "sourceNodes": 29,
+    "sourceMeshes": 29,
+    "sourceMaterials": 1,
+    "sourceTriangles": 27342,
+    "outputGeometryNodes": 42,
+    "outputTriangles": 27342,
+    "triangleCountPreserved": true,
+    "sourceBoundsMeters": [
+      [
+        -0.08833272755146027,
+        -7.34478235244751e-05,
+        -0.1993586476892233
+      ],
+      [
+        0.15133289620280266,
+        0.7912846058607101,
+        0.23992673307657242
+      ]
+    ],
+    "outputBoundsMeters": [
+      [
+        -0.08833272755146027,
+        -7.34478235244751e-05,
+        -0.1993586476892233
+      ],
+      [
+        0.15133289620280266,
+        0.7912846058607101,
+        0.23992673307657242
+      ]
+    ]
+  }
+}

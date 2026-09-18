@@ -1,0 +1,3016 @@
+[
+  {
+    "id": "lathe",
+    "model": "lathe_16k20_dark_green_no_backboard.glb",
+    "config": "lathe_parts.json",
+    "nodeCount": 182,
+    "meshCount": 172,
+    "errors": [],
+    "audit": [
+      {
+        "name": "Object_93",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_94",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_96",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_98",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_99",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_105",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_111",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_113",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_115",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_119",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_121",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_123",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_125",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_127",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_129",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_131",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_133",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_135",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_137",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_139",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_141",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "Object_101",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "Object_103",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "Object_147",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "Object_143",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "Object_149",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_150",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_152",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_154",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_156",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_157",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "Object_64",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
+        "name": "Object_66",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
+        "name": "Object_76",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
+        "name": "Object_74",
+        "found": true,
+        "parent": "TailstockQuill"
+      },
+      {
+        "name": "Object_78::shaft",
+        "found": true,
+        "parent": "SpindlePivot"
+      },
+      {
+        "name": "Object_78::chuckBody",
+        "found": true,
+        "parent": "ChuckAssembly"
+      },
+      {
+        "name": "Object_80",
+        "found": true,
+        "parent": "ChuckAssembly"
+      },
+      {
+        "name": "Object_117::wheelBody",
+        "found": true,
+        "parent": "CarriageHandwheel"
+      },
+      {
+        "name": "Object_117::gripRim",
+        "found": true,
+        "parent": "CarriageHandwheelHandle"
+      },
+      {
+        "name": "Object_107",
+        "found": true,
+        "parent": "CrossSlideHandwheel"
+      },
+      {
+        "name": "Object_109",
+        "found": true,
+        "parent": "CrossSlideHandwheelHandle"
+      },
+      {
+        "name": "Object_145::wheelBody",
+        "found": true,
+        "parent": "HeightHandwheel"
+      },
+      {
+        "name": "Object_145::grip",
+        "found": true,
+        "parent": "HeightHandwheelHandle"
+      },
+      {
+        "name": "Object_68",
+        "found": true,
+        "parent": "TailstockHandwheel"
+      },
+      {
+        "name": "Object_70",
+        "found": true,
+        "parent": "TailstockHandwheel"
+      },
+      {
+        "name": "Object_72",
+        "found": true,
+        "parent": "TailstockHandwheel"
+      },
+      {
+        "name": "Object_189",
+        "found": true,
+        "parent": "TailstockHandwheelHandle"
+      },
+      {
+        "name": "Object_12",
+        "found": true,
+        "parent": "StartLeverRod"
+      },
+      {
+        "name": "Object_38",
+        "found": true,
+        "parent": "StartLeverHandle"
+      },
+      {
+        "name": "ToolHeightAssembly",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "ChuckAssembly",
+        "found": true,
+        "parent": "SpindlePivot"
+      },
+      {
+        "name": "WorkpieceMount",
+        "found": true,
+        "parent": "ChuckAssembly"
+      },
+      {
+        "name": "CarriageAssembly",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
+        "name": "CrossSlideAssembly",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "ToolHeightAssembly",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "TailstockAssembly",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
+        "name": "TailstockQuill",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
+        "name": "CarriageHandwheelPivot",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "CrossSlideHandwheelPivot",
+        "found": true,
+        "parent": "CarriageAssembly"
+      },
+      {
+        "name": "HeightHandwheelPivot",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
+        "name": "TailstockHandwheelPivot",
+        "found": true,
+        "parent": "TailstockAssembly"
+      },
+      {
+        "name": "SpindlePivot",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
+        "name": "StartLeverPivot",
+        "found": true,
+        "parent": "Scene"
+      }
+    ],
+    "axes": [
+      {
+        "id": "x",
+        "node": "CarriageAssembly",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -0.24,
+          0.38
+        ],
+        "label": "X軸／縱向進給",
+        "enabled": true
+      },
+      {
+        "id": "y",
+        "node": "CrossSlideAssembly",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range": [
+          -0.065,
+          0.065
+        ],
+        "label": "Y軸／橫向進給",
+        "enabled": true
+      },
+      {
+        "id": "z",
+        "node": "ToolHeightAssembly",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "range": [
+          -0.015,
+          0.035
+        ],
+        "label": "Z軸／刀具高度",
+        "enabled": true
+      },
+      {
+        "id": "tail",
+        "node": "TailstockAssembly",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -0.12,
+          0.04
+        ],
+        "label": "尾座位置",
+        "enabled": true
+      },
+      {
+        "id": "quill",
+        "node": "TailstockQuill",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -0.08,
+          0
+        ],
+        "label": "尾座套筒",
+        "enabled": true
+      }
+    ],
+    "wheels": [
+      {
+        "id": "carriageHandwheel",
+        "node": "CarriageHandwheelPivot",
+        "pivot": [
+          0.0791843,
+          0.4864774,
+          0.349
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "縱向進給手輪",
+        "drives": "x",
+        "ratio": 0.018,
+        "speed": 2.4
+      },
+      {
+        "id": "crossSlideHandwheel",
+        "node": "CrossSlideHandwheelPivot",
+        "pivot": [
+          0.0791951,
+          0.6833978,
+          0.397
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "橫向進給手輪",
+        "drives": "y",
+        "ratio": 0.0075,
+        "speed": 2.4
+      },
+      {
+        "id": "heightHandwheel",
+        "node": "HeightHandwheelPivot",
+        "pivot": [
+          0.407,
+          0.7619079,
+          0.0566564
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "label": "高度調整手輪",
+        "drives": "z",
+        "ratio": 0.003,
+        "speed": 2
+      },
+      {
+        "id": "tailstockHandwheel",
+        "node": "TailstockHandwheelPivot",
+        "pivot": [
+          1.038285,
+          0.8525885,
+          -0.0216612
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "label": "尾座手輪",
+        "drives": "quill",
+        "ratio": 0.008,
+        "speed": 2.4
+      }
+    ],
+    "spindle": {
+      "node": "SpindlePivot",
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "pivot": [
+        -0.267,
+        0.8525885,
+        -0.0216612
+      ]
+    },
+    "notes": [
+      "Object_117 無獨立凸出握把；外緣握持面與輪身依原始三角形分區，未新增握把。",
+      "實際輪面在 XY 平面，因此使用 Z 軸；Object_107 包含與輪身連成一體的握把桿，Object_109 是末端球形握把。",
+      "側向調節旋鈕的外觀已確認；高度連動是教學配置，原模型沒有機構語意，需實機教師確認。Object_143 支座保持固定。",
+      "Object_10 為固定支座；此拉桿依位置與外觀指定為啟停教學控制，須人工確認實機用途。"
+    ],
+    "sourceHierarchy": [
+      {
+        "index": 0,
+        "name": "Object_179",
+        "children": []
+      },
+      {
+        "index": 1,
+        "name": "Object_181",
+        "children": []
+      },
+      {
+        "index": 2,
+        "name": "Object_183",
+        "children": []
+      },
+      {
+        "index": 3,
+        "name": "Object_185",
+        "children": []
+      },
+      {
+        "index": 4,
+        "name": "Object_187",
+        "children": []
+      },
+      {
+        "index": 5,
+        "name": "Object_207",
+        "children": []
+      },
+      {
+        "index": 6,
+        "name": "Object_209",
+        "children": []
+      },
+      {
+        "index": 7,
+        "name": "DetailItem Air Blower",
+        "children": [
+          "Object_179",
+          "Object_181",
+          "Object_183",
+          "Object_185",
+          "Object_187",
+          "Object_207",
+          "Object_209"
+        ]
+      },
+      {
+        "index": 8,
+        "name": "Object_101",
+        "children": []
+      },
+      {
+        "index": 9,
+        "name": "Object_103",
+        "children": []
+      },
+      {
+        "index": 10,
+        "name": "Object_105",
+        "children": []
+      },
+      {
+        "index": 11,
+        "name": "Object_107",
+        "children": []
+      },
+      {
+        "index": 12,
+        "name": "Object_109",
+        "children": []
+      },
+      {
+        "index": 13,
+        "name": "Object_143",
+        "children": []
+      },
+      {
+        "index": 14,
+        "name": "Object_145",
+        "children": []
+      },
+      {
+        "index": 15,
+        "name": "Object_147",
+        "children": []
+      },
+      {
+        "index": 16,
+        "name": "Object_149",
+        "children": []
+      },
+      {
+        "index": 17,
+        "name": "Object_150",
+        "children": []
+      },
+      {
+        "index": 18,
+        "name": "Object_152",
+        "children": []
+      },
+      {
+        "index": 19,
+        "name": "Object_154",
+        "children": []
+      },
+      {
+        "index": 20,
+        "name": "Object_156",
+        "children": []
+      },
+      {
+        "index": 21,
+        "name": "Object_157",
+        "children": []
+      },
+      {
+        "index": 22,
+        "name": "Object_96",
+        "children": []
+      },
+      {
+        "index": 23,
+        "name": "Object_98",
+        "children": []
+      },
+      {
+        "index": 24,
+        "name": "Object_99",
+        "children": []
+      },
+      {
+        "index": 25,
+        "name": "DetailItem Cutting Platform",
+        "children": [
+          "Object_101",
+          "Object_103",
+          "Object_105",
+          "Object_107",
+          "Object_109",
+          "Object_143",
+          "Object_145",
+          "Object_147",
+          "Object_149",
+          "Object_150",
+          "Object_152",
+          "Object_154",
+          "Object_156",
+          "Object_157",
+          "Object_96",
+          "Object_98",
+          "Object_99"
+        ]
+      },
+      {
+        "index": 26,
+        "name": "cable.007_low__0",
+        "children": []
+      },
+      {
+        "index": 27,
+        "name": "cable.008_low__0",
+        "children": []
+      },
+      {
+        "index": 28,
+        "name": "cable.015_low__0",
+        "children": []
+      },
+      {
+        "index": 29,
+        "name": "cable.016_low__0",
+        "children": []
+      },
+      {
+        "index": 30,
+        "name": "cable.017_low__0",
+        "children": []
+      },
+      {
+        "index": 31,
+        "name": "cable.018_low__0",
+        "children": []
+      },
+      {
+        "index": 32,
+        "name": "kabel_koncovka_01.001_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 33,
+        "name": "kabel_koncovka_01.002_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 34,
+        "name": "kabel_koncovka_01.003_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 35,
+        "name": "kabel_koncovka_01.004_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 36,
+        "name": "kabel_koncovka_01.005_low.001_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 37,
+        "name": "kabel_koncovka_01.005_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 38,
+        "name": "kabel_koncovka_01_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 39,
+        "name": "kladka_motor_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 40,
+        "name": "Kladka_valec_velka_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 41,
+        "name": "lozisko.001_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 42,
+        "name": "lozisko.002_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 43,
+        "name": "lozisko.003_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 44,
+        "name": "Motor_mriezka_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 45,
+        "name": "Motor_os_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 46,
+        "name": "Motor_pripojka_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 47,
+        "name": "Motor_skrutky_1_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 48,
+        "name": "Motor_skrutky_2_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 49,
+        "name": "Motor_skrutky_3_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 50,
+        "name": "Motor_skrutky_4_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 51,
+        "name": "Motor_telo_chladenie_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 52,
+        "name": "Motor_telo_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 53,
+        "name": "Motor_vrtula_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 54,
+        "name": "Motor_vrtula_os_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 55,
+        "name": "Ozubenie_valec_1.003_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 56,
+        "name": "Ozubenie_valec_1.004_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 57,
+        "name": "Ozubenie_valec_1.005_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 58,
+        "name": "remen_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 59,
+        "name": "skrutka_srob_1_002.023_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 60,
+        "name": "skrutka_srob_1_002.024_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 61,
+        "name": "skrutka_srob_1_002.025_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 62,
+        "name": "skrutka_srob_1_002.026_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 63,
+        "name": "skrutka_srob_1_002.027_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 64,
+        "name": "skrutka_srob_1_002.028_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 65,
+        "name": "skrutka_srob_1_002.031_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 66,
+        "name": "skrutka_srob_1_002.032_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 67,
+        "name": "skrutka_srob_1_002.033_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 68,
+        "name": "skrutka_srob_1_002.034_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 69,
+        "name": "skrutka_srob_2_002.023_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 70,
+        "name": "skrutka_srob_2_002.024_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 71,
+        "name": "skrutka_srob_2_002.025_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 72,
+        "name": "skrutka_srob_2_002.026_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 73,
+        "name": "skrutka_srob_2_002.027_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 74,
+        "name": "skrutka_srob_2_002.028_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 75,
+        "name": "skrutka_srob_2_002.031_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 76,
+        "name": "skrutka_srob_2_002.032_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 77,
+        "name": "skrutka_srob_2_002.033_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 78,
+        "name": "skrutka_srob_2_002.034_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 79,
+        "name": "skrutka_srob_3_002.023_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 80,
+        "name": "skrutka_srob_3_002.024_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 81,
+        "name": "skrutka_srob_3_002.025_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 82,
+        "name": "skrutka_srob_3_002.026_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 83,
+        "name": "skrutka_srob_3_002.027_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 84,
+        "name": "skrutka_srob_3_002.028_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 85,
+        "name": "skrutka_srob_3_002.031_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 86,
+        "name": "skrutka_srob_3_002.032_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 87,
+        "name": "skrutka_srob_3_002.033_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 88,
+        "name": "skrutka_srob_3_002.034_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 89,
+        "name": "ukotvenie_01_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 90,
+        "name": "ukotvenie_03_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 91,
+        "name": "valec_podlozka_panel_01_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 92,
+        "name": "valec_podlozka_panel_02_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 93,
+        "name": "valec_stojan_01_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 94,
+        "name": "valec_stojan_podlozka_01_low_Bul��nkostroj-mat_0",
+        "children": []
+      },
+      {
+        "index": 95,
+        "name": "DetailItem Engine",
+        "children": [
+          "cable.007_low__0",
+          "cable.008_low__0",
+          "cable.015_low__0",
+          "cable.016_low__0",
+          "cable.017_low__0",
+          "cable.018_low__0",
+          "kabel_koncovka_01.001_low_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01.002_low_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01.003_low_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01.004_low_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01.005_low.001_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01.005_low_Bul��nkostroj-mat_0",
+          "kabel_koncovka_01_low_Bul��nkostroj-mat_0",
+          "kladka_motor_low_Bul��nkostroj-mat_0",
+          "Kladka_valec_velka_low_Bul��nkostroj-mat_0",
+          "lozisko.001_low_Bul��nkostroj-mat_0",
+          "lozisko.002_low_Bul��nkostroj-mat_0",
+          "lozisko.003_low_Bul��nkostroj-mat_0",
+          "Motor_mriezka_low_Bul��nkostroj-mat_0",
+          "Motor_os_low_Bul��nkostroj-mat_0",
+          "Motor_pripojka_low_Bul��nkostroj-mat_0",
+          "Motor_skrutky_1_low_Bul��nkostroj-mat_0",
+          "Motor_skrutky_2_low_Bul��nkostroj-mat_0",
+          "Motor_skrutky_3_low_Bul��nkostroj-mat_0",
+          "Motor_skrutky_4_low_Bul��nkostroj-mat_0",
+          "Motor_telo_chladenie_low_Bul��nkostroj-mat_0",
+          "Motor_telo_low_Bul��nkostroj-mat_0",
+          "Motor_vrtula_low_Bul��nkostroj-mat_0",
+          "Motor_vrtula_os_low_Bul��nkostroj-mat_0",
+          "Ozubenie_valec_1.003_low_Bul��nkostroj-mat_0",
+          "Ozubenie_valec_1.004_low_Bul��nkostroj-mat_0",
+          "Ozubenie_valec_1.005_low_Bul��nkostroj-mat_0",
+          "remen_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.023_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.024_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.025_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.026_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.027_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.028_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.031_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.032_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.033_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_1_002.034_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.023_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.024_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.025_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.026_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.027_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.028_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.031_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.032_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.033_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_2_002.034_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.023_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.024_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.025_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.026_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.027_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.028_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.031_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.032_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.033_low_Bul��nkostroj-mat_0",
+          "skrutka_srob_3_002.034_low_Bul��nkostroj-mat_0",
+          "ukotvenie_01_low_Bul��nkostroj-mat_0",
+          "ukotvenie_03_low_Bul��nkostroj-mat_0",
+          "valec_podlozka_panel_01_low_Bul��nkostroj-mat_0",
+          "valec_podlozka_panel_02_low_Bul��nkostroj-mat_0",
+          "valec_stojan_01_low_Bul��nkostroj-mat_0",
+          "valec_stojan_podlozka_01_low_Bul��nkostroj-mat_0"
+        ]
+      },
+      {
+        "index": 96,
+        "name": "Object_189",
+        "children": []
+      },
+      {
+        "index": 97,
+        "name": "Object_64",
+        "children": []
+      },
+      {
+        "index": 98,
+        "name": "Object_66",
+        "children": []
+      },
+      {
+        "index": 99,
+        "name": "Object_68",
+        "children": []
+      },
+      {
+        "index": 100,
+        "name": "Object_70",
+        "children": []
+      },
+      {
+        "index": 101,
+        "name": "Object_72",
+        "children": []
+      },
+      {
+        "index": 102,
+        "name": "Object_74",
+        "children": []
+      },
+      {
+        "index": 103,
+        "name": "Object_76",
+        "children": []
+      },
+      {
+        "index": 104,
+        "name": "DetailItem Force Regulator",
+        "children": [
+          "Object_189",
+          "Object_64",
+          "Object_66",
+          "Object_68",
+          "Object_70",
+          "Object_72",
+          "Object_74",
+          "Object_76"
+        ]
+      },
+      {
+        "index": 105,
+        "name": "Object_166",
+        "children": []
+      },
+      {
+        "index": 106,
+        "name": "Object_168",
+        "children": []
+      },
+      {
+        "index": 107,
+        "name": "Object_170",
+        "children": []
+      },
+      {
+        "index": 108,
+        "name": "Object_171",
+        "children": []
+      },
+      {
+        "index": 109,
+        "name": "Object_173",
+        "children": []
+      },
+      {
+        "index": 110,
+        "name": "DetailItem Infomatin Board",
+        "children": [
+          "Object_166",
+          "Object_168",
+          "Object_170",
+          "Object_171",
+          "Object_173"
+        ]
+      },
+      {
+        "index": 111,
+        "name": "Object_164",
+        "children": []
+      },
+      {
+        "index": 112,
+        "name": "Object_175",
+        "children": []
+      },
+      {
+        "index": 113,
+        "name": "Object_177",
+        "children": []
+      },
+      {
+        "index": 114,
+        "name": "Object_205",
+        "children": []
+      },
+      {
+        "index": 115,
+        "name": "DetailItem Lamp",
+        "children": [
+          "Object_164",
+          "Object_175",
+          "Object_177",
+          "Object_205"
+        ]
+      },
+      {
+        "index": 116,
+        "name": "Object_10",
+        "children": []
+      },
+      {
+        "index": 117,
+        "name": "Object_111",
+        "children": []
+      },
+      {
+        "index": 118,
+        "name": "Object_113",
+        "children": []
+      },
+      {
+        "index": 119,
+        "name": "Object_115",
+        "children": []
+      },
+      {
+        "index": 120,
+        "name": "Object_119",
+        "children": []
+      },
+      {
+        "index": 121,
+        "name": "Object_12",
+        "children": []
+      },
+      {
+        "index": 122,
+        "name": "Object_121",
+        "children": []
+      },
+      {
+        "index": 123,
+        "name": "Object_123",
+        "children": []
+      },
+      {
+        "index": 124,
+        "name": "Object_125",
+        "children": []
+      },
+      {
+        "index": 125,
+        "name": "Object_127",
+        "children": []
+      },
+      {
+        "index": 126,
+        "name": "Object_129",
+        "children": []
+      },
+      {
+        "index": 127,
+        "name": "Object_131",
+        "children": []
+      },
+      {
+        "index": 128,
+        "name": "Object_133",
+        "children": []
+      },
+      {
+        "index": 129,
+        "name": "Object_135",
+        "children": []
+      },
+      {
+        "index": 130,
+        "name": "Object_137",
+        "children": []
+      },
+      {
+        "index": 131,
+        "name": "Object_139",
+        "children": []
+      },
+      {
+        "index": 132,
+        "name": "Object_14",
+        "children": []
+      },
+      {
+        "index": 133,
+        "name": "Object_141",
+        "children": []
+      },
+      {
+        "index": 134,
+        "name": "Object_159",
+        "children": []
+      },
+      {
+        "index": 135,
+        "name": "Object_16",
+        "children": []
+      },
+      {
+        "index": 136,
+        "name": "Object_160",
+        "children": []
+      },
+      {
+        "index": 137,
+        "name": "Object_162",
+        "children": []
+      },
+      {
+        "index": 138,
+        "name": "Object_18",
+        "children": []
+      },
+      {
+        "index": 139,
+        "name": "Object_191",
+        "children": []
+      },
+      {
+        "index": 140,
+        "name": "Object_193",
+        "children": []
+      },
+      {
+        "index": 141,
+        "name": "Object_195",
+        "children": []
+      },
+      {
+        "index": 142,
+        "name": "Object_20",
+        "children": []
+      },
+      {
+        "index": 143,
+        "name": "Object_22",
+        "children": []
+      },
+      {
+        "index": 144,
+        "name": "Object_24",
+        "children": []
+      },
+      {
+        "index": 145,
+        "name": "Object_26",
+        "children": []
+      },
+      {
+        "index": 146,
+        "name": "Object_28",
+        "children": []
+      },
+      {
+        "index": 147,
+        "name": "Object_30",
+        "children": []
+      },
+      {
+        "index": 148,
+        "name": "Object_32",
+        "children": []
+      },
+      {
+        "index": 149,
+        "name": "Object_34",
+        "children": []
+      },
+      {
+        "index": 150,
+        "name": "Object_36",
+        "children": []
+      },
+      {
+        "index": 151,
+        "name": "Object_38",
+        "children": []
+      },
+      {
+        "index": 152,
+        "name": "Object_4",
+        "children": []
+      },
+      {
+        "index": 153,
+        "name": "Object_40",
+        "children": []
+      },
+      {
+        "index": 154,
+        "name": "Object_42",
+        "children": []
+      },
+      {
+        "index": 155,
+        "name": "Object_44",
+        "children": []
+      },
+      {
+        "index": 156,
+        "name": "Object_46",
+        "children": []
+      },
+      {
+        "index": 157,
+        "name": "Object_48",
+        "children": []
+      },
+      {
+        "index": 158,
+        "name": "Object_50",
+        "children": []
+      },
+      {
+        "index": 159,
+        "name": "Object_54",
+        "children": []
+      },
+      {
+        "index": 160,
+        "name": "Object_6",
+        "children": []
+      },
+      {
+        "index": 161,
+        "name": "Object_62",
+        "children": []
+      },
+      {
+        "index": 162,
+        "name": "Object_8",
+        "children": []
+      },
+      {
+        "index": 163,
+        "name": "Object_82",
+        "children": []
+      },
+      {
+        "index": 164,
+        "name": "Object_83",
+        "children": []
+      },
+      {
+        "index": 165,
+        "name": "Object_85",
+        "children": []
+      },
+      {
+        "index": 166,
+        "name": "Object_87",
+        "children": []
+      },
+      {
+        "index": 167,
+        "name": "Object_89",
+        "children": []
+      },
+      {
+        "index": 168,
+        "name": "Object_91",
+        "children": []
+      },
+      {
+        "index": 169,
+        "name": "Object_93",
+        "children": []
+      },
+      {
+        "index": 170,
+        "name": "Object_94",
+        "children": []
+      },
+      {
+        "index": 171,
+        "name": "DetailItem Machine Box",
+        "children": [
+          "Object_10",
+          "Object_111",
+          "Object_113",
+          "Object_115",
+          "Object_119",
+          "Object_12",
+          "Object_121",
+          "Object_123",
+          "Object_125",
+          "Object_127",
+          "Object_129",
+          "Object_131",
+          "Object_133",
+          "Object_135",
+          "Object_137",
+          "Object_139",
+          "Object_14",
+          "Object_141",
+          "Object_16",
+          "Object_162",
+          "Object_18",
+          "Object_191",
+          "Object_193",
+          "Object_195",
+          "Object_20",
+          "Object_22",
+          "Object_24",
+          "Object_26",
+          "Object_28",
+          "Object_30",
+          "Object_32",
+          "Object_34",
+          "Object_36",
+          "Object_38",
+          "Object_4",
+          "Object_40",
+          "Object_42",
+          "Object_44",
+          "Object_46",
+          "Object_48",
+          "Object_50",
+          "Object_54",
+          "Object_6",
+          "Object_62",
+          "Object_8",
+          "Object_82",
+          "Object_83",
+          "Object_85",
+          "Object_87",
+          "Object_89",
+          "Object_91",
+          "Object_93",
+          "Object_94"
+        ]
+      },
+      {
+        "index": 172,
+        "name": "Object_78",
+        "children": []
+      },
+      {
+        "index": 173,
+        "name": "Object_80",
+        "children": []
+      },
+      {
+        "index": 174,
+        "name": "DetailItem Plier",
+        "children": [
+          "Object_78",
+          "Object_80"
+        ]
+      },
+      {
+        "index": 175,
+        "name": "Object_117",
+        "children": []
+      },
+      {
+        "index": 176,
+        "name": "Object_52",
+        "children": []
+      },
+      {
+        "index": 177,
+        "name": "Object_56",
+        "children": []
+      },
+      {
+        "index": 178,
+        "name": "Object_58",
+        "children": []
+      },
+      {
+        "index": 179,
+        "name": "Object_60",
+        "children": []
+      },
+      {
+        "index": 180,
+        "name": "DetailItem Regulator",
+        "children": [
+          "Object_117",
+          "Object_52",
+          "Object_56",
+          "Object_58",
+          "Object_60"
+        ]
+      },
+      {
+        "index": 181,
+        "name": "Lathe Machine",
+        "children": [
+          "DetailItem Air Blower",
+          "DetailItem Cutting Platform",
+          "DetailItem Engine",
+          "DetailItem Force Regulator",
+          "DetailItem Infomatin Board",
+          "DetailItem Lamp",
+          "DetailItem Machine Box",
+          "DetailItem Plier",
+          "DetailItem Regulator"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "milling",
+    "model": "milling_machine_interactive.glb",
+    "config": "parts-map.json",
+    "nodeCount": 79,
+    "meshCount": 60,
+    "errors": [
+      "找不到 JSON 節點：Worktable_X_Slide"
+    ],
+    "audit": [
+      {
+        "name": "X_Handwheel_Left_Group",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "X_Handwheel_Right_Group",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Y_Handwheel_Group",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Z_Handwheel_Group",
+        "found": true,
+        "parent": "MillingMachine"
+      },
+      {
+        "name": "Spindle_Rotor_Group",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Knee_Z_Slide",
+        "found": true,
+        "parent": "MillingMachine"
+      },
+      {
+        "name": "Y_Axis_Saddle",
+        "found": true,
+        "parent": "Knee_Z_Slide"
+      },
+      {
+        "name": "X_Axis_Table",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Worktable_X_Slide",
+        "found": false,
+        "parent": null
+      },
+      {
+        "name": "Workholding",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "Knee_Z_Slide",
+        "found": true,
+        "parent": "MillingMachine"
+      },
+      {
+        "name": "Y_Axis_Saddle",
+        "found": true,
+        "parent": "Knee_Z_Slide"
+      },
+      {
+        "name": "X_Axis_Table",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "X_Handwheel_Left_Group",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "X_Handwheel_Left_Group",
+        "pivot": [
+          -0.030288,
+          0.706218,
+          -0.729364
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "X_Handwheel_Right_Group",
+        "found": true,
+        "parent": "X_Axis_Table"
+      },
+      {
+        "name": "X_Handwheel_Right_Group",
+        "pivot": [
+          -0.060988,
+          0.710102,
+          0.692064
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "Y_Handwheel_Group",
+        "found": true,
+        "parent": "Y_Axis_Saddle"
+      },
+      {
+        "name": "Y_Handwheel_Group",
+        "pivot": [
+          0.393986,
+          0.554001,
+          0.006382
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "Z_Handwheel_Group",
+        "found": true,
+        "parent": "MillingMachine"
+      },
+      {
+        "name": "Z_Handwheel_Group",
+        "pivot": [
+          -0.580015,
+          0.499931,
+          0.260787
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "Spindle_Rotor_Group",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Spindle_Rotor_Group",
+        "pivot": [
+          0.35703,
+          1.776645,
+          0
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "attachmentError": 0
+      }
+    ],
+    "axes": [
+      {
+        "id": "Knee_Z_Slide",
+        "node": "Knee_Z_Slide",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "range": [
+          -0.35,
+          0.35
+        ],
+        "label": "Z 軸／工作臺升降",
+        "enabled": true
+      },
+      {
+        "id": "Y_Axis_Saddle",
+        "node": "Y_Axis_Saddle",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          -0.25,
+          0.25
+        ],
+        "label": "Y 軸／鞍座進給",
+        "enabled": true
+      },
+      {
+        "id": "X_Axis_Table",
+        "node": "X_Axis_Table",
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "range": [
+          -0.55,
+          0.55
+        ],
+        "label": "X 軸／工作臺進給",
+        "enabled": true
+      }
+    ],
+    "wheels": [
+      {
+        "id": "X_Handwheel_Left_Group",
+        "node": "X_Handwheel_Left_Group",
+        "pivot": [
+          -0.030288,
+          0.706218,
+          -0.729364
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "X 軸左手輪",
+        "drives": "X_Axis_Table",
+        "ratio": null,
+        "speed": 2.4,
+        "needsCalibration": true
+      },
+      {
+        "id": "X_Handwheel_Right_Group",
+        "node": "X_Handwheel_Right_Group",
+        "pivot": [
+          -0.060988,
+          0.710102,
+          0.692064
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "X 軸右手輪",
+        "drives": "X_Axis_Table",
+        "ratio": null,
+        "speed": 2.4,
+        "needsCalibration": true
+      },
+      {
+        "id": "Y_Handwheel_Group",
+        "node": "Y_Handwheel_Group",
+        "pivot": [
+          0.393986,
+          0.554001,
+          0.006382
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "label": "Y 軸手輪",
+        "drives": "Y_Axis_Saddle",
+        "ratio": null,
+        "speed": 2.4,
+        "needsCalibration": true
+      },
+      {
+        "id": "Z_Handwheel_Group",
+        "node": "Z_Handwheel_Group",
+        "pivot": [
+          -0.580015,
+          0.499931,
+          0.260787
+        ],
+        "axis": [
+          0,
+          0,
+          1
+        ],
+        "label": "Z 軸手輪",
+        "drives": "Knee_Z_Slide",
+        "ratio": null,
+        "speed": 2.4,
+        "needsCalibration": true
+      }
+    ],
+    "spindle": {
+      "node": "Spindle_Rotor_Group",
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "pivot": [
+        0.35703,
+        1.776645,
+        0
+      ]
+    },
+    "notes": [
+      "未提供銑床模型使用說明 .md。",
+      "缺少可辨識的刀具、刀把、虎鉗及工件；空掛點不代表已有實體零件。",
+      "膝座鑄件仍固定；Z 軸只帶動 JSON 已定義的滑座階層。",
+      "Y／Z 手輪用途及主軸 X 軸為原 JSON 的中信心設定，需人工校正。",
+      "行程為原 JSON 的教學預設，非實機規格。",
+      "JSON 未指定每圈進給量；手輪進給需先選擇教學比例。"
+    ],
+    "sourceHierarchy": [
+      {
+        "index": 0,
+        "name": "MillingMachine",
+        "children": [
+          "Frame_Static",
+          "Head_Assembly",
+          "Knee_Z_Slide",
+          "Z_Handwheel_Group",
+          "Controls",
+          "Accessories"
+        ]
+      },
+      {
+        "index": 1,
+        "name": "Frame_Static",
+        "children": [
+          "Column_Ram_Static_Mat03",
+          "Column_Ram_Static_Mat04",
+          "Column_Ram_Static_Mat05",
+          "Column_Ram_Static_Mat06",
+          "Column_Ram_Static_Mat07",
+          "Column_Ram_Static_Mat08",
+          "Column_Ram_Static_Mat09",
+          "Machine_Base_Knee_Static_Mat10",
+          "Machine_Base_Knee_Static_Mat11",
+          "Machine_Base_Knee_Static_Mat07",
+          "Machine_Base_Knee_Static_Mat12",
+          "Machine_Base_Knee_Static_Mat13",
+          "Machine_Base_Knee_Static_Mat14",
+          "Machine_Base_Knee_Static_Mat15",
+          "Machine_Base_Knee_Static_Mat16",
+          "Machine_Base_Knee_Static_Mat17",
+          "Machine_Base_Knee_Static_Mat18",
+          "Machine_Base_Knee_Static_Mat19",
+          "Machine_Base_Knee_Static_Mat20",
+          "Machine_Base_Knee_Static_Mat21",
+          "Machine_Base_Knee_Static_Mat22",
+          "Machine_Base_Knee_Static_Mat23",
+          "Machine_Base_Knee_Static_Mat24"
+        ]
+      },
+      {
+        "index": 2,
+        "name": "Head_Assembly",
+        "children": [
+          "Spindle_Rotor_Group",
+          "Headstock_Static_Mat25",
+          "Headstock_Static_Mat26",
+          "Headstock_Static_Mat27",
+          "Headstock_Static_Mat28",
+          "Headstock_Static_Mat07",
+          "Headstock_Static_Mat30",
+          "Headstock_Static_Mat31",
+          "Headstock_Static_Mat32",
+          "Headstock_Static_Mat33",
+          "Head_Labels_Static_Mat39",
+          "Head_Labels_Static_Mat03",
+          "Head_Labels_Static_Mat40",
+          "Head_Labels_Static_Mat41",
+          "Head_Labels_Static_Mat42",
+          "Head_Labels_Static_Mat43",
+          "Head_Labels_Static_Mat44"
+        ]
+      },
+      {
+        "index": 3,
+        "name": "Spindle_Rotor_Group",
+        "children": [
+          "Tool_Holder_Missing",
+          "Spindle_Rotor_Mat26",
+          "Spindle_Rotor_Mat29"
+        ]
+      },
+      {
+        "index": 4,
+        "name": "Tool_Holder_Missing",
+        "children": [
+          "Cutting_Tool_Missing"
+        ]
+      },
+      {
+        "index": 5,
+        "name": "Cutting_Tool_Missing",
+        "children": []
+      },
+      {
+        "index": 6,
+        "name": "Knee_Z_Slide",
+        "children": [
+          "Y_Axis_Saddle"
+        ]
+      },
+      {
+        "index": 7,
+        "name": "Y_Axis_Saddle",
+        "children": [
+          "X_Axis_Table",
+          "Y_Handwheel_Group"
+        ]
+      },
+      {
+        "index": 8,
+        "name": "X_Axis_Table",
+        "children": [
+          "X_Handwheel_Left_Group",
+          "X_Handwheel_Right_Group",
+          "Workholding",
+          "Worktable_X_Slide_Mat34",
+          "Worktable_X_Slide_Mat35",
+          "Worktable_X_Slide_Mat07",
+          "Worktable_X_Slide_Mat36",
+          "Worktable_X_Slide_Mat37"
+        ]
+      },
+      {
+        "index": 9,
+        "name": "X_Handwheel_Left_Group",
+        "children": [
+          "X_Left_Wheel_Mat34",
+          "X_Left_Handle_Mat34",
+          "X_Left_Wheel_Mat07",
+          "X_Left_Wheel_Mat36"
+        ]
+      },
+      {
+        "index": 10,
+        "name": "X_Handwheel_Right_Group",
+        "children": [
+          "X_Right_Wheel_Mat34",
+          "X_Right_Wheel_Mat35",
+          "X_Right_Handle_Mat35",
+          "X_Right_Wheel_Mat07"
+        ]
+      },
+      {
+        "index": 11,
+        "name": "Y_Handwheel_Group",
+        "children": [
+          "Y_Handwheel_Wheel_Mat11",
+          "Y_Handwheel_Handle_Mat11",
+          "Y_Handwheel_Wheel_Mat07"
+        ]
+      },
+      {
+        "index": 12,
+        "name": "Z_Handwheel_Group",
+        "children": [
+          "Z_Handwheel_Wheel_Mat17",
+          "Z_Handwheel_Handle_Mat20"
+        ]
+      },
+      {
+        "index": 13,
+        "name": "Workholding",
+        "children": [
+          "Vise_Missing"
+        ]
+      },
+      {
+        "index": 14,
+        "name": "Vise_Missing",
+        "children": [
+          "Workpiece_Missing"
+        ]
+      },
+      {
+        "index": 15,
+        "name": "Workpiece_Missing",
+        "children": []
+      },
+      {
+        "index": 16,
+        "name": "Controls",
+        "children": [
+          "Start_Lever_Missing"
+        ]
+      },
+      {
+        "index": 17,
+        "name": "Start_Lever_Missing",
+        "children": []
+      },
+      {
+        "index": 18,
+        "name": "Accessories",
+        "children": [
+          "Work_Light_Static_Mat38"
+        ]
+      },
+      {
+        "index": 19,
+        "name": "Column_Ram_Static_Mat03",
+        "children": []
+      },
+      {
+        "index": 20,
+        "name": "Column_Ram_Static_Mat04",
+        "children": []
+      },
+      {
+        "index": 21,
+        "name": "Column_Ram_Static_Mat05",
+        "children": []
+      },
+      {
+        "index": 22,
+        "name": "Column_Ram_Static_Mat06",
+        "children": []
+      },
+      {
+        "index": 23,
+        "name": "Column_Ram_Static_Mat07",
+        "children": []
+      },
+      {
+        "index": 24,
+        "name": "Column_Ram_Static_Mat08",
+        "children": []
+      },
+      {
+        "index": 25,
+        "name": "Column_Ram_Static_Mat09",
+        "children": []
+      },
+      {
+        "index": 26,
+        "name": "Machine_Base_Knee_Static_Mat10",
+        "children": []
+      },
+      {
+        "index": 27,
+        "name": "Machine_Base_Knee_Static_Mat11",
+        "children": []
+      },
+      {
+        "index": 28,
+        "name": "Y_Handwheel_Wheel_Mat11",
+        "children": []
+      },
+      {
+        "index": 29,
+        "name": "Y_Handwheel_Handle_Mat11",
+        "children": []
+      },
+      {
+        "index": 30,
+        "name": "Machine_Base_Knee_Static_Mat07",
+        "children": []
+      },
+      {
+        "index": 31,
+        "name": "Y_Handwheel_Wheel_Mat07",
+        "children": []
+      },
+      {
+        "index": 32,
+        "name": "Machine_Base_Knee_Static_Mat12",
+        "children": []
+      },
+      {
+        "index": 33,
+        "name": "Machine_Base_Knee_Static_Mat13",
+        "children": []
+      },
+      {
+        "index": 34,
+        "name": "Machine_Base_Knee_Static_Mat14",
+        "children": []
+      },
+      {
+        "index": 35,
+        "name": "Machine_Base_Knee_Static_Mat15",
+        "children": []
+      },
+      {
+        "index": 36,
+        "name": "Machine_Base_Knee_Static_Mat16",
+        "children": []
+      },
+      {
+        "index": 37,
+        "name": "Z_Handwheel_Wheel_Mat17",
+        "children": []
+      },
+      {
+        "index": 38,
+        "name": "Machine_Base_Knee_Static_Mat17",
+        "children": []
+      },
+      {
+        "index": 39,
+        "name": "Machine_Base_Knee_Static_Mat18",
+        "children": []
+      },
+      {
+        "index": 40,
+        "name": "Machine_Base_Knee_Static_Mat19",
+        "children": []
+      },
+      {
+        "index": 41,
+        "name": "Machine_Base_Knee_Static_Mat20",
+        "children": []
+      },
+      {
+        "index": 42,
+        "name": "Z_Handwheel_Handle_Mat20",
+        "children": []
+      },
+      {
+        "index": 43,
+        "name": "Machine_Base_Knee_Static_Mat21",
+        "children": []
+      },
+      {
+        "index": 44,
+        "name": "Machine_Base_Knee_Static_Mat22",
+        "children": []
+      },
+      {
+        "index": 45,
+        "name": "Machine_Base_Knee_Static_Mat23",
+        "children": []
+      },
+      {
+        "index": 46,
+        "name": "Machine_Base_Knee_Static_Mat24",
+        "children": []
+      },
+      {
+        "index": 47,
+        "name": "Headstock_Static_Mat25",
+        "children": []
+      },
+      {
+        "index": 48,
+        "name": "Headstock_Static_Mat26",
+        "children": []
+      },
+      {
+        "index": 49,
+        "name": "Spindle_Rotor_Mat26",
+        "children": []
+      },
+      {
+        "index": 50,
+        "name": "Headstock_Static_Mat27",
+        "children": []
+      },
+      {
+        "index": 51,
+        "name": "Headstock_Static_Mat28",
+        "children": []
+      },
+      {
+        "index": 52,
+        "name": "Spindle_Rotor_Mat29",
+        "children": []
+      },
+      {
+        "index": 53,
+        "name": "Headstock_Static_Mat07",
+        "children": []
+      },
+      {
+        "index": 54,
+        "name": "Headstock_Static_Mat30",
+        "children": []
+      },
+      {
+        "index": 55,
+        "name": "Headstock_Static_Mat31",
+        "children": []
+      },
+      {
+        "index": 56,
+        "name": "Headstock_Static_Mat32",
+        "children": []
+      },
+      {
+        "index": 57,
+        "name": "Headstock_Static_Mat33",
+        "children": []
+      },
+      {
+        "index": 58,
+        "name": "X_Left_Wheel_Mat34",
+        "children": []
+      },
+      {
+        "index": 59,
+        "name": "X_Right_Wheel_Mat34",
+        "children": []
+      },
+      {
+        "index": 60,
+        "name": "X_Left_Handle_Mat34",
+        "children": []
+      },
+      {
+        "index": 61,
+        "name": "Worktable_X_Slide_Mat34",
+        "children": []
+      },
+      {
+        "index": 62,
+        "name": "Worktable_X_Slide_Mat35",
+        "children": []
+      },
+      {
+        "index": 63,
+        "name": "X_Right_Wheel_Mat35",
+        "children": []
+      },
+      {
+        "index": 64,
+        "name": "X_Right_Handle_Mat35",
+        "children": []
+      },
+      {
+        "index": 65,
+        "name": "Worktable_X_Slide_Mat07",
+        "children": []
+      },
+      {
+        "index": 66,
+        "name": "X_Right_Wheel_Mat07",
+        "children": []
+      },
+      {
+        "index": 67,
+        "name": "X_Left_Wheel_Mat07",
+        "children": []
+      },
+      {
+        "index": 68,
+        "name": "X_Left_Wheel_Mat36",
+        "children": []
+      },
+      {
+        "index": 69,
+        "name": "Worktable_X_Slide_Mat36",
+        "children": []
+      },
+      {
+        "index": 70,
+        "name": "Worktable_X_Slide_Mat37",
+        "children": []
+      },
+      {
+        "index": 71,
+        "name": "Work_Light_Static_Mat38",
+        "children": []
+      },
+      {
+        "index": 72,
+        "name": "Head_Labels_Static_Mat39",
+        "children": []
+      },
+      {
+        "index": 73,
+        "name": "Head_Labels_Static_Mat03",
+        "children": []
+      },
+      {
+        "index": 74,
+        "name": "Head_Labels_Static_Mat40",
+        "children": []
+      },
+      {
+        "index": 75,
+        "name": "Head_Labels_Static_Mat41",
+        "children": []
+      },
+      {
+        "index": 76,
+        "name": "Head_Labels_Static_Mat42",
+        "children": []
+      },
+      {
+        "index": 77,
+        "name": "Head_Labels_Static_Mat43",
+        "children": []
+      },
+      {
+        "index": 78,
+        "name": "Head_Labels_Static_Mat44",
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "drill",
+    "model": "drill_press_interactive.glb",
+    "config": "drill_press_parts.json",
+    "nodeCount": 62,
+    "meshCount": 42,
+    "errors": [],
+    "audit": [
+      {
+        "name": "SpindleAssembly",
+        "found": true,
+        "parent": "Quill"
+      },
+      {
+        "name": "FeedHandlePivot",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "Quill",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "TableAssembly",
+        "found": true,
+        "parent": "DrillPress"
+      },
+      {
+        "name": "TableRotationPivot",
+        "found": true,
+        "parent": "TableBracket"
+      },
+      {
+        "name": "SwitchLever",
+        "found": true,
+        "parent": "Controls"
+      },
+      {
+        "name": "Spindle",
+        "found": true,
+        "parent": "SpindleAssembly"
+      },
+      {
+        "name": "Chuck",
+        "found": true,
+        "parent": "SpindleAssembly"
+      },
+      {
+        "name": "DrillBit",
+        "found": true,
+        "parent": "SpindleAssembly"
+      },
+      {
+        "name": "HeadHousing",
+        "found": true,
+        "parent": "DrillPress"
+      },
+      {
+        "name": "TableLiftHandwheel_MOUNT",
+        "found": true,
+        "parent": "TableAssembly"
+      },
+      {
+        "name": "Vise_MOUNT",
+        "found": true,
+        "parent": "WorkTable"
+      },
+      {
+        "name": "Workpiece_MOUNT",
+        "found": true,
+        "parent": "Vise_MOUNT"
+      },
+      {
+        "name": "Quill",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "TableAssembly",
+        "found": true,
+        "parent": "DrillPress"
+      },
+      {
+        "name": "FeedHandlePivot",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "FeedHandlePivot",
+        "pivot": [
+          0.0949,
+          0.5928,
+          0.1182
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "SpindleAssembly",
+        "found": true,
+        "parent": "Quill"
+      },
+      {
+        "name": "SpindleAssembly",
+        "pivot": [
+          0,
+          0.5608,
+          0.1422
+        ],
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "attachmentError": 0
+      },
+      {
+        "name": "SwitchLever",
+        "found": true,
+        "parent": "Controls"
+      }
+    ],
+    "axes": [
+      {
+        "id": "quill",
+        "node": "Quill",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "range": [
+          -0.085,
+          0
+        ],
+        "label": "套筒／垂直進給",
+        "enabled": true
+      },
+      {
+        "id": "table",
+        "node": "TableAssembly",
+        "axis": [
+          0,
+          1,
+          0
+        ],
+        "range": [
+          -0.32,
+          0.18
+        ],
+        "label": "工作臺高度（待確認）",
+        "enabled": false
+      }
+    ],
+    "wheels": [
+      {
+        "id": "feed",
+        "node": "FeedHandlePivot",
+        "pivot": [
+          0.0949,
+          0.5928,
+          0.1182
+        ],
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "label": "套筒進給手柄",
+        "drives": "quill",
+        "angleRange": [
+          -2.007128639793479,
+          0.6108652381980153
+        ],
+        "ratio": null,
+        "speed": 1,
+        "needsCalibration": true
+      }
+    ],
+    "spindle": {
+      "node": "SpindleAssembly",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "pivot": [
+        0,
+        0.5608,
+        0.1422
+      ],
+      "required": [
+        "Spindle",
+        "Chuck",
+        "DrillBit"
+      ],
+      "exclude": [
+        "HeadHousing"
+      ]
+    },
+    "notes": [
+      "未提供鑽床模型使用說明 .md。",
+      "原模型沒有工作臺升降手輪、虎鉗與工件，掛點為空節點。",
+      "工作臺升降與旋轉在 JSON 標為待確認，本版不啟用。",
+      "進給手柄角度與套筒零點關係尚未定義；進給連動需先選擇教學比例。",
+      "主軸／夾頭／鑽頭幾何分界及 HeadSideRod 用途仍需人工確認。",
+      "表面標籤維持原檔靜止狀態。"
+    ],
+    "sourceHierarchy": [
+      {
+        "index": 0,
+        "name": "DrillPress",
+        "children": [
+          "Base",
+          "Column",
+          "HeadHousing",
+          "StaticAccessories",
+          "TableAssembly"
+        ]
+      },
+      {
+        "index": 1,
+        "name": "Base",
+        "children": [
+          "BaseFasteners",
+          "ColumnBaseCollar",
+          "BaseCasting"
+        ]
+      },
+      {
+        "index": 2,
+        "name": "Column",
+        "children": [
+          "ColumnTube"
+        ]
+      },
+      {
+        "index": 3,
+        "name": "HeadHousing",
+        "children": [
+          "Motor",
+          "Controls",
+          "RearHeadFastener",
+          "HeadSideRod",
+          "DepthScaleAssembly",
+          "HeadRearPlate",
+          "HeadMainCasting",
+          "HeadInternalSupport",
+          "SpindlePulley",
+          "FeedShaft",
+          "HeadFrontGuard",
+          "HeadBeltGuard",
+          "TransparentSafetyGuard",
+          "SafetyGuardPanels",
+          "BeltTensionKnob",
+          "Quill",
+          "FeedHandlePivot"
+        ]
+      },
+      {
+        "index": 4,
+        "name": "Motor",
+        "children": [
+          "MotorBody",
+          "MotorTopFastener",
+          "MotorCover"
+        ]
+      },
+      {
+        "index": 5,
+        "name": "StaticAccessories",
+        "children": [
+          "PowerCableAndWiring",
+          "SurfaceDetailsAndLabels"
+        ]
+      },
+      {
+        "index": 6,
+        "name": "TableAssembly",
+        "children": [
+          "TableBracket",
+          "TableLiftHandwheel_MOUNT"
+        ]
+      },
+      {
+        "index": 7,
+        "name": "TableBracket",
+        "children": [
+          "WorkTable",
+          "TableRotationPivot",
+          "TableSupportCollar"
+        ]
+      },
+      {
+        "index": 8,
+        "name": "WorkTable",
+        "children": [
+          "Vise_MOUNT",
+          "WorkTableCasting"
+        ]
+      },
+      {
+        "index": 9,
+        "name": "TableLiftHandwheel_MOUNT",
+        "children": []
+      },
+      {
+        "index": 10,
+        "name": "TableRotationPivot",
+        "children": []
+      },
+      {
+        "index": 11,
+        "name": "Vise_MOUNT",
+        "children": [
+          "Workpiece_MOUNT"
+        ]
+      },
+      {
+        "index": 12,
+        "name": "Workpiece_MOUNT",
+        "children": []
+      },
+      {
+        "index": 13,
+        "name": "Controls",
+        "children": [
+          "HeadControlButton",
+          "SwitchBody",
+          "SwitchLever"
+        ]
+      },
+      {
+        "index": 14,
+        "name": "PowerCableAndWiring",
+        "children": []
+      },
+      {
+        "index": 15,
+        "name": "RearHeadFastener",
+        "children": []
+      },
+      {
+        "index": 16,
+        "name": "HeadSideRod",
+        "children": []
+      },
+      {
+        "index": 17,
+        "name": "BaseFasteners",
+        "children": []
+      },
+      {
+        "index": 18,
+        "name": "ColumnBaseCollar",
+        "children": []
+      },
+      {
+        "index": 19,
+        "name": "BaseCasting",
+        "children": []
+      },
+      {
+        "index": 20,
+        "name": "WorkTableCasting",
+        "children": []
+      },
+      {
+        "index": 21,
+        "name": "HeadControlButton",
+        "children": []
+      },
+      {
+        "index": 22,
+        "name": "TableSupportCollar",
+        "children": []
+      },
+      {
+        "index": 23,
+        "name": "ColumnTube",
+        "children": []
+      },
+      {
+        "index": 24,
+        "name": "DepthScaleAssembly",
+        "children": []
+      },
+      {
+        "index": 25,
+        "name": "HeadRearPlate",
+        "children": []
+      },
+      {
+        "index": 26,
+        "name": "HeadMainCasting",
+        "children": []
+      },
+      {
+        "index": 27,
+        "name": "HeadInternalSupport",
+        "children": []
+      },
+      {
+        "index": 28,
+        "name": "SpindlePulley",
+        "children": []
+      },
+      {
+        "index": 29,
+        "name": "FeedShaft",
+        "children": []
+      },
+      {
+        "index": 30,
+        "name": "HeadFrontGuard",
+        "children": []
+      },
+      {
+        "index": 31,
+        "name": "HeadBeltGuard",
+        "children": []
+      },
+      {
+        "index": 32,
+        "name": "SwitchBody",
+        "children": []
+      },
+      {
+        "index": 33,
+        "name": "SwitchLever",
+        "children": []
+      },
+      {
+        "index": 34,
+        "name": "TransparentSafetyGuard",
+        "children": []
+      },
+      {
+        "index": 35,
+        "name": "SafetyGuardPanels",
+        "children": []
+      },
+      {
+        "index": 36,
+        "name": "MotorBody",
+        "children": []
+      },
+      {
+        "index": 37,
+        "name": "SurfaceDetailsAndLabels",
+        "children": []
+      },
+      {
+        "index": 38,
+        "name": "BeltTensionKnob",
+        "children": []
+      },
+      {
+        "index": 39,
+        "name": "MotorTopFastener",
+        "children": []
+      },
+      {
+        "index": 40,
+        "name": "MotorCover",
+        "children": []
+      },
+      {
+        "index": 41,
+        "name": "Quill",
+        "children": [
+          "SpindleAssembly"
+        ]
+      },
+      {
+        "index": 42,
+        "name": "SpindleAssembly",
+        "children": [
+          "Spindle",
+          "Chuck",
+          "DrillBit"
+        ]
+      },
+      {
+        "index": 43,
+        "name": "Spindle",
+        "children": []
+      },
+      {
+        "index": 44,
+        "name": "Chuck",
+        "children": []
+      },
+      {
+        "index": 45,
+        "name": "DrillBit",
+        "children": []
+      },
+      {
+        "index": 46,
+        "name": "FeedHandlePivot",
+        "children": [
+          "FeedHandle01",
+          "FeedHandle02",
+          "FeedHandle03"
+        ]
+      },
+      {
+        "index": 47,
+        "name": "FeedHandle01",
+        "children": [
+          "FeedHandle01_Grip",
+          "FeedHandle01_EndCap",
+          "FeedHandle01_Collar",
+          "FeedHandle01_Rod"
+        ]
+      },
+      {
+        "index": 48,
+        "name": "FeedHandle02",
+        "children": [
+          "FeedHandle02_Grip",
+          "FeedHandle02_EndCap",
+          "FeedHandle02_Collar",
+          "FeedHandle02_Rod"
+        ]
+      },
+      {
+        "index": 49,
+        "name": "FeedHandle03",
+        "children": [
+          "FeedHandle03_Grip",
+          "FeedHandle03_EndCap",
+          "FeedHandle03_Collar",
+          "FeedHandle03_Rod"
+        ]
+      },
+      {
+        "index": 50,
+        "name": "FeedHandle01_Grip",
+        "children": []
+      },
+      {
+        "index": 51,
+        "name": "FeedHandle02_Grip",
+        "children": []
+      },
+      {
+        "index": 52,
+        "name": "FeedHandle03_Grip",
+        "children": []
+      },
+      {
+        "index": 53,
+        "name": "FeedHandle01_EndCap",
+        "children": []
+      },
+      {
+        "index": 54,
+        "name": "FeedHandle02_EndCap",
+        "children": []
+      },
+      {
+        "index": 55,
+        "name": "FeedHandle03_EndCap",
+        "children": []
+      },
+      {
+        "index": 56,
+        "name": "FeedHandle01_Collar",
+        "children": []
+      },
+      {
+        "index": 57,
+        "name": "FeedHandle02_Collar",
+        "children": []
+      },
+      {
+        "index": 58,
+        "name": "FeedHandle03_Collar",
+        "children": []
+      },
+      {
+        "index": 59,
+        "name": "FeedHandle01_Rod",
+        "children": []
+      },
+      {
+        "index": 60,
+        "name": "FeedHandle02_Rod",
+        "children": []
+      },
+      {
+        "index": 61,
+        "name": "FeedHandle03_Rod",
+        "children": []
+      }
+    ]
+  }
+]

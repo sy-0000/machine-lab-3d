@@ -1,0 +1,26 @@
+{
+  "name": "machine-learning-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test src/lathe.test.js src/machines/runtime.test.js",
+    "test:browser": "playwright test",
+    "audit:models": "node scripts/audit-machines.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.0.0",
+    "@react-three/fiber": "^9.0.0",
+    "react": "~19.2.0",
+    "react-dom": "~19.2.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.1.0"
+  }
+}

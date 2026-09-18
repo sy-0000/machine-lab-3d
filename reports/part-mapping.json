@@ -1,0 +1,391 @@
+{
+  "model": "lathe_16k20_dark_green_no_backboard.glb",
+  "sourceNodes": 182,
+  "sourceMeshes": 172,
+  "reachableNodes": 180,
+  "reachableMeshes": 170,
+  "parts": {
+    "spindle": {
+      "objectNames": [
+        "Object_78::shaft"
+      ],
+      "axis": "x",
+      "pivot": [
+        -0.267,
+        0.8525885,
+        -0.0216612
+      ]
+    },
+    "chuck": {
+      "objectNames": [
+        "Object_78::chuckBody",
+        "Object_80"
+      ],
+      "parent": "spindle"
+    },
+    "carriageHandwheel": {
+      "wheelObjects": [
+        "Object_117::wheelBody"
+      ],
+      "handleObjects": [
+        "Object_117::gripRim"
+      ],
+      "axis": "z",
+      "pivot": [
+        0.0791843,
+        0.4864774,
+        0.349
+      ],
+      "pivotName": "CarriageHandwheelPivot",
+      "baseName": "CarriageHandwheel",
+      "parent": "CarriageAssembly",
+      "label": "縱向進給手輪",
+      "key": "x",
+      "ratio": 0.018,
+      "rotationSpeed": 2.4,
+      "help": [
+        "左鍵：向左移動",
+        "右鍵：向右移動"
+      ],
+      "note": "Object_117 無獨立凸出握把；外緣握持面與輪身依原始三角形分區，未新增握把。"
+    },
+    "crossSlideHandwheel": {
+      "wheelObjects": [
+        "Object_107"
+      ],
+      "handleObjects": [
+        "Object_109"
+      ],
+      "axis": "z",
+      "pivot": [
+        0.0791951,
+        0.6833978,
+        0.397
+      ],
+      "pivotName": "CrossSlideHandwheelPivot",
+      "baseName": "CrossSlideHandwheel",
+      "parent": "CarriageAssembly",
+      "label": "橫向進給手輪",
+      "key": "y",
+      "ratio": 0.0075,
+      "rotationSpeed": 2.4,
+      "help": [
+        "左鍵：刀具靠近",
+        "右鍵：刀具遠離"
+      ],
+      "note": "實際輪面在 XY 平面，因此使用 Z 軸；Object_107 包含與輪身連成一體的握把桿，Object_109 是末端球形握把。"
+    },
+    "heightHandwheel": {
+      "wheelObjects": [
+        "Object_145::wheelBody"
+      ],
+      "handleObjects": [
+        "Object_145::grip"
+      ],
+      "axis": "x",
+      "pivot": [
+        0.407,
+        0.7619079,
+        0.0566564
+      ],
+      "pivotName": "HeightHandwheelPivot",
+      "baseName": "HeightHandwheel",
+      "parent": "CrossSlideAssembly",
+      "label": "高度調整手輪",
+      "key": "z",
+      "ratio": 0.003,
+      "rotationSpeed": 2,
+      "help": [
+        "左鍵：降低刀具",
+        "右鍵：升高刀具"
+      ],
+      "note": "側向調節旋鈕的外觀已確認；高度連動是教學配置，原模型沒有機構語意，需實機教師確認。Object_143 支座保持固定。"
+    },
+    "tailstockHandwheel": {
+      "wheelObjects": [
+        "Object_68",
+        "Object_70",
+        "Object_72"
+      ],
+      "handleObjects": [
+        "Object_189"
+      ],
+      "axis": "x",
+      "pivot": [
+        1.038285,
+        0.8525885,
+        -0.0216612
+      ],
+      "pivotName": "TailstockHandwheelPivot",
+      "baseName": "TailstockHandwheel",
+      "parent": "TailstockAssembly",
+      "label": "尾座手輪",
+      "key": "quill",
+      "ratio": 0.008,
+      "rotationSpeed": 2.4,
+      "help": [
+        "左鍵：套筒伸出",
+        "右鍵：套筒縮回"
+      ]
+    },
+    "startLever": {
+      "objectNames": [
+        "Object_12",
+        "Object_38"
+      ],
+      "rodObjects": [
+        "Object_12"
+      ],
+      "handleObjects": [
+        "Object_38"
+      ],
+      "axis": "z",
+      "pivot": [
+        -0.4023504,
+        0.3522738,
+        0.3674505
+      ],
+      "pivotName": "StartLeverPivot",
+      "label": "主軸啟動拉桿",
+      "help": [
+        "點擊切換啟動／停止"
+      ],
+      "stopAngle": 0,
+      "runAngle": -0.65,
+      "duration": 0.3,
+      "note": "Object_10 為固定支座；此拉桿依位置與外觀指定為啟停教學控制，須人工確認實機用途。"
+    }
+  },
+  "limits": {
+    "x": {
+      "name": "CarriageAssembly",
+      "axis": "x",
+      "label": "X軸／縱向進給",
+      "range": [
+        -0.24,
+        0.38
+      ],
+      "hint": "帶動大溜板、橫向滑座與刀座"
+    },
+    "y": {
+      "name": "CrossSlideAssembly",
+      "axis": "z",
+      "label": "Y軸／橫向進給",
+      "range": [
+        -0.065,
+        0.065
+      ],
+      "hint": "沿模型 Z 軸靠近／遠離工件"
+    },
+    "z": {
+      "name": "ToolHeightAssembly",
+      "axis": "y",
+      "label": "Z軸／刀具高度",
+      "range": [
+        -0.015,
+        0.035
+      ],
+      "hint": "只升降上方刀座與刀具；教學連動"
+    },
+    "tail": {
+      "name": "TailstockAssembly",
+      "axis": "x",
+      "label": "尾座位置",
+      "range": [
+        -0.12,
+        0.04
+      ],
+      "hint": "沿床身調整尾座本體"
+    },
+    "quill": {
+      "name": "TailstockQuill",
+      "axis": "x",
+      "label": "尾座套筒",
+      "range": [
+        -0.08,
+        0
+      ],
+      "hint": "負值伸向主軸，0 為載入時收回位置"
+    }
+  },
+  "missing": [],
+  "maximumAttachmentMatrixError": 1.3877787807814457e-17,
+  "triangles": {
+    "Object_179": 124,
+    "Object_181": 64,
+    "Object_183": 1468,
+    "Object_185": 128,
+    "Object_187": 456,
+    "Object_207": 1416,
+    "Object_209": 3444,
+    "Object_101": 60,
+    "Object_103": 3596,
+    "Object_105": 7792,
+    "Object_107": 10448,
+    "Object_109": 960,
+    "Object_143": 132,
+    "Object_145": 1214,
+    "Object_147": 272,
+    "Object_149": 65926,
+    "Object_150": 1722,
+    "Object_152": 190,
+    "Object_154": 3328,
+    "Object_156": 127341,
+    "Object_157": 126611,
+    "Object_96": 10,
+    "Object_98": 10,
+    "Object_99": 2,
+    "cable007_low__0": 312,
+    "cable008_low__0": 588,
+    "cable015_low__0": 588,
+    "cable016_low__0": 588,
+    "cable017_low__0": 312,
+    "cable018_low__0": 312,
+    "kabel_koncovka_01001_low_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01002_low_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01003_low_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01004_low_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01005_low001_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01005_low_Bul��nkostroj-mat_0": 270,
+    "kabel_koncovka_01_low_Bul��nkostroj-mat_0": 270,
+    "kladka_motor_low_Bul��nkostroj-mat_0": 1728,
+    "Kladka_valec_velka_low_Bul��nkostroj-mat_0": 2610,
+    "lozisko001_low_Bul��nkostroj-mat_0": 864,
+    "lozisko002_low_Bul��nkostroj-mat_0": 864,
+    "lozisko003_low_Bul��nkostroj-mat_0": 864,
+    "Motor_mriezka_low_Bul��nkostroj-mat_0": 32,
+    "Motor_os_low_Bul��nkostroj-mat_0": 80,
+    "Motor_pripojka_low_Bul��nkostroj-mat_0": 180,
+    "Motor_skrutky_1_low_Bul��nkostroj-mat_0": 64,
+    "Motor_skrutky_2_low_Bul��nkostroj-mat_0": 120,
+    "Motor_skrutky_3_low_Bul��nkostroj-mat_0": 240,
+    "Motor_skrutky_4_low_Bul��nkostroj-mat_0": 64,
+    "Motor_telo_chladenie_low_Bul��nkostroj-mat_0": 190,
+    "Motor_telo_low_Bul��nkostroj-mat_0": 1722,
+    "Motor_vrtula_low_Bul��nkostroj-mat_0": 400,
+    "Motor_vrtula_os_low_Bul��nkostroj-mat_0": 50,
+    "Ozubenie_valec_1003_low_Bul��nkostroj-mat_0": 2032,
+    "Ozubenie_valec_1004_low_Bul��nkostroj-mat_0": 2032,
+    "Ozubenie_valec_1005_low_Bul��nkostroj-mat_0": 2032,
+    "remen_low_Bul��nkostroj-mat_0": 368,
+    "skrutka_srob_1_002023_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002024_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002025_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002026_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002027_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002028_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002031_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002032_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002033_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_1_002034_low_Bul��nkostroj-mat_0": 40,
+    "skrutka_srob_2_002023_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002024_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002025_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002026_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002027_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002028_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002031_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002032_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002033_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_2_002034_low_Bul��nkostroj-mat_0": 88,
+    "skrutka_srob_3_002023_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002024_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002025_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002026_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002027_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002028_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002031_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002032_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002033_low_Bul��nkostroj-mat_0": 44,
+    "skrutka_srob_3_002034_low_Bul��nkostroj-mat_0": 44,
+    "ukotvenie_01_low_Bul��nkostroj-mat_0": 140,
+    "ukotvenie_03_low_Bul��nkostroj-mat_0": 44,
+    "valec_podlozka_panel_01_low_Bul��nkostroj-mat_0": 10,
+    "valec_podlozka_panel_02_low_Bul��nkostroj-mat_0": 54,
+    "valec_stojan_01_low_Bul��nkostroj-mat_0": 196,
+    "valec_stojan_podlozka_01_low_Bul��nkostroj-mat_0": 28,
+    "Object_189": 94,
+    "Object_64": 2888,
+    "Object_66": 28,
+    "Object_68": 598,
+    "Object_70": 10761,
+    "Object_72": 240,
+    "Object_74": 508,
+    "Object_76": 4092,
+    "Object_166": 426,
+    "Object_168": 12,
+    "Object_170": 48,
+    "Object_171": 4,
+    "Object_173": 252,
+    "Object_164": 12,
+    "Object_175": 1148,
+    "Object_177": 960,
+    "Object_205": 1724,
+    "Object_10": 1286,
+    "Object_111": 284,
+    "Object_113": 190,
+    "Object_115": 190,
+    "Object_119": 1024,
+    "Object_12": 124,
+    "Object_121": 1024,
+    "Object_123": 1024,
+    "Object_125": 12,
+    "Object_127": 190,
+    "Object_129": 168,
+    "Object_131": 53760,
+    "Object_133": 446,
+    "Object_135": 960,
+    "Object_137": 3902,
+    "Object_139": 2302,
+    "Object_14": 462,
+    "Object_141": 188,
+    "Object_16": 2686,
+    "Object_162": 28,
+    "Object_18": 586,
+    "Object_191": 2052,
+    "Object_193": 146,
+    "Object_195": 53248,
+    "Object_20": 72,
+    "Object_22": 4985,
+    "Object_24": 25040,
+    "Object_26": 446,
+    "Object_28": 124,
+    "Object_30": 63488,
+    "Object_32": 446,
+    "Object_34": 248,
+    "Object_36": 126976,
+    "Object_38": 63488,
+    "Object_4": 452,
+    "Object_40": 72,
+    "Object_42": 12,
+    "Object_44": 190,
+    "Object_46": 3148,
+    "Object_48": 96,
+    "Object_50": 238,
+    "Object_54": 3086,
+    "Object_6": 12,
+    "Object_62": 3156,
+    "Object_8": 37560,
+    "Object_82": 526,
+    "Object_83": 28,
+    "Object_85": 4792,
+    "Object_87": 190,
+    "Object_89": 726,
+    "Object_91": 1180,
+    "Object_93": 130,
+    "Object_94": 16,
+    "Object_78": 3548,
+    "Object_80": 420,
+    "Object_117": 8448,
+    "Object_52": 160,
+    "Object_56": 240,
+    "Object_58": 240,
+    "Object_60": 9285,
+    "Object_117::wheelBody": 3198,
+    "Object_117::gripRim": 5250,
+    "Object_145::wheelBody": 1024,
+    "Object_145::grip": 190,
+    "Object_78::shaft": 107,
+    "Object_78::chuckBody": 3441
+  }
+}

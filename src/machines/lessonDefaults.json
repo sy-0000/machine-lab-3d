@@ -1,0 +1,9 @@
+{
+  "description": "Presentation / opt-in lesson parameters, not supplied machine specifications",
+  "defaultRpm": 500,
+  "defaultMaxRpm": 2000,
+  "accelerationRpmPerSecond": 900,
+  "wheelSpeedRadiansPerSecond": 2.4,
+  "feedHandleSpeedRadiansPerSecond": 1,
+  "teachingTurnsForFullTravel": 10
+}
