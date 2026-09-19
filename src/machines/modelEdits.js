@@ -3,7 +3,7 @@ const vector=a=>new Vector3(...a);
 // Explicit source names and reviewed triangle lists; no spatial grouping at runtime.
 export function editSource(scene,config){
  const retired=[];
- for(const name of config.removeNodes||[]){const node=scene.getObjectByName(name);if(!node)throw Error(`找不到要移除的零件：${name}`);node.removeFromParent();retired.push(node);}
+ for(const name of [...(config.removeNodes||[]),...(config.hideNodes||[])]){const node=scene.getObjectByName(name);if(!node)throw Error(`找不到要隱藏的零件：${name}`);node.visible=false;}
  for(const spec of config.geometrySplits||[]){
   const source=scene.getObjectByName(spec.source);if(!source?.isMesh)throw Error(`找不到拆分來源：${spec.source}`);
   const original=source.geometry,index=original.index,all=index?Array.from(index.array):Array.from({length:original.attributes.position.count},(_,i)=>i),selected=new Set(spec.triangles),keep=[],take=[];
@@ -27,7 +27,7 @@ export function createAddition(def,scene,lookup){
  }else if(def.kind==='cloneLever'){
   steel.dispose();for(const name of def.sources){const source=lookup[name];if(!source?.isMesh)throw Error(`缺少拉桿樣本：${name}`);const copy=source.clone();copy.name=def.name+'_'+name;scene.add(copy);copy.matrix.copy(source.matrixWorld);copy.matrix.decompose(copy.position,copy.quaternion,copy.scale);copy.position.add(vector(def.position).sub(vector(def.sourcePivot)));copy.updateWorldMatrix(true,true);group.attach(copy);}
  }
- if(def.kind==='cloneLever')group.rotation.z=(def.initialDegrees-def.sourceDegrees)*Math.PI/180;
+ if(def.kind==='cloneLever'){group.traverse(n=>{n.visible=true;});group.rotation.z=(def.initialDegrees-def.sourceDegrees)*Math.PI/180;if(def.scale)group.scale.setScalar(def.scale);}
  if(def.parent){const parent=lookup[def.parent];if(!parent)throw Error(`新增零件的父群組不存在：${def.parent}`);parent.attach(group);}
  lookup[def.name]=group;return group;
 }

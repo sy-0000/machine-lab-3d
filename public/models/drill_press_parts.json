@@ -31,7 +31,7 @@
     "FeedHandlePivot": {
       "type": "dragRotation",
       "axis": [
-        1,
+        -1,
         0,
         0
       ],
@@ -107,7 +107,7 @@
   },
   "manualReview": [
     "已閱讀 drillingREADME.md；握柄按住向下進給，放開彈簧回位。",
-    "SwitchLever 作主軸啟停開關；工作臺 Y 行程為 -0.20～0.18，收窄下限避免穿入底座。",
+    "SwitchBody 為開關本體；SwitchLever 為固定周圍面板，不註冊互動。工作臺 Y 行程 -0.20～0.18。",
     "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
     "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。",
     "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。"
@@ -659,6 +659,11 @@
     {
       "node": "TableSurfaceDetail",
       "parent": "TableAssembly"
+    },
+    {
+      "node": "FeedShaft",
+      "parent": "FeedHandlePivot"
     }
-  ]
+  ],
+  "switchNode": "SwitchBody"
 }

@@ -246,6 +246,18 @@
       "objects": [
         "Head_Part_023"
       ]
+    },
+    {
+      "name": "MillingRightLever",
+      "parent": "Head_Assembly",
+      "pivot": [
+        0.14,
+        1.274,
+        0.06
+      ],
+      "objects": [
+        "Head_Part_021"
+      ]
     }
   ],
   "axes": [
@@ -394,7 +406,7 @@
   "notes": [
     "已從原始 GLB 逐面恢復 UV、法線與貼圖材質，保留 422 個獨立零件。",
     "新增 Z 升降教學手輪，與工作臺升降連動；原合併膝座鑄件保持固定。",
-    "Head_Part_023 握桿依使用者要求作主軸啟停，既有機身開關仍可操作。",
+    "隱藏舊 Head_Part_023 啟動握桿，改用右側既有 Head_Part_021 黑色桿；機身電源開關仍可操作。",
     "手輪導程、握桿用途及新增手輪尺寸仍為教學配置。",
     "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。"
   ],
@@ -426,7 +438,7 @@
     }
   ],
   "lever": {
-    "node": "MillingStartLever",
+    "node": "MillingRightLever",
     "axis": [
       1,
       0,
@@ -434,6 +446,9 @@
     ],
     "runAngle": 0.5,
     "duration": 0.25,
-    "label": "銑床啟動握桿"
-  }
+    "label": "右側黑色主軸啟動桿"
+  },
+  "hideNodes": [
+    "Head_Part_023"
+  ]
 }

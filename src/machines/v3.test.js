@@ -4,11 +4,11 @@ const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} != ${b}`),point=n=>new Box3
 async function load(id){const c=MACHINES.find(m=>m.id===id);return prepareMachine((await loadSource(new URL('../../public/models/'+c.model,import.meta.url))).scene,normalizeConfig(id,JSON.parse(fs.readFileSync(new URL('../../public/models/'+c.config,import.meta.url)))));}
 test('v3 lathe removals, four detents, rear wheel, exact limits, lever and spindle reverse',async()=>{
  const m=await load('lathe');try{
-  for(const name of m.config.removeNodes)assert.equal(m.scene.getObjectByName(name),undefined);
+  for(const name of m.config.hideNodes)assert.equal(m.scene.getObjectByName(name).visible,false);
   setAxis(m,'x',-100);near(m.offsets.x,-.14);setAxis(m,'tail',-100);near(m.offsets.tail,-.278);setAxis(m,'quill',-100);near(m.offsets.quill,-.11);resetMachine(m);
   const original=point(m.lookup.Object_135);stepMachine(m,true,500,2,1);assert.ok(point(m.lookup.Object_135).z>original.z);assert.ok(m.signedRpm>0);
   stepMachine(m,true,500,3,-1);assert.ok(point(m.lookup.Object_135).z<original.z);assert.ok(m.signedRpm<0);const angle=m.spindleAngle;stepMachine(m,true,500,.2,-1);assert.ok(m.spindleAngle<angle);resetMachine(m);
-  const initial=m.lookup.LeftSelectorPivot.quaternion.clone();for(let i=0;i<4;i++){setDetent(m,'gearSelector',i);near(initial.angleTo(m.lookup.LeftSelectorPivot.quaternion),Math.abs([60,90,120,150][i]-90)*Math.PI/180);const ball=point(m.lookup.LeftSelectorPivot.getObjectByName('LeftSelectorPivot_Object_30')),pivot=m.lookup.LeftSelectorPivot.getWorldPosition(new Vector3());near(Math.atan2(ball.y-pivot.y,ball.x-pivot.x)*180/Math.PI,[60,90,120,150][i]);}resetMachine(m);assert.equal(m.detents.gearSelector,1);
+  const initial=m.lookup.LeftSelectorPivot.quaternion.clone();for(let i=0;i<4;i++){setDetent(m,'gearSelector',i);near(initial.angleTo(m.lookup.LeftSelectorPivot.quaternion),Math.abs([-45,0,45,90][i])*Math.PI/180);const ball=point(m.lookup.LeftSelectorPivot.getObjectByName('LeftSelectorPivot_Object_30')),pivot=m.lookup.LeftSelectorPivot.getWorldPosition(new Vector3());near(Math.atan2(ball.y-pivot.y,ball.x-pivot.x)*180/Math.PI,[157.5,112.5,67.5,22.5][i]);}resetMachine(m);assert.equal(m.detents.gearSelector,1);
   turnControl(m,'tailTravel',-1,1);assert.ok(m.offsets.tail<0);near(m.angles.tailstockHandwheel,0);assert.equal(m.lookup.TailTravelWheel.parent.name,'TailstockAssembly');
  }finally{disposeMachine(m);}
 });

@@ -2,7 +2,7 @@
 import lesson from './lessonDefaults.json' with {type:'json'};
 const vector = axis => typeof axis==='string' ? ['x','y','z'].map(a=>a===axis?1:0) : axis;
 export function normalizeConfig(id, raw) {
- const common={id,raw,lesson,removeNodes:raw.removeNodes||[],geometrySplits:raw.geometrySplits||[],reparents:raw.reparents||[],axes:[],wheels:[],references:[],notes:[],safety:null,actions:raw.actions||[],extraGroups:raw.extraGroups||[],additions:raw.additions||[],defaultRpm:lesson.defaultRpm,maxRpm:lesson.defaultMaxRpm};
+ const common={id,raw,lesson,removeNodes:raw.removeNodes||[],hideNodes:raw.hideNodes||[],speedSelectors:raw.speedSelectors,geometrySplits:raw.geometrySplits||[],reparents:raw.reparents||[],axes:[],wheels:[],references:[],notes:[],safety:null,actions:raw.actions||[],extraGroups:raw.extraGroups||[],additions:raw.additions||[],defaultRpm:lesson.defaultRpm,maxRpm:lesson.defaultMaxRpm};
  if(raw.schemaVersion===2)return {...common,...raw,id,raw,lesson,references:raw.groups.flatMap(g=>g.objects),relationships:[],defaultRpm:lesson.defaultRpm};
  if(id==='lathe') {
   const p=raw.parts;
@@ -35,7 +35,7 @@ export function normalizeConfig(id, raw) {
   axes:[{id:'quill',node:'Quill',axis:i.Quill.axis,range:i.Quill.travelMeters,label:'套筒／垂直進給',enabled:true},{id:'table',node:'TableAssembly',axis:i.TableAssembly.axis,range:i.TableAssembly.travelMeters,label:'工作臺高度',enabled:i.TableAssembly.type==='linearTranslation'}],
   wheels:[{id:'feed',node:'FeedHandlePivot',pivot:f.pivotWorld,axis:f.axis,label:'套筒進給手柄',drives:'quill',angleRange:f.rotationLimitDegrees.map(v=>v*Math.PI/180),ratio:f.feedPerRadian??null,springReturn:f.springReturn,speed:lesson.feedHandleSpeedRadiansPerSecond,needsCalibration:f.feedPerRadian===undefined}],
   spindle:{node:'SpindleAssembly',axis:i.SpindleAssembly.axis,pivot:i.SpindleAssembly.pivotWorld,required:i.SpindleAssembly.includes,exclude:i.SpindleAssembly.exclude},
-  toggle:{node:'SwitchLever',label:'主軸啟停開關'},
+  toggle:{node:raw.switchNode||'SwitchLever',label:'主軸啟停開關'},
   notes:raw.manualReview,
  };
 }

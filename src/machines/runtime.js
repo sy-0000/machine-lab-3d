@@ -1,6 +1,7 @@
 import {Box3,Group,Vector3,Quaternion,Mesh,CylinderGeometry,BoxGeometry,MeshStandardMaterial} from 'three';
 import {prepareModel as prepareLathe,disposeModel,disposeHighlights} from '../lathe.js';
 import {editSource,createAddition} from './modelEdits.js';
+import {createSelectorScale,updateSelectorScales} from './selectorScale.js';
 const v=a=>new Vector3(...a);
 export const clamp=(x,[lo,hi])=>Math.max(lo,Math.min(hi,Number.isFinite(x)?x:0));
 const descendant=(node,parent)=>{for(let n=node;n;n=n.parent)if(n===parent)return true;return false;};
@@ -28,11 +29,19 @@ export function prepareMachine(scene,config) {
  }
  for(const spec of config.reparents||[]){const node=requireNode(spec.node),parent=requireNode(spec.parent);if(node&&parent)parent.attach(node);}
  for(const def of config.additions||[]){
+  if(def.kind==='selectorScale'){createSelectorScale(def,scene,lookup);continue;}
   if(['handwheel','cloneLever'].includes(def.kind)){createAddition(def,scene,lookup);continue;}
   const group=new Group();group.name=def.name;scene.add(group);lookup[def.name]=group;
   if(def.kind==='pedal'){
    group.position.fromArray(def.position);const bar=new Mesh(new CylinderGeometry(def.radius,def.radius,def.length,32),new MeshStandardMaterial({color:def.color,roughness:.6,metalness:.45}));bar.rotation.z=Math.PI/2;group.add(bar);
    for(const x of [-def.length/2+.08,def.length/2-.08]){const arm=new Mesh(new BoxGeometry(.035,.025,.15),new MeshStandardMaterial({color:'#313c40',metalness:.6,roughness:.6}));arm.position.set(x,0,-.06);group.add(arm);}
+  }else if(def.kind==='plate'){
+   group.position.fromArray(def.position);group.add(new Mesh(new BoxGeometry(...def.size),new MeshStandardMaterial({color:def.color,metalness:.65,roughness:.38})));
+   if(def.parent)lookup[def.parent].attach(group);
+  }else if(def.kind==='supportColumn'){
+   const length=def.topY-def.position[1];group.position.fromArray(def.position);group.position.y+=length/2;
+   const column=new Mesh(new CylinderGeometry(def.radius,def.radius,length,48),new MeshStandardMaterial({color:def.color,metalness:.75,roughness:.35}));group.add(column);
+   if(def.parent)lookup[def.parent].attach(group);
   }else if(def.kind==='sleeve'){
    const cylinder=new Mesh(new CylinderGeometry(def.radius,def.radius,1,32),new MeshStandardMaterial({color:def.color,metalness:.75,roughness:.3}));group.add(cylinder);group.userData.sleeve=def;
    const length=def.top[1]-def.bottomY;group.position.set(def.top[0],def.top[1]-length/2,def.top[2]);cylinder.scale.y=length;
@@ -71,7 +80,7 @@ export function prepareMachine(scene,config) {
  register(config.spindle,'spindle');if(config.lever)register(config.lever,'lever');if(config.toggle)register(config.toggle,'toggle');
  scene.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});
  scene.updateWorldMatrix(true,true);
- const bounds=new Box3().setFromObject(scene),center=bounds.getCenter(new Vector3()),radius=bounds.getSize(new Vector3()).length()/2;
+ const bounds=new Box3();scene.traverseVisible(n=>{if(n.isMesh)bounds.union(new Box3().setFromObject(n));});const center=bounds.getCenter(new Vector3()),radius=bounds.getSize(new Vector3()).length()/2;
  if(!Number.isFinite(radius)||radius<=0)throw Error('模型沒有有效幾何尺寸');
  const restTransforms=new Map();scene.traverse(node=>restTransforms.set(node,{position:node.position.clone(),quaternion:node.quaternion.clone(),scale:node.scale.clone()}));
  const result={scene,config,retiredNodes,lookup,controls,pivots,initial,restTransforms,audit,errors:[...new Set(errors)],legacy,materials,center,radius,floor:bounds.min.y-center.y};
@@ -80,7 +89,7 @@ export function prepareMachine(scene,config) {
 export function resetMachine(m) {
  if(m.workpiece){m.workpiece.removeFromParent();m.workpiece.geometry.dispose();m.workpiece.material.dispose();m.workpiece=null;}
  for(const [node,s] of m.restTransforms){node.position.copy(s.position);node.quaternion.copy(s.quaternion);node.scale.copy(s.scale);}
- m.offsets=Object.fromEntries(m.config.axes.map(a=>[a.id,0]));m.angles=Object.fromEntries(m.config.wheels.map(w=>[w.id,0]));m.detents={};m.indexSteps=0;m.emergency=false;m.signedRpm=0;m.direction=1;m.rpm=0;m.spindleAngle=0;m.leverAngle=0;m.running=false;m.moved=false;m.active=null;m.hover=null;
+ m.offsets=Object.fromEntries(m.config.axes.map(a=>[a.id,0]));m.angles=Object.fromEntries(m.config.wheels.map(w=>[w.id,0]));m.detents={};m.indexSteps=0;m.emergency=false;m.brakeTime=0;m.signedRpm=0;m.direction=1;m.rpm=0;m.spindleAngle=0;m.leverAngle=0;m.running=false;m.moved=false;m.active=null;m.hover=null;
  for(const a of m.config.actions||[])if(a.type==='detent')setDetent(m,a.id,a.homeIndex);
  setHighlight(m,null);m.scene.updateWorldMatrix(true,true);
 }
@@ -90,6 +99,7 @@ export function setAxis(m,key,value){
  const next=clamp(Number(value),a.range);if(next!==m.offsets[key]&&m.rpm>0)m.moved=true;
  m.offsets[key]=next;object.position.copy(m.initial[a.node].position).addScaledVector(v(a.axis).normalize(),next);
  for(const def of m.config.additions||[])if(def.kind==='sleeve'&&def.drives===key){const group=m.lookup[def.name],length=def.top[1]-def.bottomY-next;group.position.y=def.top[1]-length/2;group.children[0].scale.y=length;}
+ for(const def of m.config.additions||[])if(def.kind==='supportColumn'&&def.drives===key){const group=m.lookup[def.name],rest=m.restTransforms.get(group),length=def.topY-def.position[1];group.position.y=rest.position.y+next/2;group.children[0].scale.y=(length+next)/length;}
  m.scene.updateWorldMatrix(true,true);
 }
 export function turnControl(m,key,direction,delta,teaching=false){
@@ -115,10 +125,10 @@ export function setAxisAndWheel(m,key,value,teaching=false){
 }
 export function stepMachine(m,running,rpm,dt,direction=1){
  direction=direction===-1?-1:1;m.direction=direction;
- if(m.emergency){running=false;m.rpm=0;m.signedRpm=0;}
+ if(m.brakeTime>0){m.brakeTime=Math.max(0,m.brakeTime-dt);const action=m.config.actions.find(a=>a.type==='emergency');if(action)m.lookup[action.node].position.y=m.initial[action.node].position.y-.025*Math.min(1,m.brakeTime/.18);}
  const lever=m.config.lever;let delay=0;
  if(lever){const target=running?lever.runAngle*(lever.bidirectional?direction:1):0,rate=Math.abs(lever.runAngle)/lever.duration,remaining=Math.abs(target-m.leverAngle);if(running)delay=Math.min(dt,remaining/rate);m.leverAngle+=Math.sign(target-m.leverAngle)*Math.min(remaining,dt*rate);rotate(m,lever.node,lever.axis,m.leverAngle);}
- const target=running?clamp(rpm,[0,m.config.maxRpm])*direction:0,time=Math.max(0,dt-delay),old=m.signedRpm||0;
+ const target=running?clamp(selectorRpm(m)??rpm,[0,m.config.maxRpm])*direction:0,time=Math.max(0,dt-delay),old=m.signedRpm||0;
  const acceleration=m.config.lesson.accelerationRpmPerSecond;
  m.signedRpm=old+Math.sign(target-old)*Math.min(Math.abs(target-old),acceleration*time);m.rpm=Math.abs(m.signedRpm);
  const arrival=Math.min(time,Math.abs(target-old)/acceleration);
@@ -132,12 +142,13 @@ export function stepReturn(m,heldKey,dt){
  for(const w of m.config.wheels){if(!w.springReturn||w.id===heldKey||m.angles[w.id]===0)continue;const current=m.angles[w.id],next=current-Math.sign(current)*Math.min(Math.abs(current),w.springReturn.speed*dt);m.angles[w.id]=next;setAxis(m,w.drives,next*w.ratio);rotate(m,w.node,w.axis,next);returning=returning||next!==0;}
  return returning;
 }
-export function setDetent(m,key,index){const a=m.config.actions.find(a=>a.id===key&&a.type==='detent');if(!a)return;const next=Number.isInteger(index)?Math.max(0,Math.min(a.degrees.length-1,index)):((m.detents[key]??a.homeIndex)+1)%a.degrees.length;m.detents[key]=next;rotate(m,a.node,a.axis,(a.degrees[next]-a.referenceDegrees)*Math.PI/180);m.scene.updateWorldMatrix(true,true);}
+export function selectorRpm(m){const s=m.config.speedSelectors;return s?s.baseRpm[m.detents[s.gear]??1]*s.multipliers[m.detents[s.mode]??1]:null;}
+export function setDetent(m,key,index){const a=m.config.actions.find(a=>a.id===key&&a.type==='detent');if(!a)return;const next=Math.max(0,Math.min(a.degrees.length-1,Number.isInteger(index)?index:(m.detents[key]??a.homeIndex)-1));m.detents[key]=next;rotate(m,a.node,a.axis,(a.degrees[next]-a.referenceDegrees)*Math.PI/180);m.selectedRpm=selectorRpm(m);updateSelectorScales(m);m.scene.updateWorldMatrix(true,true);}
+export function stepDetent(m,key,direction){const a=m.config.actions.find(a=>a.id===key&&a.type==='detent');if(a)setDetent(m,key,(m.detents[key]??a.homeIndex)+(direction===1?1:-1));}
 export function indexTool(m){const action=m.config.actions?.find(a=>a.type==='index');if(!action)return;m.indexSteps=(m.indexSteps+1)%8;rotate(m,action.node,action.axis,m.indexSteps*action.step);m.scene.updateWorldMatrix(true,true);}
-export function emergencyStop(m){m.emergency=true;m.running=false;m.rpm=0;m.signedRpm=0;const action=m.config.actions?.find(a=>a.type==='emergency');if(action){const n=m.lookup[action.node];n.position.y=m.initial[action.node].position.y-.025;}m.active=null;}
+export function emergencyStop(m){m.emergency=false;m.running=false;m.brakeTime=.35;const action=m.config.actions?.find(a=>a.type==='emergency');if(action){const n=m.lookup[action.node];n.position.y=m.initial[action.node].position.y-.025;}m.active=null;}
 export function releaseEmergency(m){m.emergency=false;const action=m.config.actions?.find(a=>a.type==='emergency');if(action)m.lookup[action.node].position.copy(m.initial[action.node].position);}
 export function safetyStatus(m){
- if(m.emergency)return {level:'danger',text:'緊急煞車已鎖定：主軸已立即停止，解除後才可重新啟動。'};
  const s=m.config.safety;
  if(!s)return {level:m.rpm>0&&m.moved?'caution':'',text:m.rpm>0&&m.moved?'請注意：主軸正在旋轉，機構已進入操作狀態。':'缺少已確認的刀具／工件／夾具距離設定，接近偵測未啟用。'};
  m.scene.updateWorldMatrix(true,true);
@@ -149,9 +160,11 @@ export function setHighlight(m,key){
  if(m.highlighted===key)return;m.highlighted=key;
  for(const [mesh,{original,copy}]of m.materials)mesh.material=original;
  const root=m.controls[key]?.object;if(!root)return;
- root.traverse(mesh=>{if(!mesh.isMesh)return;if(!m.materials.has(mesh)){const original=mesh.material,copy=(Array.isArray(original)?original:[original]).map(mat=>{const c=mat.clone();c.emissive?.set('#30a888');c.emissiveIntensity=.5;return c;});m.materials.set(mesh,{original,copy});}const {original,copy}=m.materials.get(mesh);mesh.material=Array.isArray(original)?copy:copy[0];});
+ root.traverseVisible(mesh=>{if(!mesh.isMesh)return;if(!m.materials.has(mesh)){const original=mesh.material,copy=(Array.isArray(original)?original:[original]).map(mat=>{const c=mat.clone();c.emissive?.set('#30a888');c.emissiveIntensity=.5;return c;});m.materials.set(mesh,{original,copy});}const {original,copy}=m.materials.get(mesh);mesh.material=Array.isArray(original)?copy:copy[0];});
 }
-export function controlFor(object){for(let n=object;n;n=n.parent)if(n.userData.machineControl)return n.userData.machineControl;return null;}
+export function isVisibleObject(object){for(let n=object;n;n=n.parent)if(!n.visible)return false;return !!object;}
+export function visibleHit(ray,scene){return ray.intersectObject(scene,true).find(hit=>isVisibleObject(hit.object));}
+export function controlFor(object){if(!isVisibleObject(object))return null;for(let n=object;n;n=n.parent)if(n.userData.machineControl)return n.userData.machineControl;return null;}
 export function toggleDemoWorkpiece(m,requestedRunning){
  const d=m.config.demoWorkpiece;if(!d||requestedRunning||m.rpm>0||m.leverAngle!==0||!m.lookup[d.mount])return false;
  if(m.workpiece){m.workpiece.removeFromParent();m.workpiece.geometry.dispose();m.workpiece.material.dispose();m.workpiece=null;}

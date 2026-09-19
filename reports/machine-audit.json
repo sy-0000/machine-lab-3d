@@ -184,6 +184,11 @@
         "parent": "CrossSlideAssembly"
       },
       {
+        "name": "ToolPostFixedBase",
+        "found": true,
+        "parent": "CrossSlideAssembly"
+      },
+      {
         "name": "Object_103",
         "found": true,
         "parent": "ToolIndexPivot"
@@ -404,6 +409,11 @@
         "parent": "Scene"
       },
       {
+        "name": "RightSelectorPivot",
+        "found": true,
+        "parent": "Scene"
+      },
+      {
         "name": "SpindlePivot",
         "found": true,
         "parent": "Scene"
@@ -593,10 +603,10 @@
       ]
     },
     "notes": [
-      "已移除燈、圖紙架及其支柱、主軸黃色護蓋。",
-      "左側拉桿以右側單桿外型複製，限定 60／90／120／150 度；未虛構變速齒輪機構。",
-      "外撥／內撥啟動主軸相反方向；中位停止。",
-      "背面新增尾座位置手輪，尾座位置行程 -0.278～0.04；套筒可伸至 -0.11。"
+      "雙凸輪開關各四段 45°，左鍵逆時針、右鍵順時針；端點不循環。",
+      "左桿 125／250／375／500 RPM，右桿倍率 1／2／3／4；屬教學轉速設定。",
+      "舊護蓋、圖紙架、燈具、殘留管線及背板柱保留節點並隱藏。",
+      "刀座底板拆出固定，中心柱支撐升降；尾座位置手輪縮短並改黑色。"
     ],
     "sourceHierarchy": [
       {
@@ -3583,6 +3593,21 @@
         "attachmentError": 0
       },
       {
+        "name": "Head_Assembly",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Head_Part_021",
+        "found": true,
+        "parent": "Head_Assembly"
+      },
+      {
+        "name": "Head_Part_021",
+        "parent": "MillingRightLever",
+        "attachmentError": 0
+      },
+      {
         "name": "Head_Part_000",
         "found": true,
         "parent": "Head_Assembly"
@@ -3690,7 +3715,7 @@
       {
         "name": "Head_Part_021",
         "found": true,
-        "parent": "Head_Assembly"
+        "parent": "MillingRightLever"
       },
       {
         "name": "Head_Part_022",
@@ -4579,7 +4604,7 @@
         "attachmentError": 0
       },
       {
-        "name": "MillingStartLever",
+        "name": "MillingRightLever",
         "found": true,
         "parent": "Head_Assembly"
       },
@@ -4729,7 +4754,7 @@
     "notes": [
       "已從原始 GLB 逐面恢復 UV、法線與貼圖材質，保留 422 個獨立零件。",
       "新增 Z 升降教學手輪，與工作臺升降連動；原合併膝座鑄件保持固定。",
-      "Head_Part_023 握桿依使用者要求作主軸啟停，既有機身開關仍可操作。",
+      "隱藏舊 Head_Part_023 啟動握桿，改用右側既有 Head_Part_021 黑色桿；機身電源開關仍可操作。",
       "手輪導程、握桿用途及新增手輪尺寸仍為教學配置。",
       "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。"
     ],
@@ -6876,6 +6901,16 @@
         "parent": "DrillPress"
       },
       {
+        "name": "FeedShaft",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
+        "name": "FeedHandlePivot",
+        "found": true,
+        "parent": "HeadHousing"
+      },
+      {
         "name": "SpindleAssembly",
         "found": true,
         "parent": "Quill"
@@ -6963,7 +6998,7 @@
           0.1182
         ],
         "axis": [
-          1,
+          -1,
           0,
           0
         ],
@@ -6989,7 +7024,7 @@
         "attachmentError": 0
       },
       {
-        "name": "SwitchLever",
+        "name": "SwitchBody",
         "found": true,
         "parent": "Controls"
       }
@@ -7036,7 +7071,7 @@
           0.1182
         ],
         "axis": [
-          1,
+          -1,
           0,
           0
         ],
@@ -7078,7 +7113,7 @@
     },
     "notes": [
       "已閱讀 drillingREADME.md；握柄按住向下進給，放開彈簧回位。",
-      "SwitchLever 作主軸啟停開關；工作臺 Y 行程為 -0.20～0.18，收窄下限避免穿入底座。",
+      "SwitchBody 為開關本體；SwitchLever 為固定周圍面板，不註冊互動。工作臺 Y 行程 -0.20～0.18。",
       "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
       "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。",
       "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。"

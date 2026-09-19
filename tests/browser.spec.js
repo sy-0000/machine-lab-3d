@@ -60,8 +60,8 @@ test('v2 lathe physical index, right lever and emergency foot brake',async({page
  await open(page,'lathe');
  let p=await visibleControl(page,'toolIndex');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).indexSteps).toBe(1);
  p=await visibleControl(page,'lever');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);
- p=await visibleControl(page,'footBrake');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).emergency).toBe(true);await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
- const angle=(await snap(page)).spindleAngle;await page.waitForTimeout(150);expect((await snap(page)).spindleAngle).toBe(angle);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeDisabled();await page.getByRole('button',{name:'解除煞車'}).click();await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();await reset(page);expect((await snap(page)).indexSteps).toBe(0);
+ p=await visibleControl(page,'footBrake');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).emergency).toBe(false);await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
+ const angle=(await snap(page)).spindleAngle;await page.waitForTimeout(150);expect((await snap(page)).spindleAngle).toBe(angle);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);await reset(page);expect((await snap(page)).indexSteps).toBe(0);
 });
 for(const id of ['milling','drill'])test(`v2 ${id} real model switch and feed`,async({page})=>{
  await open(page,id);let p=await visibleControl(page,'toggle');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);
@@ -72,10 +72,11 @@ for(const id of ['milling','drill'])test(`v2 ${id} real model switch and feed`,a
 });
 
 test('v3 lathe reverse lever, four stops, rear tail wheel and revised limits',async({page})=>{
- await open(page,'lathe');const state=await snap(page);for(const key of ['Object_193','Object_195','Object_164','Object_166'])expect(state.nodes[key]).toBeUndefined();
+ test.setTimeout(240000); // Includes rear-view orbit search and full-page captures.
+ await open(page,'lathe');const state=await snap(page);for(const key of ['Object_193','Object_195','Object_164','Object_166'])expect(state.nodes[key].visible).toBe(false);
  await expect(page.locator('#x')).toHaveAttribute('min','-0.14');await expect(page.locator('#tail')).toHaveAttribute('min','-0.278');await expect(page.locator('#quill')).toHaveAttribute('min','-0.11');
- const selector=page.getByRole('combobox',{name:'左側四段拉桿'});for(const index of [0,1,2,3]){await selector.selectOption(String(index));await expect.poll(async()=>(await snap(page)).detents.gearSelector).toBe(index);}
- let p=await visibleControl(page,'gearSelector');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).detents.gearSelector).toBe(0);
+ const selector=page.getByRole('combobox',{name:'左側轉速段位'});for(const index of [0,1,2,3]){await selector.selectOption(String(index));await expect.poll(async()=>(await snap(page)).detents.gearSelector).toBe(index);}
+ let p=await visibleControl(page,'gearSelector');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).detents.gearSelector).toBe(2);
  p=await visibleControl(page,'lever');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).signedRpm).toBeGreaterThan(100);
  p=await visibleControl(page,'lever');await page.mouse.click(p.x,p.y,{button:'right'});await expect.poll(async()=>(await snap(page)).signedRpm).toBeLessThan(-100);
  await page.getByRole('button',{name:'■ 停止主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
@@ -89,4 +90,18 @@ test('v3 milling textured model, Z wheel and physical start lever',async({page})
 });
 test('v3 drill table handle follows every table height',async({page})=>{
  await open(page,'drill');const before=await snap(page);await page.locator('#table').fill('0.12');for(const key of ['TableClampHandle','TableSurfaceDetail'])await expect.poll(async()=>(await snap(page)).nodes[key].world[1]).toBeCloseTo(before.nodes[key].world[1]+.12,6);expect((await snap(page)).nodes.HeadInternalSupport.world).toEqual(before.nodes.HeadInternalSupport.world);await page.screenshot({path:'reports/v3-drill-ui.png',fullPage:true});
+});
+
+test('cam switches: real left/right clicks clamp endpoints and update RPM in motion',async({page})=>{
+ test.setTimeout(240000); // Twelve physical picks while the full GLB is animating.
+ await open(page,'lathe');await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
+ for(const [key,label] of [['gearSelector','左側轉速段位'],['speedMode','右側速度模式']]){
+  await page.getByRole('combobox',{name:label}).selectOption('1');
+  for(const [button,index] of [['left',0],['left',0],['right',1],['right',2],['right',3],['right',3]]){
+   const p=await visibleControl(page,key);await page.mouse.click(p.x,p.y,{button});await expect.poll(async()=>(await snap(page)).detents[key]).toBe(index);
+  }
+ }
+ await expect.poll(async()=>(await snap(page)).targetRpm).toBe(2000);await expect.poll(async()=>(await snap(page)).rpm).toBe(2000);
+ await page.getByRole('button',{name:'腳踏煞車（減速停止）'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBe(0);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();
+ await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);await reset(page);await expect.poll(async()=>(await snap(page)).targetRpm).toBe(500);
 });
