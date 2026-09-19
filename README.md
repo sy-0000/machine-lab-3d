@@ -124,4 +124,4 @@ npm run preview
 
 這是教學模擬，行程與進給比例不是已校正的實機數值。尚未實作真正切削與切屑；工件碰撞提示不是完整物理模擬。
 
-最初模型來源紀錄：3D model “lathe” by Oleg，CC BY 4.0，[來源](https://sketchfab.com/3d-models/lathe-cfaed4ba749a46f2baf4012bedd00b6d)。現行替換模型與其他機台由使用者提供，授權尚待來源文件確認；舊模型紀錄不代表現行模型已取得相同授權。
+- [第三方模型授權與來源](ASSETS_LICENSE.md)
