@@ -1,104 +1,127 @@
-# MACHINE LAB｜工具機 3D 互動教學網站
+# MACHINE LAB｜工具機 3D 互動教學
 
-React、Vite、Three.js、React Three Fiber、Drei 純前端專案。首頁選擇車床、銑床或鑽床，三者共用模型載入、相機、操作與動畫核心。
+React、Vite、Three.js、React Three Fiber 與 Drei 製作的純前端網站，提供工安守則、刀具介紹、關卡預覽，以及車床、銑床、鑽床互動教室。套件版本為 3.0.0，模組架構名稱為 Machine System v1.0。
 
-## 安裝與啟動
+首頁不下載機台模型，進入加工教室後才載入。關卡頁目前是內容與規格預覽，尚未實作切削變形、評分或過關判定。
 
-使用 Node.js 22.12+，在 `Assets/lathe-learning` 執行：
+## 專案根目錄與啟動
 
-```bash
-npm install
+本機根目錄是 `Assets/lathe-learning/`，也是 `.git`、`package.json` 所在位置。上傳的是這個資料夾的內容；組員 clone 後直接進入 clone 出來的資料夾，不必再找一層 `Assets/lathe-learning`。
+
+準備 Node.js 22.12+、Git、Git LFS，在專案根目錄執行：
+
+```powershell
+git lfs install
+git lfs pull
+npm ci
 npm run dev
 ```
 
-開啟終端機顯示的網址（通常 http://localhost:5173/）。不要直接開啟 dist/index.html；GLB 載入需要 HTTP 伺服器。
+開啟終端機顯示的網址，通常為 `http://localhost:5173/`。用 `npm ci` 依照 `package-lock.json` 安裝，不要手改 lockfile。首次 clone 和 GitHub 上傳步驟見 [LFS 與協作指南](docs/GITHUB_AND_LFS.md)。
 
-```bash
-npm run build
-npm run preview
-```
+## 組員要修改哪裡？
 
-部署完整 `dist/` 至靜態 HTTP(S) 主機。相對 base 與 hash 路由支援子目錄，不需後端路由規則。首頁不下載模型；選擇機器才載入。目前銑床已恢復內嵌貼圖及 UV，約 190 MB；首次下載需要較多時間。
+| 頁面／功能 | 路由 | 編輯位置 |
+| --- | --- | --- |
+| 首頁、導覽列、路由 | `#/` | `src/App.jsx` |
+| 首頁機台名稱、簡介、排序 | `#/` | `src/machines/catalog.js` |
+| 工安守則 | `#/safety` | `src/pages/SafetyPage.jsx` |
+| 刀具介紹版面 | `#/tools` | `src/pages/ToolsPage.jsx` |
+| 刀具名稱、說明、尺寸與用途 | `#/tools` | `src/tools/tool.config.js` |
+| 關卡選擇／預覽、範例資料 | `#/levels` | `src/pages/LevelsPage.jsx`，資料在 `SAMPLE_LEVELS` |
+| 加工教室、機台切換、狀態區 | `#/game`、`#/lathe`、`#/milling`、`#/drill` | `src/pages/GameWorkspace.jsx` |
+| 操作控制台與按鈕 | 加工教室 | `src/components/ControlPanel.jsx` |
+| 場景、相機與光線 | 加工教室 | `src/components/MachineScene.jsx` |
+| 3D 點選、拖曳與動畫 | 加工教室 | `src/components/MachineModel.jsx` |
+| 操作事件與 React 狀態 | 加工教室 | `src/hooks/useMachineControls.js` |
+| 開發者掛載面板 | 加工教室 | `src/components/DeveloperPanel.jsx` |
+| 全站配色、卡片與響應式版面 | 全站 | `src/styles/app.css` |
 
-## 版本
+只改文案與排版，優先修改 `src/pages/` 與 CSS。刀具介紹由刀具目錄產生，新增資料請改 `tool.config.js`。關卡的進入按鈕目前只開啟對應機台，不會自動執行關卡。
 
-修改前已建立獨立 Git 儲存庫，第一版 commit `4ba2985`，標籤 `v1.0.0`。第二版標籤 `v2.0.0` 保留；第三版標籤為 `v3.0.0`，詳見下方修正。尚未設定遠端或上傳。舊資料整理於 `todelete/`，詳見其中清單；移動資料沒有刪除。
+## 3D 模型與機械設定
 
-## 本次細節修正
+下表模型和 JSON 路徑均相對於 `public/models/`：
 
-- 車床兩支轉速桿各四個卡位：左鍵逆時針 −45°、右鍵順時針 +45°，端點不循環。左桿設定 125／250／375／500 RPM，右桿選 ×1／×2／×3／×4，組合範圍 125～2000 RPM，重設為 500 RPM。這是教學設定，不是實機速率表。
-- 兩支桿上方增加四格扇形刻度與選中顏色，倍率改變時同步更新 RPM 數字；Canvas Texture 隨模型卸載釋放。
-- 圖紙架、燈、殘留管線、背板立柱與舊握桿均保留來源節點，以 `visible = false` 隱藏；隱藏物件也不擋住滑鼠射線。
-- 腳踏煞車改為逐漸停止，不鎖定；可直接透過啟動桿或啟動按鈕再次運轉。
-- 從刀座 `Object_103` 拆出固定底板，補上底板封面與較細的伸縮中心柱；只讓上層刀座升降、分度。
-- 背面尾座位置手輪縮短軸向距離並改黑色；銑床隱藏舊 `Head_Part_023`，改用右側既有 `Head_Part_021` 黑色桿啟停。
-- 鑽床反向旋轉進給握柄，`FeedShaft` 軸心一起轉動；開關改選 `SwitchBody` 本體，周圍 `SwitchLever` 面板不再高亮或觸發。
+| 機台 | 模型 | 零件／行程設定 | 掛載點與控制器 |
+| --- | --- | --- | --- |
+| 車床 | `machines/lathe/lathe.glb` | `lathe_parts.json` | `src/machines/lathe/` |
+| 銑床 | `machines/milling/milling.glb` | `milling_split_controls.json` | `src/machines/milling/` |
+| 鑽床 | `machines/drill/drill.glb` | `drill_press_parts.json` | `src/machines/drill/` |
 
-詳細節點及驗證見 [本次修正紀錄](reports/refinements-verification.md)。
+三個 GLB 是現行模型唯一來源，透過 Git LFS 儲存；銑床約 181 MiB。不要另存模型到舊路徑。
 
-## 第三版修正（歷史紀錄）
+- `src/machines/core/`：機台載入、註冊、卸載、刀具與工件掛載。
+- `src/machines/runtime.js`：各軸運動、主軸、刀架、煞車與示範工件。
+- `src/machines/config.js`：將三種 JSON 轉為共用結構。
+- `src/lathe.js`、`src/latheParts.js`：現行車床幾何轉接與預設資料，**仍在使用，不可當舊檔刪除**。
+- `src/tools/`、`src/workpieces/`：模組刀具與工件。`src/machines/cuttingTools.js` 建立機台預設教學刀具。
+- `public/models/deliver_milling_machine_split/`：保留來源 README 與節點 manifest；模型稽核仍使用 manifest。
 
-- 車床移除燈／圖紙架／黃色護蓋，左側改單桿並限定 60、90、120、150 度。
-- 主軸桿左鍵外撥正轉、右鍵內撥反轉，同向再點停止；手機面板有正反轉按鈕。
-- X 下限 -0.14；尾座位置下限 -0.278；套筒可伸到 -0.11；背面新增尾座位置手輪。
-- 銑床逐面恢復原 UV、貼圖與法線，新增 Z 升降手輪和啟動握桿。
-- 鑽床工作臺鎖緊手把及細節現在跟隨工作臺升降。
+掛載設定的 `position` 是相對父節點的局部座標，不能直接填世界座標。修改機械資料後需跑測試與模型稽核。
 
-完整零件與軸向見 [第三版對照](reports/v3-model-mapping.md)。
+## 操作與驗證
 
-## 共用操作
+空白處拖曳旋轉視角、滾輪縮放、右鍵拖曳平移。手輪可用滑鼠或控制台長按操作；車床刀架每次轉 10°。工件只能在主軸停止且啟動桿回位後裝卸。重設會恢復操作位置與相機，移除示範工件。
 
-- 空白處拖曳旋轉、滾輪縮放、右鍵拖曳平移；手機雙指縮放及平移。
-- 可操作零件會高亮、顯示繁體中文說明。手輪左鍵按住負向、右鍵按住正向；面板提供手機及鍵盤可用的雙向按鈕。
-- 車床：`Object_103` 上半部與上方零件一起升降；拆出的 `ToolPostFixedBase` 及底座 `Object_101/147` 不參與升降與旋轉。點刀座或面板按鈕，每次由上往下看往右轉 45°，八次一圈。
-- 尾座負向行程改為 −0.278；高度範圍為 0～0.06。手輪右側長桿 `Object_129/131/133/135` 改作主軸啟停，跟隨溜板移動。
-- 車床正面底部新增紅色橫向腳踏煞車。點它會漸進減速停止，踏板自動回位；可直接再次啟動，不需解除鎖定。這是新增教學幾何，不是原 GLB 零件。
-- 鑽床：按住進給握柄或「按住下降」按鈕，套筒、夾頭及鑽頭下降；放開、取消或失焦自動回位。補入伸縮套筒，下降時保持連接。點 `SwitchBody` 切換主軸；工作臺高度滑桿已啟用。
-- 銑床：新拆件模型的左右 X 手輪、前方 Y 手輪均可操作；點右側黑色桿或機身電氣盒上的開關啟停主軸。Z 升降可用新增手輪或面板滑桿控制。
-- 停止主軸會減速並保留角度；腳踏煞車同樣漸進減速。重設恢復全部位置、角度、相機與 500 RPM，移除示範工件。
-
-## 模型、設定與節點核對
-
-| 機器 | public/models 中的模型 | 控制設定 | 原始節點 / Mesh | 缺少參照 |
-| --- | --- | --- | --- | --- |
-| 車床 | lathe_16k20_dark_green_no_backboard.glb | lathe_parts.json | 182 / 172 | 0 |
-| 銑床 | deliver_milling_machine_split/milling_machine_textured.glb | milling_split_controls.json | 422 / 422 | 0 |
-| 鑽床 | drill_press_interactive.glb | drill_press_parts.json | 62 / 42 | 0 |
-
-車床原始 GLB 有兩個未掛入場景的背板紀錄。新增功能群組與教學幾何由設定檔明確建立，不冒充原始 GLB 節點。逐項參照、世界 Pivot、父子關係與掛接誤差見 [machine-audit.json](reports/machine-audit.json)。新版機械對照與限制見 [v3-model-mapping.md](reports/v3-model-mapping.md)。
-
-已讀取使用者提供的 `drillingREADME.md`、`millingREADME.md`、`lathe_16k20_dark_green_README.md`，以及新拆件資料夾內 `README.txt` 與 manifest。舊 millingREADME 描述舊語意分組，不可直接套用新模型。
-
-新銑床依三角形世界座標對照舊來源、逐件隔離檢視後，明列功能成員。未以距離相近分組。使用者提供的拆件 GLB 原本不含 UV、法線與材質；第三版從舊 GLB 逐三角形轉回原始屬性與內嵌貼圖，共 1,445,428 面完整匹配。後柱另補回兩張底色，四張缺失底色使用相近漆色並保留原法線，未假稱完整還原其鏽斑。舊中性材質不再覆蓋新材質。
-
-## 架構
-
-`src/machines/catalog.js` 指定模型及 JSON；`config.js` 正規化設定；`runtime.js` 處理群組、獨立 Pivot、行程、世界距離、煞車及回位。`MachineScene`、`MachineModel`、`ControlPanel`、`PartTooltip` 和 `useMachineControls` 三台共用。
-
-初始位置、角度、比例均複製保存；變換採初始值加偏移，動畫使用 useFrame/delta。掛接驗證世界矩陣不變。車床 `lathe.js` 仍用於原模型幾何轉接；旧專用 React 元件已移至 todelete，現用流程不依賴它們。
-
-## 安全與校正限制
-
-車床以世界 Box3 計算刀座到夾頭／示範工件的間隙，黃紅閾值 0.07 / 0.02。銑床缺少已確認刀具、虎鉗與工件；鑽床缺少工件及夾具，兩者保留運轉進給提示，但接近距離警告未啟用。
-
-手輪導程、行程、開關功能對應、腳踏煞車尺寸及套筒尺寸是本版教學設定，仍需實機校正。銑床 Z 手輪為本版新增教學幾何；膝座鑄件與底座合併，Z 僅移動已分離的鞍座／工作臺。鑽床沒有獨立工作臺升降手輪，使用滑桿。未驗證實體手機，瀏覽器觸控模擬結果見測試紀錄。
-
-## 測試
-
-```bash
+```powershell
 npm test
 npm run audit:models
 npm run build
 ```
 
-瀏覽器測試（PowerShell，瀏覽器安裝留在專案內）：
+瀏覽器測試（第一次先安裝 Chromium）：
 
 ```powershell
-$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path (Get-Location) '.playwright-browsers'
 npx playwright install chromium
 npm run test:browser
 ```
 
-測試使用真實 GLB；開發模式 `?inspect=1` 提供唯讀快照，沒有直接變更狀態的測試後門。實際結果見 [v3-verification.md](reports/v3-verification.md)。
+測試自行啟動 Vite，預設連接埠 5220。如已占用：
 
-最初指定模型的授權記錄：3D model “lathe” by Oleg, licensed under CC BY 4.0. [原來源](https://sketchfab.com/3d-models/lathe-cfaed4ba749a46f2baf4012bedd00b6d)。目前替換模型及其他兩台模型的授權仍請依提供來源確認。
+```powershell
+$env:PLAYWRIGHT_PORT = "5237"
+npm run test:browser
+Remove-Item Env:PLAYWRIGHT_PORT
+```
+
+開發網址加上 `?inspect=1` 可啟用診斷，例如 `http://localhost:5173/?inspect=1#/lathe`。`reports/` 保存稽核與歷史截圖，`tests/` 放瀏覽器測試。`dist/`、依賴與測試暫存不提交。
+
+## GitHub 與協作
+
+詳見 [GitHub 與 Git LFS 上傳指南](docs/GITHUB_AND_LFS.md)。目前已設定 `*.glb` 的 LFS 規則，但舊提交仍含普通 Git 大檔；首次推送前需依指南遷移歷史，僅刪除工作目錄的舊模型並不足夠。
+
+組員日常流程：
+
+```powershell
+git switch main
+git pull --ff-only
+git switch -c feature/safety-content
+# 修改對應頁面後
+npm test
+npm run build
+git add src/pages/SafetyPage.jsx
+git commit -m "Update safety page content"
+git push -u origin feature/safety-content
+```
+
+在 GitHub 建立 Pull Request，檢查後合併。各人使用獨立分支；修改共同的 `App.jsx`、`app.css` 或大型模型前先協調。更新 GLB 後照常 add、commit、push，LFS hook 會處理內容。
+
+## 部署
+
+```powershell
+npm run build
+npm run preview
+```
+
+部署完整 `dist/` 至 HTTP(S) 靜態主機，不要直接雙擊 HTML。相對 base 與 hash 路由支援子目錄。上傳程式到 GitHub 不等於部署網站；部署平台建置前也必須下載 LFS 模型，否則會把指標文字當成 GLB。
+
+## 文件與限制
+
+- [封版紀錄與清理清單](docs/MACHINE_SYSTEM_V1_RELEASE.md)
+- [架構文件](docs/ARCHITECTURE.md)
+- [機台介面契約](docs/MACHINE_CONTRACT.md)
+
+這是教學模擬，行程與進給比例不是已校正的實機數值。尚未實作真正切削與切屑；工件碰撞提示不是完整物理模擬。
+
+最初模型來源紀錄：3D model “lathe” by Oleg，CC BY 4.0，[來源](https://sketchfab.com/3d-models/lathe-cfaed4ba749a46f2baf4012bedd00b6d)。現行替換模型與其他機台由使用者提供，授權尚待來源文件確認；舊模型紀錄不代表現行模型已取得相同授權。

@@ -15,7 +15,7 @@ export default function MachineDebug({model,controls,orbit}){
   if(!controls.held.current&&key!==cache.current.key&&now-pending.current.since>=120){
    const ray=new Raycaster(),picks={};
    for(const [id,part]of Object.entries(model.controls)){
-    let budget=128;picks[id]=[];part.object.traverse(mesh=>{
+    let budget=128;picks[id]=[];for(const root of part.pickRoots||[part.object])root.traverse(mesh=>{
      if(!mesh.isMesh||!isVisibleObject(mesh)||picks[id].length||budget<=0)return;
      const a=mesh.geometry.attributes.position,index=mesh.geometry.index,count=index?.count||a.count;
      for(let j=0;j+2<count&&budget>0;j+=Math.max(1,Math.floor(count/120))*3){

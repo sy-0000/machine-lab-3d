@@ -20,6 +20,24 @@ for(const [id,axis,wheel]of [['lathe','x','carriageHandwheel'],['milling','X_Axi
  if(id==='drill')await expect(page.locator('#table')).toBeEnabled();
  await page.screenshot({path:`reports/${id}-shared.png`,fullPage:true});expect(errors).toEqual([]);
 });
+test('lathe: demo workpiece unlocks after stopping without another interaction',async({page})=>{
+ await open(page,'lathe');
+ const workpiece=page.locator('.workpiece-button');
+ for(const stopName of ['■ 停止主軸','腳踏煞車（減速停止）','■ 停止主軸']){
+  await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
+  await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);
+  await expect(workpiece).toBeDisabled();
+  await page.getByRole('button',{name:stopName,exact:true}).click();
+  // No mouse movement or other control action may be needed to unlock the button.
+  await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
+  await expect(workpiece).toBeEnabled();
+  await workpiece.click();
+  await expect(workpiece).toHaveText('卸下示範工件');
+  await workpiece.click();
+  await expect(workpiece).toHaveText('裝上示範工件');
+ }
+});
+
 test('real canvas mouse hold, tooltip, context menu, cancellation and orbit restoration',async({page})=>{
  await open(page,'lathe');
  async function point(){await expect.poll(async()=>(await snap(page)).picks.carriageHandwheel.length).toBeGreaterThan(0);return(await snap(page)).picks.carriageHandwheel[0];}
@@ -34,7 +52,7 @@ test('mobile touch buttons stop on touch cancel; responsive navigation',async({p
  await open(page,'drill');await page.setViewportSize({width:390,height:844});const button=page.locator('.hold-button').first();await button.scrollIntoViewIfNeeded();const box=await button.boundingBox();
  const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+box.width/2,y:box.y+box.height/2,id:1}]});await expect.poll(async()=>(await snap(page)).angles.feed).toBeLessThan(0);await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);const stopped=(await snap(page)).angles.feed;await page.waitForTimeout(150);await expect.poll(async()=>(await snap(page)).angles.feed).toBe(0);const reverse=await page.locator('.hold-button').last().boundingBox();await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:reverse.x+reverse.width/2,y:reverse.y+reverse.height/2,id:2}]});await expect.poll(async()=>(await snap(page)).angles.feed).toBe(0);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:'reports/mobile-shared.png',fullPage:true});await page.getByRole('link',{name:'← 返回機器選單'}).click();await expect(page.locator('.machine-card')).toHaveCount(3);
 });
-test('missing GLB is explicit and controls disabled',async({page})=>{await page.route('**/drill_press_interactive.glb',r=>r.fulfill({status:404,body:'missing'}));await page.goto('/#/drill');await expect(page.getByRole('alert')).toContainText('模型讀取失敗');await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeDisabled();});
+test('missing GLB is explicit and controls disabled',async({page})=>{await page.route('**/drill.glb',r=>r.fulfill({status:404,body:'missing'}));await page.goto('/#/drill');await expect(page.getByRole('alert')).toContainText('模型讀取失敗');await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeDisabled();});
 test('orbit rotation zoom pan and camera reset',async({page})=>{
  await open(page,'drill');const initial=(await snap(page)).camera,box=await page.locator('canvas').boundingBox(),x=box.x+40,y=box.y+100;
  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+90,y+40,{steps:6});await page.mouse.up();await expect.poll(async()=>(await snap(page)).camera).not.toEqual(initial);
@@ -58,7 +76,7 @@ async function visibleControl(page,key){
 }
 test('v2 lathe physical index, right lever and emergency foot brake',async({page})=>{
  await open(page,'lathe');
- let p=await visibleControl(page,'toolIndex');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).indexSteps).toBe(1);
+ let p=await visibleControl(page,'toolIndex');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).indexSteps).toBe(-1);
  p=await visibleControl(page,'lever');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);
  p=await visibleControl(page,'footBrake');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).emergency).toBe(false);await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
  const angle=(await snap(page)).spindleAngle;await page.waitForTimeout(150);expect((await snap(page)).spindleAngle).toBe(angle);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);await reset(page);expect((await snap(page)).indexSteps).toBe(0);
@@ -95,13 +113,43 @@ test('v3 drill table handle follows every table height',async({page})=>{
 test('cam switches: real left/right clicks clamp endpoints and update RPM in motion',async({page})=>{
  test.setTimeout(240000); // Twelve physical picks while the full GLB is animating.
  await open(page,'lathe');await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
- for(const [key,label] of [['gearSelector','左側轉速段位'],['speedMode','右側速度模式']]){
+ for(const [key,label] of [['gearSelector','左側轉速段位'],['speedMode','HIGH / LOW 速度模式']]){
   await page.getByRole('combobox',{name:label}).selectOption('1');
-  for(const [button,index] of [['left',0],['left',0],['right',1],['right',2],['right',3],['right',3]]){
+  for(const [button,index] of (key==='speedMode'?[['left',0],['left',0],['right',1],['right',1]]:[['left',0],['left',0],['right',1],['right',2],['right',3],['right',3]])){
    const p=await visibleControl(page,key);await page.mouse.click(p.x,p.y,{button});await expect.poll(async()=>(await snap(page)).detents[key]).toBe(index);
   }
  }
  await expect.poll(async()=>(await snap(page)).targetRpm).toBe(2000);await expect.poll(async()=>(await snap(page)).rpm).toBe(2000);
  await page.getByRole('button',{name:'腳踏煞車（減速停止）'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBe(0);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();
  await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);await reset(page);await expect.poll(async()=>(await snap(page)).targetRpm).toBe(500);
+});
+
+test('tooling: full lathe post lifts and rotates ten degrees in both directions then resets',async({page})=>{
+ await open(page,'lathe');const initial=await snap(page);
+ await page.locator('#z').fill('0.06');
+ for(const name of ['ToolPostLowerBlock','TurningTool','TurningTool_Shim_Bottom'])await expect.poll(async()=>(await snap(page)).nodes[name].world[1]).toBeCloseTo(initial.nodes[name].world[1]+.06,5);
+ expect((await snap(page)).nodes.Object_101.world).toEqual(initial.nodes.Object_101.world);
+ let p=await visibleControl(page,'toolIndex');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).indexSteps).toBe(-1);
+ const left=await snap(page);for(const name of ['ToolPostLowerBlock','TurningTool','TurningTool_Shim_Bottom'])expect(left.nodes[name].quaternion).not.toEqual(initial.nodes[name].quaternion);
+ p=await visibleControl(page,'toolIndex');await page.mouse.click(p.x,p.y,{button:'right'});await expect.poll(async()=>(await snap(page)).indexSteps).toBe(0);
+ await reset(page);for(const name of ['ToolPostLowerBlock','TurningTool','TurningTool_Shim_Bottom']){expect((await snap(page)).nodes[name].world).toEqual(initial.nodes[name].world);expect((await snap(page)).nodes[name].quaternion).toEqual(initial.nodes[name].quaternion);}
+});
+test('tooling: milling Z leaves Y controls fixed and spindle turns the cutter alone',async({page})=>{
+ await open(page,'milling');const initial=await snap(page);
+ await page.locator('#Knee_Z_Slide').fill('0.12');await expect.poll(async()=>(await snap(page)).nodes.X_Axis_Table.world[1]).toBeCloseTo(initial.nodes.X_Axis_Table.world[1]+.12,5);
+ for(const name of ['MillingYControlsFixed','Y_Handwheel_Group','ZLiftWheel'])expect((await snap(page)).nodes[name].world).toEqual(initial.nodes[name].world);
+ const p=await visibleControl(page,'lever');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);
+ const cutterName=(await snap(page)).nodes.FaceMill?'FaceMill':'EndMill';
+ await expect.poll(async()=>(await snap(page)).nodes[cutterName].quaternion).not.toEqual(initial.nodes[cutterName].quaternion);
+ expect((await snap(page)).nodes.Head_Assembly.quaternion).toEqual(initial.nodes.Head_Assembly.quaternion);
+ await reset(page);for(const name of [cutterName,'X_Axis_Table'])expect((await snap(page)).nodes[name].world).toEqual(initial.nodes[name].world);
+ expect((await snap(page)).nodes[cutterName].quaternion).toEqual(initial.nodes[cutterName].quaternion);
+});
+test('tooling: drill bit spins, feeds, returns and resets',async({page})=>{
+ await open(page,'drill');const initial=await snap(page);
+ await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).nodes.TwistDrill.quaternion).not.toEqual(initial.nodes.TwistDrill.quaternion);
+ await page.locator('#wheel-choice').selectOption('feed');await page.locator('.hold-button').first().focus();await page.keyboard.down('Space');
+ await expect.poll(async()=>(await snap(page)).nodes.TwistDrill.world[1]).toBeLessThan(initial.nodes.TwistDrill.world[1]-.005);
+ await page.keyboard.up('Space');await expect.poll(async()=>(await snap(page)).nodes.TwistDrill.world[1]).toBeCloseTo(initial.nodes.TwistDrill.world[1],5);
+ await reset(page);expect((await snap(page)).nodes.TwistDrill.world).toEqual(initial.nodes.TwistDrill.world);expect((await snap(page)).nodes.TwistDrill.quaternion).toEqual(initial.nodes.TwistDrill.quaternion);
 });

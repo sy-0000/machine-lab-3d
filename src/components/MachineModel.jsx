@@ -21,14 +21,14 @@ export default function MachineModel({model,controls,orbit}) {
    if(e.pointerType==='touch'&&part.type==='wheel'&&!part.springReturn&&armed!==key){armed=key;return;}
    if(part.needsCalibration&&!latest.current.teaching)return;
    pointer=e.pointerId;canvas.setPointerCapture(pointer);if(orbit.current)orbit.current.enabled=false;
-   if(part.type==='wheel'){const direction=e.button===2?1:-1;latest.current.held.current={key,direction};model.active=key;turnControl(model,key,direction,.025,latest.current.teaching);}else if(part.type==='detent')latest.current.detentStep(key,e.button===2?1:-1);else if(part.type==='index')latest.current.index();else if(part.type==='emergency')latest.current.brake();else latest.current.toggle(e.button===2?-1:1);
+   if(part.type==='wheel'){const direction=e.button===2?1:-1;latest.current.held.current={key,direction};model.active=key;turnControl(model,key,direction,.025,latest.current.teaching);}else if(part.type==='detent')latest.current.detentStep(key,e.button===2?1:-1);else if(part.type==='index')latest.current.index(e.button===2?1:-1);else if(part.type==='emergency')latest.current.brake();else latest.current.toggle(e.button===2?-1:1);
    canvas.style.cursor='grabbing';latest.current.refresh();update(key,e.clientX,e.clientY);
   }
   function move(e){if(pointer!==null){e.stopImmediatePropagation();return;}const key=hit(e);canvas.style.cursor=key?'grab':'';update(key,e.clientX,e.clientY);}
   function up(e){if(pointer!==e.pointerId)return;e.stopImmediatePropagation();if(e.button===2)rightRelease=performance.now();finish();}
   function cancel(e){if(pointer!==null&&e.pointerId!==pointer)return;finish();}
   function blur(){finish();armed=null;update(null);}
-  function context(e){if(['wheel','lever','detent'].includes(model.controls[hit(e)]?.type)||latest.current.held.current||rightRelease&&performance.now()-rightRelease<500)e.preventDefault();e.stopImmediatePropagation();rightRelease=null;}
+  function context(e){if(['wheel','lever','detent','index'].includes(model.controls[hit(e)]?.type)||latest.current.held.current||rightRelease&&performance.now()-rightRelease<500)e.preventDefault();e.stopImmediatePropagation();rightRelease=null;}
   const events={pointerdown:down,pointermove:move,pointerup:up,pointercancel:cancel,lostpointercapture:cancel,pointerleave:()=>{if(pointer===null)update(null);},contextmenu:context};
   Object.entries(events).forEach(([type,fn])=>canvas.addEventListener(type,fn,true));window.addEventListener('blur',blur);
   return()=>{release();setHighlight(model,null);Object.entries(events).forEach(([type,fn])=>canvas.removeEventListener(type,fn,true));window.removeEventListener('blur',blur);latest.current.release.current=()=>{};latest.current.invalidate.current=()=>{};};
@@ -40,7 +40,9 @@ export default function MachineModel({model,controls,orbit}) {
   stepMachine(model,c.running,c.rpm,dt,c.direction);
   const active=returning||!!held||c.running||model.rpm>0||model.leverAngle!==0||model.brakeTime>0;
   elapsed.current+=delta;const signature=JSON.stringify([Math.round(model.rpm),model.leverAngle,model.offsets,model.angles]);
-  if(signature!==published.current&&(elapsed.current>.08||!active)){elapsed.current=0;published.current=signature;c.refresh();}
+  // The final RPM can round to the same value as the preceding frame.
+  // Publish the stop transition so controls unlock even when the signature is unchanged.
+  if((previousActive.current&&!active)||(signature!==published.current&&(elapsed.current>.08||!active))){elapsed.current=0;published.current=signature;c.refresh();}
   previousActive.current=active;if(active)invalidate();
  });
  return <group position={model.center.clone().negate().toArray()}><primitive object={model.scene} dispose={null}/></group>;

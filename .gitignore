@@ -1,6 +1,38 @@
+# Dependencies
 node_modules/
-dist/
 .npm-cache/
 .playwright-browsers/
+
+# Production build outputs
+dist/
+
+# Test outputs & reports
 test-results/
 playwright-report/
+
+# Caches
+.cache/
+cache/
+.vite/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Blender autosave & backup files
+*.blend1
+*.blend2
+*.blend@
+*.blend*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo

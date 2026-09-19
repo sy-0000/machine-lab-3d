@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-export const MODEL_FILE = new URL('../public/models/lathe_16k20_dark_green_no_backboard.glb',import.meta.url);
+export const MODEL_FILE = new URL('../public/models/machines/lathe/lathe.glb',import.meta.url);
 export function readGLB(file=MODEL_FILE) { const bytes=readFileSync(file); const json=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)).toString()); return {bytes,json}; }
 export async function loadSource(file=MODEL_FILE) {
   const {bytes,json}=readGLB(file);

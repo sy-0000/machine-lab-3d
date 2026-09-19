@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "model": "lathe_16k20_dark_green_no_backboard.glb",
+  "model": "machines/lathe/lathe.glb",
   "provenance": "Migrated without changing existing verified latheParts.js and reports/part-mapping.md settings",
   "parts": {
     "spindle": {
@@ -187,8 +187,7 @@
       "objects": [
         "Object_101",
         "Object_147",
-        "Object_143",
-        "ToolPostFixedBase"
+        "Object_143"
       ],
       "parent": "CarriageAssembly"
     },
@@ -200,7 +199,8 @@
         "Object_152",
         "Object_154",
         "Object_156",
-        "Object_157"
+        "Object_157",
+        "ToolPostLowerBlock"
       ],
       "parent": "CrossSlideAssembly"
     },
@@ -272,10 +272,11 @@
     }
   },
   "manualReview": [
-    "雙凸輪開關各四段 45°，左鍵逆時針、右鍵順時針；端點不循環。",
-    "左桿 125／250／375／500 RPM，右桿倍率 1／2／3／4；屬教學轉速設定。",
-    "舊護蓋、圖紙架、燈具、殘留管線及背板柱保留節點並隱藏。",
-    "刀座底板拆出固定，中心柱支撐升降；尾座位置手輪縮短並改黑色。"
+    "依使用者參考圖配置：綠色原機殼、小型黑底檔位標牌與 RPM 表；隱藏舊灰白標牌。",
+    "HIGH / LOW → 四檔 RPM → 主軸轉速；LOW 250／500／750／1000、HIGH 500／1000／1500／2000，沿用既有教學數值。",
+    "握把、金屬桿、旋轉座共同操作，透明 hitbox 擴大點擊範圍，不放大可見零件。",
+    "完整刀座含下層小塊與車刀，左鍵左轉 10°、右鍵右轉 10°；中心柱維持與底座連接。",
+    "所有隱藏來源節點保留；重設恢復位置、角度及 LOW 500 RPM。"
   ],
   "safety": {
     "tool": "ToolHeightAssembly",
@@ -317,7 +318,8 @@
         "Object_152",
         "Object_154",
         "Object_156",
-        "Object_157"
+        "Object_157",
+        "ToolPostLowerBlock"
       ]
     }
   ],
@@ -331,8 +333,9 @@
         1,
         0
       ],
-      "step": -0.7853981633974483,
-      "label": "刀座右轉 45°"
+      "step": -0.17453292519943295,
+      "label": "刀座左右旋轉 10°",
+      "bidirectional": true
     },
     {
       "id": "footBrake",
@@ -358,7 +361,11 @@
       ],
       "homeIndex": 1,
       "referenceDegrees": 0,
-      "bidirectional": true
+      "bidirectional": true,
+      "targets": [
+        "Object_32"
+      ],
+      "hitPadding": 0.008
     },
     {
       "id": "speedMode",
@@ -369,16 +376,18 @@
         0,
         -1
       ],
-      "label": "右側速度模式",
+      "label": "HIGH / LOW 速度模式",
       "degrees": [
-        -45,
-        0,
-        45,
-        90
+        -22.5,
+        22.5
       ],
-      "homeIndex": 1,
-      "referenceDegrees": 0,
-      "bidirectional": true
+      "homeIndex": 0,
+      "referenceDegrees": -22.5,
+      "bidirectional": true,
+      "targets": [
+        "Object_26"
+      ],
+      "hitPadding": 0.008
     }
   ],
   "additions": [
@@ -417,7 +426,7 @@
       "name": "LeftSelectorPivot",
       "kind": "cloneLever",
       "position": [
-        -0.8534345030784607,
+        -0.64,
         0.7801784574985504,
         0.2213396206498146
       ],
@@ -439,7 +448,7 @@
       "kind": "cloneLever",
       "position": [
         -0.439510241150856,
-        0.7425269186496735,
+        0.7801784574985504,
         0.20025336742401123
       ],
       "sourcePivot": [
@@ -451,7 +460,7 @@
         "Object_28",
         "Object_30"
       ],
-      "initialDegrees": 112.5,
+      "initialDegrees": 90,
       "sourceDegrees": 132.24297891434964,
       "scale": 0.34
     },
@@ -461,10 +470,10 @@
       "parent": "CrossSlideAssembly",
       "position": [
         0.0803634,
-        0.809,
+        0.76,
         0.0566564
       ],
-      "topY": 0.84,
+      "topY": 0.8,
       "radius": 0.044,
       "drives": "z",
       "color": "#667178"
@@ -473,26 +482,36 @@
       "name": "LeftSelectorPivotScale",
       "kind": "selectorScale",
       "position": [
-        -0.8534345030784607,
-        0.7801784574985504,
+        -0.64,
+        0.907,
         0.181
       ],
-      "selector": "gearSelector"
+      "selector": "gearSelector",
+      "size": [
+        0.17,
+        0.067
+      ],
+      "panel": "rpm"
     },
     {
       "name": "RightSelectorPivotScale",
       "kind": "selectorScale",
       "position": [
-        -0.439510241150856,
-        0.7425269186496735,
+        -0.43951,
+        0.902,
         0.181
       ],
-      "selector": "speedMode"
+      "selector": "speedMode",
+      "size": [
+        0.14,
+        0.063
+      ],
+      "panel": "mode"
     },
     {
       "name": "ToolPostBaseCap",
       "kind": "plate",
-      "parent": "CrossSlideAssembly",
+      "parent": "ToolIndexPivot",
       "position": [
         0.0803634,
         0.8218,
@@ -520,6 +539,41 @@
         0.0967
       ],
       "color": "#101415"
+    },
+    {
+      "name": "TurningTool",
+      "kind": "cuttingTool",
+      "tool": "turning",
+      "parent": "ToolIndexPivot",
+      "position": [
+        -0.0066366,
+        0.8417539,
+        0.0866564
+      ],
+      "rotation": [
+        0,
+        -1.5707963267948966,
+        0
+      ],
+      "scale": [
+        0.6,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "SpindleSpeedTable",
+      "kind": "selectorScale",
+      "panel": "table",
+      "position": [
+        -0.856,
+        0.897,
+        0.181
+      ],
+      "size": [
+        0.14,
+        0.215
+      ]
     }
   ],
   "extraWheels": [
@@ -548,34 +602,33 @@
     "DetailItem_Air_Blower",
     "Object_162",
     "Object_28",
-    "Object_30"
+    "Object_30",
+    "Object_40",
+    "Object_42",
+    "Object_24"
   ],
   "speedSelectors": {
     "gear": "gearSelector",
     "mode": "speedMode",
     "baseRpm": [
-      125,
       250,
-      375,
-      500
+      500,
+      750,
+      1000
     ],
     "multipliers": [
       1,
-      2,
-      3,
-      4
+      2
     ],
     "modeLabels": [
-      "低速組 ×1",
-      "標準組 ×2",
-      "高速組 ×3",
-      "最高速組 ×4"
+      "LOW 低速",
+      "HIGH 高速"
     ]
   },
   "geometrySplits": [
     {
       "source": "Object_103",
-      "name": "ToolPostFixedBase",
+      "name": "ToolPostLowerBlock",
       "triangles": [
         0,
         1,
@@ -2335,6 +2388,24 @@
         3233,
         3594,
         3595
+      ]
+    }
+  ],
+  "nodeOffsets": [
+    {
+      "node": "Object_32",
+      "offset": [
+        0.2134345030784607,
+        0,
+        0
+      ]
+    },
+    {
+      "node": "Object_26",
+      "offset": [
+        0,
+        0.0376515388488769,
+        0
       ]
     }
   ]

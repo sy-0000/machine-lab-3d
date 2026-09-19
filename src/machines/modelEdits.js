@@ -3,6 +3,8 @@ const vector=a=>new Vector3(...a);
 // Explicit source names and reviewed triangle lists; no spatial grouping at runtime.
 export function editSource(scene,config){
  const retired=[];
+ scene.updateMatrixWorld(true);
+ for(const spec of config.nodeOffsets||[]){const node=scene.getObjectByName(spec.node);if(!node)throw Error(`找不到面板零件：${spec.node}`);node.position.copy(node.parent.worldToLocal(node.getWorldPosition(new Vector3()).add(vector(spec.offset))));node.updateWorldMatrix(true,true);}
  for(const name of [...(config.removeNodes||[]),...(config.hideNodes||[])]){const node=scene.getObjectByName(name);if(!node)throw Error(`找不到要隱藏的零件：${name}`);node.visible=false;}
  for(const spec of config.geometrySplits||[]){
   const source=scene.getObjectByName(spec.source);if(!source?.isMesh)throw Error(`找不到拆分來源：${spec.source}`);

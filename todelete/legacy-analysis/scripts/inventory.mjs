@@ -1,5 +1,0 @@
-import {writeFileSync}from 'node:fs';import {loadSource,readGLB}from './model-source.mjs';import {inventory,measuredBounds,MODEL_NAME,disposeModel}from '../src/lathe.js';
-const {scene}=await loadSource(),{json}=readGLB();measuredBounds(scene);scene.updateMatrixWorld(true);const nodes=inventory(scene),reachable=new Set();
-function visit(i){if(reachable.has(i))return;reachable.add(i);for(const child of json.nodes[i].children||[])visit(child);}for(const i of json.scenes[json.scene||0].nodes)visit(i);
-const report={file:MODEL_NAME,sourceNodes:json.nodes.length,sourceMeshes:json.meshes.length,reachableNodes:reachable.size,reachableMeshes:nodes.filter(n=>n.mesh).length,asset:json.asset,notInScene:json.nodes.map((n,i)=>({...n,nodeIndex:i})).filter(n=>!reachable.has(n.nodeIndex)),nodes};
-writeFileSync(new URL('../reports/model-inventory.json',import.meta.url),JSON.stringify(report,null,2));console.log(JSON.stringify({file:MODEL_NAME,sourceNodes:report.sourceNodes,sourceMeshes:report.sourceMeshes,reachableNodes:report.reachableNodes,reachableMeshes:report.reachableMeshes,notInScene:report.notInScene.map(n=>n.name)}));disposeModel(scene);

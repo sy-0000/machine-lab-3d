@@ -1,6 +1,6 @@
 // Coordinates are measured in the original GLB WORLD frame (X = bed, Y = up, Z = front).
 // GLTFLoader sanitizes spaces in source group names to underscores. Object_XXX names are unchanged.
-export const MODEL_NAME = 'lathe_16k20_dark_green_no_backboard.glb';
+export const MODEL_NAME = 'machines/lathe/lathe.glb';
 export const LATHE_PARTS = {
   spindle: { objectNames: ['Object_78::shaft'], axis: 'x', pivot: [-0.267, 0.8525885, -0.0216612] },
   chuck: { objectNames: ['Object_78::chuckBody', 'Object_80'], parent: 'spindle' },

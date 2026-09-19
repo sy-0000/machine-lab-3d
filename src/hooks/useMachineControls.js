@@ -14,7 +14,7 @@ export default function useMachineControls(model) {
   toggle:(value)=>{if(model?.pivots[model.config.spindle.node]&&!model.emergency){const next=value===-1?-1:1;setDirection(next);setRunning(v=>v&&direction===next?false:true);invalidate.current();}},
   detentStep:(key,direction)=>{if(model){stepDetent(model,key,direction);refresh();}},
   detent:(key,index)=>{if(model){setDetent(model,key,index);refresh();}},
-  index:()=>{if(model){indexTool(model);refresh();}},
+  index:(direction=1)=>{if(model){indexTool(model,direction);refresh();}},
   brake:()=>{if(model){stopInput();setRunning(false);emergencyStop(model);refresh();}},
   releaseBrake:()=>{if(model){releaseEmergency(model);refresh();}},
   toggleWorkpiece:()=>{if(model&&toggleDemoWorkpiece(model,running))refresh();},

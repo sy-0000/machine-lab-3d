@@ -2,7 +2,7 @@
   {
     "manifestAudit": null,
     "id": "lathe",
-    "model": "lathe_16k20_dark_green_no_backboard.glb",
+    "model": "machines/lathe/lathe.glb",
     "config": "lathe_parts.json",
     "nodeCount": 182,
     "meshCount": 172,
@@ -80,6 +80,16 @@
       },
       {
         "name": "Object_157",
+        "parent": "ToolIndexPivot",
+        "attachmentError": 0
+      },
+      {
+        "name": "ToolPostLowerBlock",
+        "found": true,
+        "parent": "ToolHeightAssembly"
+      },
+      {
+        "name": "ToolPostLowerBlock",
         "parent": "ToolIndexPivot",
         "attachmentError": 0
       },
@@ -184,11 +194,6 @@
         "parent": "CrossSlideAssembly"
       },
       {
-        "name": "ToolPostFixedBase",
-        "found": true,
-        "parent": "CrossSlideAssembly"
-      },
-      {
         "name": "Object_103",
         "found": true,
         "parent": "ToolIndexPivot"
@@ -220,6 +225,11 @@
       },
       {
         "name": "Object_157",
+        "found": true,
+        "parent": "ToolIndexPivot"
+      },
+      {
+        "name": "ToolPostLowerBlock",
         "found": true,
         "parent": "ToolIndexPivot"
       },
@@ -603,10 +613,11 @@
       ]
     },
     "notes": [
-      "雙凸輪開關各四段 45°，左鍵逆時針、右鍵順時針；端點不循環。",
-      "左桿 125／250／375／500 RPM，右桿倍率 1／2／3／4；屬教學轉速設定。",
-      "舊護蓋、圖紙架、燈具、殘留管線及背板柱保留節點並隱藏。",
-      "刀座底板拆出固定，中心柱支撐升降；尾座位置手輪縮短並改黑色。"
+      "依使用者參考圖配置：綠色原機殼、小型黑底檔位標牌與 RPM 表；隱藏舊灰白標牌。",
+      "HIGH / LOW → 四檔 RPM → 主軸轉速；LOW 250／500／750／1000、HIGH 500／1000／1500／2000，沿用既有教學數值。",
+      "握把、金屬桿、旋轉座共同操作，透明 hitbox 擴大點擊範圍，不放大可見零件。",
+      "完整刀座含下層小塊與車刀，左鍵左轉 10°、右鍵右轉 10°；中心柱維持與底座連接。",
+      "所有隱藏來源節點保留；重設恢復位置、角度及 LOW 500 RPM。"
     ],
     "sourceHierarchy": [
       {
@@ -1716,7 +1727,7 @@
       "missing": []
     },
     "id": "milling",
-    "model": "deliver_milling_machine_split/milling_machine_textured.glb",
+    "model": "machines/milling/milling.glb",
     "config": "milling_split_controls.json",
     "nodeCount": 422,
     "meshCount": 422,
@@ -2583,131 +2594,131 @@
         "attachmentError": 0
       },
       {
+        "name": "Bottom_Part_006",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_006",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_077",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_077",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_084",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_084",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_094",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_094",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_101",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_101",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_118",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_118",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_119",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_119",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_120",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_120",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_121",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_121",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_122",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_122",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_123",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_123",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
+        "name": "Bottom_Part_124",
+        "found": true,
+        "parent": null
+      },
+      {
+        "name": "Bottom_Part_124",
+        "parent": "MillingYControlsFixed",
+        "attachmentError": 0
+      },
+      {
         "name": "Knee_Z_Slide",
         "found": true,
         "parent": null
       },
       {
-        "name": "Bottom_Part_006",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_006",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_077",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_077",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_084",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_084",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_094",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_094",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_101",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_101",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_118",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_118",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_119",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_119",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_120",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_120",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_121",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_121",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_122",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_122",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_123",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_123",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
-        "name": "Bottom_Part_124",
-        "found": true,
-        "parent": null
-      },
-      {
-        "name": "Bottom_Part_124",
-        "parent": "Y_Axis_Saddle",
-        "attachmentError": 0
-      },
-      {
         "name": "Y_Axis_Saddle",
         "found": true,
         "parent": "Knee_Z_Slide"
@@ -3413,9 +3424,9 @@
         "attachmentError": 0
       },
       {
-        "name": "Y_Axis_Saddle",
+        "name": "MillingYControlsFixed",
         "found": true,
-        "parent": "Knee_Z_Slide"
+        "parent": null
       },
       {
         "name": "Bottom_Part_002",
@@ -3598,12 +3609,12 @@
         "parent": null
       },
       {
-        "name": "Head_Part_021",
+        "name": "Head_Part_009",
         "found": true,
         "parent": "Head_Assembly"
       },
       {
-        "name": "Head_Part_021",
+        "name": "Head_Part_009",
         "parent": "MillingRightLever",
         "attachmentError": 0
       },
@@ -3655,7 +3666,7 @@
       {
         "name": "Head_Part_009",
         "found": true,
-        "parent": "Head_Assembly"
+        "parent": "MillingRightLever"
       },
       {
         "name": "Head_Part_010",
@@ -3715,7 +3726,7 @@
       {
         "name": "Head_Part_021",
         "found": true,
-        "parent": "MillingRightLever"
+        "parent": "Head_Assembly"
       },
       {
         "name": "Head_Part_022",
@@ -4040,62 +4051,62 @@
       {
         "name": "Bottom_Part_006",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_077",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_084",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_094",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_101",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_118",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_119",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_120",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_121",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_122",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_123",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Bottom_Part_124",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Table_Part_004",
@@ -4563,7 +4574,7 @@
       {
         "name": "Y_Handwheel_Group",
         "found": true,
-        "parent": "Y_Axis_Saddle"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Y_Handwheel_Group",
@@ -4582,7 +4593,7 @@
       {
         "name": "ZLiftWheel",
         "found": true,
-        "parent": "Knee_Z_Slide"
+        "parent": "MillingYControlsFixed"
       },
       {
         "name": "Spindle_Rotor_Group",
@@ -4754,9 +4765,10 @@
     "notes": [
       "已從原始 GLB 逐面恢復 UV、法線與貼圖材質，保留 422 個獨立零件。",
       "新增 Z 升降教學手輪，與工作臺升降連動；原合併膝座鑄件保持固定。",
-      "隱藏舊 Head_Part_023 啟動握桿，改用右側既有 Head_Part_021 黑色桿；機身電源開關仍可操作。",
+      "刀具右上方 Head_Part_009 握桿控制主軸 ON / OFF；Head_Part_021 恢復為固定原件。",
       "手輪導程、握桿用途及新增手輪尺寸仍為教學配置。",
-      "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。"
+      "後柱另補回 1018／1022 底色貼圖；其餘 4 張原始底色缺失，使用相近灰綠漆色並保留原法線。",
+      "Y 手輪、傳動盒與操作附件獨立掛在 MillingYControlsFixed，不繼承 Z 升降；Z 只帶動工作臺滑座。"
     ],
     "sourceHierarchy": [
       {
@@ -6874,7 +6886,7 @@
   {
     "manifestAudit": null,
     "id": "drill",
-    "model": "drill_press_interactive.glb",
+    "model": "machines/drill/drill.glb",
     "config": "drill_press_parts.json",
     "nodeCount": 62,
     "meshCount": 42,
@@ -6951,7 +6963,7 @@
         "parent": "SpindleAssembly"
       },
       {
-        "name": "DrillBit",
+        "name": "TwistDrill",
         "found": true,
         "parent": "SpindleAssembly"
       },
@@ -7105,7 +7117,7 @@
       "required": [
         "Spindle",
         "Chuck",
-        "DrillBit"
+        "TwistDrill"
       ],
       "exclude": [
         "HeadHousing"
@@ -7116,7 +7128,8 @@
       "SwitchBody 為開關本體；SwitchLever 為固定周圍面板，不註冊互動。工作臺 Y 行程 -0.20～0.18。",
       "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
       "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。",
-      "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。"
+      "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。",
+      "新增同心雙螺旋鑽頭 TwistDrill 掛於既有 SpindleAssembly；原 DrillBit 保留並隱藏。"
     ],
     "sourceHierarchy": [
       {

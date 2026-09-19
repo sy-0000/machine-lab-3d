@@ -2,6 +2,8 @@ import {Box3,Group,Vector3,Quaternion,Mesh,CylinderGeometry,BoxGeometry,MeshStan
 import {prepareModel as prepareLathe,disposeModel,disposeHighlights} from '../lathe.js';
 import {editSource,createAddition} from './modelEdits.js';
 import {createSelectorScale,updateSelectorScales} from './selectorScale.js';
+import {createCuttingTool} from './cuttingTools.js';
+import {addInteractionTargets} from './interactionTargets.js';
 const v=a=>new Vector3(...a);
 export const clamp=(x,[lo,hi])=>Math.max(lo,Math.min(hi,Number.isFinite(x)?x:0));
 const descendant=(node,parent)=>{for(let n=node;n;n=n.parent)if(n===parent)return true;return false;};
@@ -29,6 +31,7 @@ export function prepareMachine(scene,config) {
  }
  for(const spec of config.reparents||[]){const node=requireNode(spec.node),parent=requireNode(spec.parent);if(node&&parent)parent.attach(node);}
  for(const def of config.additions||[]){
+  if(def.kind==='cuttingTool'){createCuttingTool(def,scene,lookup);continue;}
   if(def.kind==='selectorScale'){createSelectorScale(def,scene,lookup);continue;}
   if(['handwheel','cloneLever'].includes(def.kind)){createAddition(def,scene,lookup);continue;}
   const group=new Group();group.name=def.name;scene.add(group);lookup[def.name]=group;
@@ -75,10 +78,11 @@ export function prepareMachine(scene,config) {
   }
  };
  for(const a of config.axes){if(legacy&&!legacy.availability[a.id])a.enabled=false;const node=requireNode(a.node);if(node)initial[a.node]={position:node.position.clone(),quaternion:node.quaternion.clone()};}
- for(const w of config.wheels)register(w,'wheel');
+  for(const w of config.wheels)register(w,'wheel');
  for(const action of config.actions||[])register(action,action.type);
  register(config.spindle,'spindle');if(config.lever)register(config.lever,'lever');if(config.toggle)register(config.toggle,'toggle');
- scene.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});
+ addInteractionTargets(scene,controls,lookup);
+ scene.traverse(n=>{if(n.isMesh){n.castShadow=!n.userData.hitbox;n.receiveShadow=!n.userData.hitbox;}});
  scene.updateWorldMatrix(true,true);
  const bounds=new Box3();scene.traverseVisible(n=>{if(n.isMesh)bounds.union(new Box3().setFromObject(n));});const center=bounds.getCenter(new Vector3()),radius=bounds.getSize(new Vector3()).length()/2;
  if(!Number.isFinite(radius)||radius<=0)throw Error('模型沒有有效幾何尺寸');
@@ -145,7 +149,7 @@ export function stepReturn(m,heldKey,dt){
 export function selectorRpm(m){const s=m.config.speedSelectors;return s?s.baseRpm[m.detents[s.gear]??1]*s.multipliers[m.detents[s.mode]??1]:null;}
 export function setDetent(m,key,index){const a=m.config.actions.find(a=>a.id===key&&a.type==='detent');if(!a)return;const next=Math.max(0,Math.min(a.degrees.length-1,Number.isInteger(index)?index:(m.detents[key]??a.homeIndex)-1));m.detents[key]=next;rotate(m,a.node,a.axis,(a.degrees[next]-a.referenceDegrees)*Math.PI/180);m.selectedRpm=selectorRpm(m);updateSelectorScales(m);m.scene.updateWorldMatrix(true,true);}
 export function stepDetent(m,key,direction){const a=m.config.actions.find(a=>a.id===key&&a.type==='detent');if(a)setDetent(m,key,(m.detents[key]??a.homeIndex)+(direction===1?1:-1));}
-export function indexTool(m){const action=m.config.actions?.find(a=>a.type==='index');if(!action)return;m.indexSteps=(m.indexSteps+1)%8;rotate(m,action.node,action.axis,m.indexSteps*action.step);m.scene.updateWorldMatrix(true,true);}
+export function indexTool(m,direction=1){const action=m.config.actions?.find(a=>a.type==='index');if(!action)return;const stops=Math.round(2*Math.PI/Math.abs(action.step));m.indexSteps=(m.indexSteps+(direction===-1?-1:1))%stops;rotate(m,action.node,action.axis,m.indexSteps*action.step);m.scene.updateWorldMatrix(true,true);}
 export function emergencyStop(m){m.emergency=false;m.running=false;m.brakeTime=.35;const action=m.config.actions?.find(a=>a.type==='emergency');if(action){const n=m.lookup[action.node];n.position.y=m.initial[action.node].position.y-.025;}m.active=null;}
 export function releaseEmergency(m){m.emergency=false;const action=m.config.actions?.find(a=>a.type==='emergency');if(action)m.lookup[action.node].position.copy(m.initial[action.node].position);}
 export function safetyStatus(m){
@@ -160,10 +164,10 @@ export function setHighlight(m,key){
  if(m.highlighted===key)return;m.highlighted=key;
  for(const [mesh,{original,copy}]of m.materials)mesh.material=original;
  const root=m.controls[key]?.object;if(!root)return;
- root.traverseVisible(mesh=>{if(!mesh.isMesh)return;if(!m.materials.has(mesh)){const original=mesh.material,copy=(Array.isArray(original)?original:[original]).map(mat=>{const c=mat.clone();c.emissive?.set('#30a888');c.emissiveIntensity=.5;return c;});m.materials.set(mesh,{original,copy});}const {original,copy}=m.materials.get(mesh);mesh.material=Array.isArray(original)?copy:copy[0];});
+ for(const target of m.controls[key].pickRoots||[root])target.traverseVisible(mesh=>{if(!mesh.isMesh||mesh.userData.hitbox)return;if(!m.materials.has(mesh)){const original=mesh.material,copy=(Array.isArray(original)?original:[original]).map(mat=>{const c=mat.clone();c.emissive?.set('#30a888');c.emissiveIntensity=.5;return c;});m.materials.set(mesh,{original,copy});}const {original,copy}=m.materials.get(mesh);mesh.material=Array.isArray(original)?copy:copy[0];});
 }
 export function isVisibleObject(object){for(let n=object;n;n=n.parent)if(!n.visible)return false;return !!object;}
-export function visibleHit(ray,scene){return ray.intersectObject(scene,true).find(hit=>isVisibleObject(hit.object));}
+export function visibleHit(ray,scene){const meshes=[];scene.traverseVisible(n=>{if(n.isMesh)meshes.push(n);});return ray.intersectObjects(meshes,false)[0];}
 export function controlFor(object){if(!isVisibleObject(object))return null;for(let n=object;n;n=n.parent)if(n.userData.machineControl)return n.userData.machineControl;return null;}
 export function toggleDemoWorkpiece(m,requestedRunning){
  const d=m.config.demoWorkpiece;if(!d||requestedRunning||m.rpm>0||m.leverAngle!==0||!m.lookup[d.mount])return false;

@@ -22,7 +22,7 @@
       "includes": [
         "Spindle",
         "Chuck",
-        "DrillBit"
+        "TwistDrill"
       ],
       "exclude": [
         "HeadHousing"
@@ -110,7 +110,8 @@
     "SwitchBody 為開關本體；SwitchLever 為固定周圍面板，不註冊互動。工作臺 Y 行程 -0.20～0.18。",
     "QuillExtension 為新增的可伸縮教學套筒，補足下降後露出的連接段。",
     "原檔沒有工作臺升降手輪、虎鉗與工件；本版使用工作臺本體的面板升降控制。",
-    "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。"
+    "原誤放於 HeadInternalSupport 的工作臺鎖緊握把及表面細節已拆出，跟隨 TableAssembly 升降。",
+    "新增同心雙螺旋鑽頭 TwistDrill 掛於既有 SpindleAssembly；原 DrillBit 保留並隱藏。"
   ],
   "validation": {
     "sourceFile": "drill_press_-__interkrenn_maschinen_tb_145.glb",
@@ -124,7 +125,7 @@
     "sourceBoundsMeters": [
       [
         -0.08833272755146027,
-        -0.0000734478235244751,
+        -7.34478235244751e-05,
         -0.1993586476892233
       ],
       [
@@ -136,7 +137,7 @@
     "outputBoundsMeters": [
       [
         -0.08833272755146027,
-        -0.0000734478235244751,
+        -7.34478235244751e-05,
         -0.1993586476892233
       ],
       [
@@ -159,6 +160,20 @@
       "radius": 0.021,
       "drives": "quill",
       "color": "#aeb9bd"
+    },
+    {
+      "name": "TwistDrill",
+      "kind": "cuttingTool",
+      "tool": "drill",
+      "parent": "SpindleAssembly",
+      "position": [
+        0,
+        0.503,
+        0.1422
+      ],
+      "radius": 0.006,
+      "shankLength": 0.015,
+      "cuttingLength": 0.049
     }
   ],
   "geometrySplits": [
@@ -665,5 +680,8 @@
       "parent": "FeedHandlePivot"
     }
   ],
-  "switchNode": "SwitchBody"
+  "switchNode": "SwitchBody",
+  "hideNodes": [
+    "DrillBit"
+  ]
 }

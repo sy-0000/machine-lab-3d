@@ -2,7 +2,7 @@
 import lesson from './lessonDefaults.json' with {type:'json'};
 const vector = axis => typeof axis==='string' ? ['x','y','z'].map(a=>a===axis?1:0) : axis;
 export function normalizeConfig(id, raw) {
- const common={id,raw,lesson,removeNodes:raw.removeNodes||[],hideNodes:raw.hideNodes||[],speedSelectors:raw.speedSelectors,geometrySplits:raw.geometrySplits||[],reparents:raw.reparents||[],axes:[],wheels:[],references:[],notes:[],safety:null,actions:raw.actions||[],extraGroups:raw.extraGroups||[],additions:raw.additions||[],defaultRpm:lesson.defaultRpm,maxRpm:lesson.defaultMaxRpm};
+ const common={id,raw,lesson,nodeOffsets:raw.nodeOffsets||[],removeNodes:raw.removeNodes||[],hideNodes:raw.hideNodes||[],speedSelectors:raw.speedSelectors,geometrySplits:raw.geometrySplits||[],reparents:raw.reparents||[],axes:[],wheels:[],references:[],notes:[],safety:null,actions:raw.actions||[],extraGroups:raw.extraGroups||[],additions:raw.additions||[],defaultRpm:lesson.defaultRpm,maxRpm:lesson.defaultMaxRpm};
  if(raw.schemaVersion===2)return {...common,...raw,id,raw,lesson,references:raw.groups.flatMap(g=>g.objects),relationships:[],defaultRpm:lesson.defaultRpm};
  if(id==='lathe') {
   const p=raw.parts;
