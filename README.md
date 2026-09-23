@@ -125,3 +125,9 @@ npm run preview
 這是教學模擬，行程與進給比例不是已校正的實機數值。尚未實作真正切削與切屑；工件碰撞提示不是完整物理模擬。
 
 - [第三方模型授權與來源](ASSETS_LICENSE.md)
+
+## MachineSession 相容層
+
+完整機台教室的玩家輸入現已經過 `MachineSession` → `MachineV1Adapter` → 既有 Machine System；舊槌柄局部原型仍獨立保留。API、教學 X/Z、單位、輸入鎖與更新時鐘見 [MachineSession 文件](docs/MACHINE_SESSION.md)。尚未新增正式關卡、DemoSequence、評分或完整切削。
+
+- 可持久化車床槌柄與最小切削：[WorkpieceState](docs/WORKPIECE_STATE.md)（現有車床開發者面板：建立／儲存／載入）。

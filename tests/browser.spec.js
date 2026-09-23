@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 const snap=page=>page.evaluate(()=>window.__MACHINE_DEBUG__);
-async function open(page,id){await page.setViewportSize({width:1440,height:1700});await page.goto(`/?inspect=1#/${id}`);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});await page.waitForFunction(id=>window.__MACHINE_DEBUG__?.id===id,id);}
+async function open(page,id){await page.setViewportSize({width:1440,height:1700});await page.goto(`/?inspect=1#/${id}`);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});await page.waitForFunction(id=>window.__MACHINE_DEBUG__?.id===id,id);for(const section of await page.locator('.control-console details').all())await section.locator('summary').click();}
 async function reset(page){await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();await expect.poll(async()=>Object.values((await snap(page)).angles).every(x=>x===0)).toBe(true);}
 test('home has three cards and loads no GLB before choosing a machine',async({page})=>{const requests=[];page.on('request',r=>{if(r.url().endsWith('.glb'))requests.push(r.url());});await page.goto('/');for(const name of ['車床','銑床','鑽床'])await expect(page.locator('.machine-card').filter({hasText:name})).toHaveCount(1);expect(requests).toEqual([]);await page.screenshot({path:'reports/home.png',fullPage:true});});
 for(const [id,axis,wheel]of [['lathe','x','carriageHandwheel'],['milling','X_Axis_Table','X_Handwheel_Left_Group'],['drill','quill','feed']])test(`${id}: real load, both directions, slider, spindle, reset, console`,async({page})=>{
@@ -40,7 +40,7 @@ test('lathe: demo workpiece unlocks after stopping without another interaction',
 
 test('real canvas mouse hold, tooltip, context menu, cancellation and orbit restoration',async({page})=>{
  await open(page,'lathe');
- async function point(){await expect.poll(async()=>(await snap(page)).picks.carriageHandwheel.length).toBeGreaterThan(0);return(await snap(page)).picks.carriageHandwheel[0];}
+ const point=()=>visibleControl(page,'carriageHandwheel',true);
  let p=await point();await page.mouse.move(p.x,p.y);await expect(page.getByRole('tooltip')).toContainText('縱向進給手輪');
  const camera=(await snap(page)).camera;await page.mouse.down();await expect.poll(async()=>(await snap(page)).angles.carriageHandwheel).toBeLessThan(-.1);await page.mouse.move(p.x+10,p.y+10);await page.mouse.up();await expect.poll(async()=>(await snap(page)).orbitEnabled).toBe(true);expect((await snap(page)).camera).toEqual(camera);
  const negative=(await snap(page)).angles.carriageHandwheel;p=await point();await page.mouse.move(p.x,p.y);await page.mouse.down({button:'right'});await expect.poll(async()=>(await snap(page)).angles.carriageHandwheel).toBeGreaterThan(negative);await page.mouse.up({button:'right'});
@@ -65,11 +65,25 @@ test('bad JSON reference is shown; missing spindle assembly disables start',asyn
 });
 test('world distance warnings and reset',async({page})=>{await open(page,'lathe');await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);await page.locator('#x').fill('-0.01');await expect(page.locator('.notice')).toHaveClass(/caution/);await reset(page);await page.getByRole('button',{name:'裝上示範工件'}).click();await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(100);await page.locator('#x').fill('-0.14');await expect(page.locator('.notice')).toHaveClass(/danger/);await reset(page);await expect(page.locator('.notice')).toContainText('目前無警告');});
 
-async function visibleControl(page,key){
+async function visibleControl(page,key,settle=false){
  await page.locator('canvas').scrollIntoViewIfNeeded();const box=await page.locator('canvas').boundingBox();await page.mouse.move(box.x+10,box.y+box.height*.3);
  for(let i=0;i<10;i++){
-  await page.waitForFunction(()=>window.__MACHINE_DEBUG__&&!window.__MACHINE_DEBUG__.pickingPending);
-  const picks=(await snap(page)).picks[key];if(picks?.length)return picks[0];
+  if(!settle){
+   await page.waitForFunction(()=>window.__MACHINE_DEBUG__&&!window.__MACHINE_DEBUG__.pickingPending);
+   const picks=(await snap(page)).picks[key];if(picks?.length)return picks[0];
+  }else{
+  // Session/UI updates and canvas scrolling can invalidate picks between two reads.
+  // Keep the successful sample itself, after its screen position has settled.
+  let point=null,previous='',stableSince=0;
+  await expect.poll(async()=>{
+   const state=await snap(page),candidate=!state.pickingPending&&state.picks[key]?.[0];
+   const signature=JSON.stringify(candidate||null);
+   if(signature!==previous){previous=signature;stableSince=Date.now();}
+   point=candidate||null;
+   return !state.pickingPending&&Date.now()-stableSince>=250;
+  },{timeout:15000}).toBe(true);
+  if(point&&await page.evaluate(p=>document.elementFromPoint(p.x,p.y)?.tagName==='CANVAS',point))return point;
+  }
   const b=await page.locator('canvas').boundingBox();await page.mouse.move(b.x+30,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+230,b.y+b.height/2,{steps:2});await page.mouse.up();await page.waitForTimeout(250);
  }
  throw Error(`No visible raycast target: ${key}`);
@@ -82,9 +96,9 @@ test('v2 lathe physical index, right lever and emergency foot brake',async({page
  const angle=(await snap(page)).spindleAngle;await page.waitForTimeout(150);expect((await snap(page)).spindleAngle).toBe(angle);await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled();await page.getByRole('button',{name:'▶ 啟動主軸'}).click();await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);await reset(page);expect((await snap(page)).indexSteps).toBe(0);
 });
 for(const id of ['milling','drill'])test(`v2 ${id} real model switch and feed`,async({page})=>{
- await open(page,id);let p=await visibleControl(page,'toggle');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);
- p=await visibleControl(page,'toggle');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
- const key=id==='drill'?'feed':'Y_Handwheel_Group';p=await visibleControl(page,key);await page.mouse.move(p.x,p.y);await page.mouse.down();await expect.poll(async()=>(await snap(page)).angles[key]).toBeLessThan(-.15);await page.mouse.up();
+ await open(page,id);let p=await visibleControl(page,'toggle',id==='milling');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBeGreaterThan(0);
+ p=await visibleControl(page,'toggle',id==='milling');await page.mouse.click(p.x,p.y);await expect.poll(async()=>(await snap(page)).rpm).toBe(0);
+ const key=id==='drill'?'feed':'Y_Handwheel_Group';p=await visibleControl(page,key,id==='milling');await page.mouse.move(p.x,p.y);await page.mouse.down();await expect.poll(async()=>(await snap(page)).angles[key]).toBeLessThan(-.15);await page.mouse.up();
  if(id==='drill'){await expect.poll(async()=>(await snap(page)).offsets.quill).toBe(0);const before=(await snap(page)).nodes.TableAssembly.world[1];await page.locator('#table').fill('0.1');await expect.poll(async()=>(await snap(page)).nodes.TableAssembly.world[1]).toBeCloseTo(before+.1,5);}
  await page.screenshot({path:`reports/v2-${id}-interaction.png`,fullPage:true});
 });

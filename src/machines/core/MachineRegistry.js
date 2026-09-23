@@ -1,3 +1,4 @@
+import { disposeModel } from '../../lathe.js';
 import { MachineLoader } from './MachineLoader.js';
 import { LatheController } from '../lathe/LatheController.js';
 import { LATHE_CONFIG } from '../lathe/lathe.config.js';
@@ -10,6 +11,7 @@ class MachineRegistryImpl {
   constructor() {
     this.registry = new Map();
     this.currentMachine = null;
+    this.loadGeneration = 0;
 
     // Register built-in machines
     this.register('lathe', {
@@ -75,6 +77,7 @@ class MachineRegistryImpl {
    * Cleans up scene nodes, materials, geometries, and event listeners.
    */
   async unload() {
+    this.loadGeneration++;
     if (this.currentMachine) {
       this.currentMachine.dispose();
       this.currentMachine = null;
@@ -97,20 +100,26 @@ class MachineRegistryImpl {
       throw new Error(`未註冊的機器類型：${id}。可用機器：${[...this.registry.keys()].join(', ')}`);
     }
 
-    // Safely unload existing machine to guarantee zero node or listener residue
-    if (this.currentMachine) {
-      await this.unload();
-    }
+    const generation = ++this.loadGeneration;
+    if (this.currentMachine) { this.currentMachine.dispose(); this.currentMachine = null; }
 
     const { Controller, config } = entry;
     const { scene, config: normalizedConfig } = await MachineLoader.load(config, options);
 
+    if (options.signal?.aborted || generation !== this.loadGeneration) {
+      disposeModel(scene);
+      throw new Error('Machine load cancelled');
+    }
     const machineInstance = new Controller({
       scene,
       config: normalizedConfig,
     });
 
     await machineInstance.load();
+    if (options.signal?.aborted || generation !== this.loadGeneration) {
+      machineInstance.dispose();
+      throw new Error('Machine load cancelled');
+    }
     this.currentMachine = machineInstance;
     return machineInstance;
   }

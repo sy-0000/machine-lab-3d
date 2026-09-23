@@ -7,7 +7,8 @@ export default function DeveloperPanel({
   currentMachineId,
   onSelectMachine,
   currentMachineInstance,
-  onRefresh,
+  session,
+  onUnload,
 }) {
   const [open, setOpen] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState(currentMachineId || 'lathe');
@@ -16,7 +17,7 @@ export default function DeveloperPanel({
   const [logMessage, setLogMessage] = useState('');
 
   const machines = MachineRegistry.getAvailableMachines();
-  const tools = ToolRegistry.getAvailableTools();
+  const tools = ToolRegistry.getToolsForMachine(currentMachineId).filter(tool => tool.type !== 'measuring');
   const workpieces = WorkpieceRegistry.getAvailablePresets();
 
   useEffect(() => {
@@ -46,88 +47,38 @@ export default function DeveloperPanel({
 
   const handleUnloadMachine = async () => {
     try {
-      await MachineRegistry.unload();
-      if (onRefresh) onRefresh();
+      await onUnload();
       showLog('已卸載目前機台，場景已清空');
     } catch (e) {
       showLog(`卸載失敗：${e.message}`);
     }
   };
 
+  const run = async (target, command) => {
+    if (!target) throw new Error('請先載入機台');
+    const result = await target.command(command);
+    if (!result.ok) throw new Error(result.reason);
+  };
   const handleMountTool = async () => {
-    try {
-      if (!currentMachineInstance) {
-        showLog('請先載入機台再掛載刀具');
-        return;
-      }
-      if (!selectedTool) {
-        await currentMachineInstance.unmountTool();
-        showLog('已卸下刀具');
-        if (onRefresh) onRefresh();
-        return;
-      }
-      const tool = await ToolRegistry.load(selectedTool);
-      await currentMachineInstance.mountTool(tool);
-      showLog(`刀具 [${tool.name}] 已成功掛載至 ToolMount`);
-      if (onRefresh) onRefresh();
-    } catch (e) {
-      showLog(`掛載刀具錯誤：${e.message}`);
-    }
+    try { await run(session, {type:'tool.select',toolId:selectedTool || null}); showLog('刀具已更新'); }
+    catch (error) { showLog('掛載刀具錯誤：' + error.message); }
   };
-
   const handleMountWorkpiece = async () => {
-    try {
-      if (!currentMachineInstance) {
-        showLog('請先載入機台再掛載工件');
-        return;
-      }
-      if (!selectedWorkpiece) {
-        await currentMachineInstance.unmountWorkpiece();
-        showLog('已卸下工件');
-        if (onRefresh) onRefresh();
-        return;
-      }
-      const wp = await WorkpieceRegistry.load(selectedWorkpiece);
-      await currentMachineInstance.mountWorkpiece(wp);
-      showLog(`工件 [${wp.name}] 已成功掛載至 WorkpieceMount`);
-      if (onRefresh) onRefresh();
-    } catch (e) {
-      showLog(`掛載工件錯誤：${e.message}`);
-    }
+    try { await run(session, selectedWorkpiece ? {type:'workpiece.mount',spec:selectedWorkpiece} : {type:'workpiece.unmount'}); showLog('工件已更新'); }
+    catch (error) { showLog('掛載工件錯誤：' + error.message); }
   };
-
-  const handleResetMachine = () => {
-    if (currentMachineInstance) {
-      currentMachineInstance.reset();
-      showLog('機台座標與狀態已重設');
-      if (onRefresh) onRefresh();
-    }
+  const handleResetMachine = async () => {
+    try { await run(session, {type:'machine.reset'}); showLog('機台座標與狀態已重設'); }
+    catch (error) { showLog(error.message); }
   };
-
-  // Quick Presets
   const applyPreset = async (mId, tId, wpId) => {
     try {
-      setSelectedMachine(mId);
-      setSelectedTool(tId);
-      setSelectedWorkpiece(wpId);
-      showLog(`正在執行快速測試組合：${mId} + ${tId} + ${wpId}...`);
-
-      const machine = await onSelectMachine(mId);
-      if (machine) {
-        if (wpId) {
-          const wp = await WorkpieceRegistry.load(wpId);
-          await machine.mountWorkpiece(wp);
-        }
-        if (tId) {
-          const tool = await ToolRegistry.load(tId);
-          await machine.mountTool(tool);
-        }
-        showLog(`快速組合 ${mId} 載入並掛載成功！`);
-      }
-      if (onRefresh) onRefresh();
-    } catch (e) {
-      showLog(`套用組合失敗：${e.message}`);
-    }
+      setSelectedMachine(mId);setSelectedTool(tId);setSelectedWorkpiece(wpId);
+      const nextSession = await onSelectMachine(mId);
+      await run(nextSession, {type:'workpiece.mount',spec:wpId});
+      await run(nextSession, {type:'tool.select',toolId:tId});
+      showLog('快速組合已掛載');
+    } catch (error) { showLog('套用組合失敗：' + error.message); }
   };
 
   return (
@@ -191,6 +142,21 @@ export default function DeveloperPanel({
               </button>
             </div>
           </div>
+
+          {currentMachineId === 'lathe' && <div className="dev-section">
+            <label>可切削槌柄（本機存檔）</label>
+            <div className="dev-row">
+              {[
+                ['workpiece.createHandle', '建立毛胚 Ø20 × 300 mm'],
+                ['workpiece.save', '儲存槌柄'],
+                ['workpiece.load', '載入槌柄'],
+              ].map(([type, label]) => <button key={type} className="dev-btn" onClick={async () => {
+                try { await run(session, {type}); showLog(label + '完成'); }
+                catch (error) { showLog(error.message); }
+              }}>{label}</button>)}
+            </div>
+            <small>300 mm 為毛胚長度；儲存會覆蓋本機槌柄存檔。載入／新建前請停止主軸。</small>
+          </div>}
 
           <div className="dev-section">
             <label htmlFor="dev-tool-select">刀具系統 (Tool):</label>

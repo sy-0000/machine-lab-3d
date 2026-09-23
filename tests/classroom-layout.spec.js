@@ -1,0 +1,49 @@
+import {test,expect} from '@playwright/test';
+test('each lesson opens its own experience and demonstration',async({page})=>{
+ const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/#/levels');
+ const second=page.locator('.lesson-card').nth(1);
+ await expect(second).toContainText('Ø16 mm');
+ await second.getByRole('link',{name:'開始體驗 →'}).click();
+ await expect(page.getByRole('heading',{name:'第二關：槌柄前端'})).toBeVisible();
+ await expect(page.getByTestId('tool-position')).toHaveText('135.00 mm');
+ await page.getByRole('link',{name:'← 返回關卡選擇'}).click();
+ await page.locator('.lesson-card').first().getByRole('link',{name:'觀看示範'}).click();
+ await expect(page.getByRole('heading',{name:'第一關：槌柄握柄'})).toBeVisible();
+ await expect.poll(async()=>parseFloat(await page.getByTestId('tool-position').textContent())).toBeLessThan(109);
+ await page.getByRole('button',{name:'返回練習'}).click();
+ await expect(page.getByTestId('tool-position')).toHaveText('110.00 mm');
+ await page.goto('/#/levels');
+ await page.screenshot({path:'reports/levels-objectives-desktop.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:'reports/levels-objectives-mobile.png',fullPage:true});
+ expect(errors).toEqual([]);
+});
+for(const id of ['lathe','milling','drill'])test(id+' simplified controls support jog, spindle and reset',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/?inspect=1#/'+id);
+ await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});
+ await expect(page.getByText('節點核對與模型限制')).toHaveCount(0);
+ const read=()=>page.evaluate(()=>window.__MACHINE_DEBUG__);
+ await expect.poll(async()=>!!(await read())).toBe(true);
+ const wheel=await page.locator('#wheel-choice').inputValue();
+ const axis=await page.evaluate(async wheel=>{const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');return MachineRegistry.getCurrentMachine().runtime.config.wheels.find(w=>w.id===wheel).drives},wheel);
+ const before=(await read()).offsets[axis];
+ await page.locator('#jog-step').selectOption('1');
+ await page.getByRole('button',{name:'− 微調',exact:true}).click();
+ if(id!=='drill') await expect.poll(async()=>(await read()).offsets[axis]).toBeCloseTo(before-.001,5);
+ await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
+ await expect.poll(async()=>(await read()).rpm).toBeGreaterThan(0);
+ await page.getByRole('button',{name:'■ 停止主軸'}).click();
+ await expect.poll(async()=>(await read()).rpm).toBe(0);
+ await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();
+ await expect.poll(async()=>(await read()).offsets[axis]).toBe(0);
+ if(id==='lathe'){
+  await page.screenshot({path:'reports/classroom-controls-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'reports/classroom-controls-mobile.png',fullPage:true});
+ }
+ expect(errors).toEqual([]);
+});

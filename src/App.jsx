@@ -1,6 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
+import { HAMMER_LEVELS } from './levels/hammerPrototype.js';
+
+const HammerPrototype = lazy(() => import('./pages/HammerPrototype'));
 
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
@@ -45,6 +48,9 @@ export default function App() {
     return () => removeEventListener('hashchange', change);
   }, []);
 
+  const [lessonMode, lessonId] = route.split('/');
+  const lessonIndex = HAMMER_LEVELS.findIndex(level => level.id === lessonId);
+  const isLessonRoute = ['experience', 'demo'].includes(lessonMode) && lessonIndex >= 0;
   const isGameRoute = ['lathe', 'milling', 'drill', 'game'].includes(route);
 
   return (
@@ -70,7 +76,7 @@ export default function App() {
           <a className={`nav-link ${route === 'tools' ? 'active' : ''}`} href="#/tools">
             刀具介紹
           </a>
-          <a className={`nav-link ${route === 'levels' ? 'active' : ''}`} href="#/levels">
+          <a className={`nav-link ${(route === 'levels' || isLessonRoute) ? 'active' : ''}`} href="#/levels">
             關卡選擇
           </a>
           <a className={`nav-link ${isGameRoute ? 'active' : ''}`} href="#/lathe">
@@ -81,7 +87,9 @@ export default function App() {
         <span className="header-tag">觀察構造 · 理解連動</span>
       </header>
 
-      {route === 'safety' ? (
+      {route === 'hammer-prototype' || isLessonRoute ? (
+        <Suspense fallback={<main>正在載入槌柄小關卡…</main>}><HammerPrototype key={route} initialLevelIndex={Math.max(0, lessonIndex)} initialDemo={lessonMode === 'demo'} /></Suspense>
+      ) : route === 'safety' ? (
         <Suspense fallback={<main>正在載入工安規範…</main>}>
           <SafetyPage />
         </Suspense>

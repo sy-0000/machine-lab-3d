@@ -90,8 +90,14 @@ export function prepareMachine(scene,config) {
  const result={scene,config,retiredNodes,lookup,controls,pivots,initial,restTransforms,audit,errors:[...new Set(errors)],legacy,materials,center,radius,floor:bounds.min.y-center.y};
  resetMachine(result);return result;
 }
+// Modular workpieces are owned by MachineBase; legacy demo objects are runtime-owned.
+export function removeDemoWorkpiece(m) {
+ if(!m.workpiece || m.workpieceOwner === 'module')return false;
+ const object=m.workpiece;object.removeFromParent();disposeModel(object);
+ m.workpiece=null;m.workpieceOwner=null;return true;
+}
 export function resetMachine(m) {
- if(m.workpiece){m.workpiece.removeFromParent();m.workpiece.geometry.dispose();m.workpiece.material.dispose();m.workpiece=null;}
+ removeDemoWorkpiece(m);
  for(const [node,s] of m.restTransforms){node.position.copy(s.position);node.quaternion.copy(s.quaternion);node.scale.copy(s.scale);}
  m.offsets=Object.fromEntries(m.config.axes.map(a=>[a.id,0]));m.angles=Object.fromEntries(m.config.wheels.map(w=>[w.id,0]));m.detents={};m.indexSteps=0;m.emergency=false;m.brakeTime=0;m.signedRpm=0;m.direction=1;m.rpm=0;m.spindleAngle=0;m.leverAngle=0;m.running=false;m.moved=false;m.active=null;m.hover=null;
  for(const a of m.config.actions||[])if(a.type==='detent')setDetent(m,a.id,a.homeIndex);
@@ -170,9 +176,9 @@ export function isVisibleObject(object){for(let n=object;n;n=n.parent)if(!n.visi
 export function visibleHit(ray,scene){const meshes=[];scene.traverseVisible(n=>{if(n.isMesh)meshes.push(n);});return ray.intersectObjects(meshes,false)[0];}
 export function controlFor(object){if(!isVisibleObject(object))return null;for(let n=object;n;n=n.parent)if(n.userData.machineControl)return n.userData.machineControl;return null;}
 export function toggleDemoWorkpiece(m,requestedRunning){
- const d=m.config.demoWorkpiece;if(!d||requestedRunning||m.rpm>0||m.leverAngle!==0||!m.lookup[d.mount])return false;
- if(m.workpiece){m.workpiece.removeFromParent();m.workpiece.geometry.dispose();m.workpiece.material.dispose();m.workpiece=null;}
- else {const mesh=new Mesh(new CylinderGeometry(d.radius,d.radius,d.length,32),new MeshStandardMaterial({color:'#adbdc5',metalness:.8,roughness:.3}));mesh.name=d.name;mesh.quaternion.setFromUnitVectors(new Vector3(0,1,0),v(d.axis).normalize());mesh.position.fromArray(d.position);mesh.castShadow=true;m.lookup[d.mount].add(mesh);m.workpiece=mesh;}
+ const d=m.config.demoWorkpiece;if(m.workpieceOwner==='module'||!d||requestedRunning||m.rpm>0||m.leverAngle!==0||!m.lookup[d.mount])return false;
+ if(m.workpiece)removeDemoWorkpiece(m);
+ else {const mesh=new Mesh(new CylinderGeometry(d.radius,d.radius,d.length,32),new MeshStandardMaterial({color:'#adbdc5',metalness:.8,roughness:.3}));mesh.name=d.name;mesh.quaternion.setFromUnitVectors(new Vector3(0,1,0),v(d.axis).normalize());mesh.position.fromArray(d.position);mesh.castShadow=true;m.lookup[d.mount].add(mesh);m.workpiece=mesh;m.workpieceOwner='demo';}
  return true;
 }
 export function disposeMachine(m){for(const [mesh,{original,copy}]of m.materials){mesh.material=original;copy.forEach(mat=>mat.dispose());}if(m.legacy)disposeHighlights(m.legacy);for(const node of m.retiredNodes||[])m.scene.add(node);disposeModel(m.scene);}

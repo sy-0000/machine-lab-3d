@@ -1,26 +1,43 @@
-import {useRef,useState} from 'react';
-import {resetMachine,setAxisAndWheel,turnControl,safetyStatus,toggleDemoWorkpiece,indexTool,emergencyStop,releaseEmergency,setDetent,stepDetent,selectorRpm} from '../machines/runtime';
-export default function useMachineControls(model) {
- const [direction,setDirection]=useState(1);
- const [running,setRunning]=useState(false),[rpm,setRpm]=useState(500),[resetKey,setResetKey]=useState(0),[teaching,setTeaching]=useState(false),[interaction,setInteraction]=useState({hover:null,active:null,x:0,y:0}),[version,setVersion]=useState(0);
+import {useEffect,useRef,useState} from 'react';
+import {legacySliderCommand} from '../machining/adapters/MachineV1Adapter.js';
+
+// UI state only. All machine mutations, including pointer/keyboard holds, go through Session.
+export default function useMachineControls(session) {
+ const [resetKey,setResetKey]=useState(0),[interaction,setInteraction]=useState({hover:null,active:null,x:0,y:0}),[version,setVersion]=useState(0),[commandError,setCommandError]=useState('');
  const held=useRef(null),release=useRef(()=>{}),invalidate=useRef(()=>{});
  const refresh=()=>{setVersion(v=>v+1);invalidate.current();};
- const stopInput=(clear=false)=>{held.current=null;release.current(clear);refresh();};
- return {model,running,direction,rpm:(model&&selectorRpm(model))??rpm,resetKey,teaching,interaction,setInteraction,held,release,invalidate,version,refresh,stopInput,
-  setTeaching:value=>{stopInput();if(value&&model)for(const a of model.config.axes)setAxisAndWheel(model,a.id,model.offsets[a.id],true);setTeaching(value);refresh();},
-  setRpm:value=>{setRpm(Number(value));invalidate.current();},
-  start:(value)=>{if(model?.pivots[model.config.spindle.node]&&!model.emergency){setDirection(value===-1?-1:1);setRunning(true);invalidate.current();}},
-  stop:()=>{setRunning(false);invalidate.current();},
-  toggle:(value)=>{if(model?.pivots[model.config.spindle.node]&&!model.emergency){const next=value===-1?-1:1;setDirection(next);setRunning(v=>v&&direction===next?false:true);invalidate.current();}},
-  detentStep:(key,direction)=>{if(model){stepDetent(model,key,direction);refresh();}},
-  detent:(key,index)=>{if(model){setDetent(model,key,index);refresh();}},
-  index:(direction=1)=>{if(model){indexTool(model,direction);refresh();}},
-  brake:()=>{if(model){stopInput();setRunning(false);emergencyStop(model);refresh();}},
-  releaseBrake:()=>{if(model){releaseEmergency(model);refresh();}},
-  toggleWorkpiece:()=>{if(model&&toggleDemoWorkpiece(model,running))refresh();},
-  move:(key,value)=>{if(model){setAxisAndWheel(model,key,Number(value),teaching);refresh();}},
-  turn:(key,direction,dt)=>{if(model){turnControl(model,key,direction,dt,teaching);refresh();}},
-  reset:()=>{stopInput(true);setRunning(false);setDirection(1);setTeaching(false);setRpm(model?.config.defaultRpm||500);if(model)resetMachine(model);setInteraction({hover:null,active:null,x:0,y:0});setResetKey(v=>v+1);refresh();},
-  warning:model?safetyStatus(model):{level:'',text:'等待模型載入'},
+ useEffect(()=>{
+  held.current=null;setCommandError('');
+  if(!session)return;
+  return session.subscribe(()=>{
+   if(!session.canCommand()) {held.current=null;release.current(true);}
+   refresh();
+  });
+ },[session]);
+ const send=command=>{
+  const result=session?.command(command);
+  if(result && !result.ok)setCommandError(result.reason);else setCommandError('');
+  return !!result?.ok;
+ };
+ const stopInput=(clear=false)=>{held.current=null;session?.command({type:'wheel.release'});release.current(clear);refresh();};
+ const state=session?.getState();
+ return {session,state,running:state?.running||false,direction:state?.direction||1,rpm:state?.targetRpm??500,teaching:state?.teaching||false,
+  inputEnabled:!!session?.canCommand()&&!state?.busy,resetKey,interaction,setInteraction,held,release,invalidate,version,refresh,stopInput,
+  hold:(key,direction)=>{if(send({type:'wheel.hold',key,direction}))held.current={key,direction};},
+  setTeaching:enabled=>{stopInput();send({type:'teaching.set',enabled});},
+  setRpm:value=>send({type:'spindle.speed',rpm:Number(value)}),
+  start:direction=>send({type:'spindle.start',direction}),
+  stop:()=>send({type:'spindle.stop'}),
+  toggle:direction=>send({type:'spindle.toggle',direction}),
+  detentStep:(key,direction)=>send({type:'detent.step',key,direction}),
+  detent:(key,index)=>send({type:'detent.set',key,index}),
+  index:(direction=1)=>send({type:'tool.index',direction}),
+  brake:()=>{stopInput();send({type:'spindle.brake'});},
+  releaseBrake:()=>send({type:'spindle.releaseBrake'}),
+  toggleWorkpiece:()=>send({type:'workpiece.toggleDemo'}),
+  move:(key,value)=>send(legacySliderCommand(key,value)),
+  jog:(axisId,deltaMm)=>{stopInput();send({type:'machineAxis.jog',axisId,deltaMm});},
+  reset:()=>{stopInput(true);if(send({type:'machine.reset'})){setInteraction({hover:null,active:null,x:0,y:0});setResetKey(v=>v+1);}},
+  warning:commandError?{level:'caution',text:commandError}:state?.warning||{level:'',text:'等待模型載入'},
  };
 }

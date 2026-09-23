@@ -49,7 +49,7 @@ export class LatheController extends MachineBase {
   }
 
   /**
-   * Move Cross Slide (Z axis on lathe schema).
+   * Legacy Z: tool height (runtime z), NOT the teaching radial X axis.
    * @param {number} delta - distance in meters
    */
   moveZ(delta) {

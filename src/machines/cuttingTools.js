@@ -67,6 +67,8 @@ function buildTurningTool(group, def, lookup){
  const insert=new Mesh(new CylinderGeometry(.0118,.0118,.0042,3),goldInsert);
  insert.name=def.name+'_Insert';
  insert.rotation.y=-Math.PI/2;
+  // Upper cutting corner in this insert's local world units; consumed only by the adapter.
+  insert.userData.cuttingTipLocal = [0, insert.geometry.parameters.height / 2, insert.geometry.parameters.radiusTop];
  insert.position.set(-.195,.009+.0028+.0021,0);
  group.add(insert);lookup[insert.name]=insert;
 

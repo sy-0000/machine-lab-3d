@@ -52,7 +52,7 @@ class WorkpieceRegistryImpl {
   constructor() {
     this.presets = new Map();
     for (const [id, def] of Object.entries(WORKPIECE_PRESETS)) {
-      this.presets.set(id, def);
+      this.presets.set(id, { ...def, units: 'mm' });
     }
   }
 

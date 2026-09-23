@@ -10,6 +10,8 @@ import {
   stepReturn,
   safetyStatus,
   setHighlight,
+  setDetent, stepDetent, selectorRpm, indexTool, emergencyStop, releaseEmergency,
+  toggleDemoWorkpiece, removeDemoWorkpiece,
 } from '../runtime.js';
 
 /**
@@ -42,6 +44,8 @@ export class MachineBase {
     this.teaching = false;
 
     this.eventListeners = new Set();
+    this.updateClockOwner = null;
+    this.defaultTools = [];
   }
 
   /**
@@ -50,6 +54,9 @@ export class MachineBase {
   async load() {
     this.runtime = prepareMachine(this.rootScene, this.config);
     this._setupMountPoints();
+    this.defaultTools = (this.config.additions || [])
+      .filter(def => def.kind === 'cuttingTool')
+      .map(def => ({ id: def.name, type: def.tool, object: this.runtime.lookup[def.name], visible: this.runtime.lookup[def.name]?.visible }));
     this.isActive = true;
     return this;
   }
@@ -176,6 +183,7 @@ export class MachineBase {
     tool.object3D.position.set(0, 0, 0);
     tool.object3D.rotation.set(0, 0, 0);
     this.toolMount.add(tool.object3D);
+    for (const entry of this.defaultTools) if (entry.object) entry.object.visible = false;
     this.rootScene.updateWorldMatrix(true, true);
     return true;
   }
@@ -191,6 +199,7 @@ export class MachineBase {
     }
     tool.mountedTo = null;
     this.currentTool = null;
+    for (const entry of this.defaultTools) if (entry.object) entry.object.visible = entry.visible;
     this.rootScene.updateWorldMatrix(true, true);
     return tool;
   }
@@ -206,6 +215,7 @@ export class MachineBase {
     if (this.currentWorkpiece) {
       await this.unmountWorkpiece();
     }
+    removeDemoWorkpiece(this.runtime);
     this.currentWorkpiece = workpiece;
     workpiece.mountedTo = this.workpieceMount;
     workpiece.object3D.position.set(0, 0, 0);
@@ -215,6 +225,7 @@ export class MachineBase {
     // Provide to runtime for safety boundary checks
     if (this.runtime) {
       this.runtime.workpiece = workpiece.object3D;
+      this.runtime.workpieceOwner = 'module';
     }
     this.rootScene.updateWorldMatrix(true, true);
     return true;
@@ -233,6 +244,7 @@ export class MachineBase {
     this.currentWorkpiece = null;
     if (this.runtime) {
       this.runtime.workpiece = null;
+      this.runtime.workpieceOwner = null;
     }
     this.rootScene.updateWorldMatrix(true, true);
     return workpiece;
@@ -263,6 +275,8 @@ export class MachineBase {
     }
 
     this.eventListeners.clear();
+    this.updateClockOwner = null;
+    this.defaultTools = [];
     this.toolMount = null;
     this.workpieceMount = null;
   }
@@ -305,11 +319,51 @@ export class MachineBase {
    * Per-frame animation / simulation step.
    * @param {number} dt
    */
-  step(dt) {
+  step(dt, { owner = null, heldControl = null } = {}) {
+    if (this.updateClockOwner && owner !== this.updateClockOwner) throw new Error('Machine update clock is owned by a session');
+    if (!Number.isFinite(dt) || dt < 0) throw new Error('Invalid simulation dt');
     if (!this.runtime) return false;
-    stepReturn(this.runtime, null, dt);
+    if (heldControl) this.turnHandwheel(heldControl.key, heldControl.direction, dt);
+    const returning = stepReturn(this.runtime, heldControl?.key, dt);
     stepMachine(this.runtime, this.running, this.targetRpm, dt, this.direction);
-    return this.runtime.rpm > 0 || this.runtime.leverAngle !== 0 || this.running;
+    return returning || !!heldControl || this.runtime.rpm > 0 || this.runtime.leverAngle !== 0 || this.running || this.runtime.brakeTime > 0;
+  }
+
+  // Additive v1 capabilities. Existing moveX/moveZ retain their original meaning.
+  claimUpdateClock(owner) {
+    if (!owner || this.updateClockOwner) throw new Error('Machine update clock already claimed');
+    this.updateClockOwner = owner;
+  }
+
+  releaseUpdateClock(owner) {
+    if (this.updateClockOwner === owner) this.updateClockOwner = null;
+  }
+
+  setAxisPosition(axisId, worldValue) {
+    if (!this.runtime?.config.axes.some(axis => axis.id === axisId && axis.enabled)) throw new Error('Unsupported machine axis: ' + axisId);
+    setAxisAndWheel(this.runtime, axisId, worldValue, this.teaching);
+  }
+
+  turnHandwheel(key, direction, dt) {
+    if (this.runtime) turnControl(this.runtime, key, direction, dt, this.teaching);
+  }
+
+  setTeachingEnabled(value) {
+    this.teaching = !!value;
+    if (this.teaching && this.runtime) for (const axis of this.config.axes) this.setAxisPosition(axis.id, this.runtime.offsets[axis.id]);
+  }
+
+  setControlDetent(key, index) { if (this.runtime) setDetent(this.runtime, key, index); }
+  stepControlDetent(key, direction) { if (this.runtime) stepDetent(this.runtime, key, direction); }
+  indexToolPost(direction) { if (this.runtime) indexTool(this.runtime, direction); }
+  emergencyBrake() { this.running = false; if (this.runtime) emergencyStop(this.runtime); }
+  releaseEmergencyBrake() { if (this.runtime) releaseEmergency(this.runtime); }
+  toggleDemoWorkpiece() { return !!this.runtime && toggleDemoWorkpiece(this.runtime, this.running); }
+
+  getActiveCuttingTool() {
+    if (this.currentTool) return this.currentTool.type === 'measuring' ? null : { id: this.currentTool.id, name: this.currentTool.name, type: this.currentTool.type, source: 'module' };
+    const entry = this.defaultTools.find(tool => tool.object?.visible);
+    return entry ? { id: entry.id, name: entry.id, type: entry.type, source: 'default' } : null;
   }
 
   /**
@@ -323,6 +377,11 @@ export class MachineBase {
       direction: this.direction,
       rpm: Math.round(this.runtime?.rpm || 0),
       targetRpm: this.targetRpm,
+      effectiveTargetRpm: this.runtime ? selectorRpm(this.runtime) ?? this.targetRpm : this.targetRpm,
+      spindleAvailable: !!this.runtime?.pivots[this.config.spindle.node],
+      emergency: !!this.runtime?.emergency,
+      leverAngle: this.runtime?.leverAngle || 0,
+      activeCuttingTool: this.getActiveCuttingTool(),
       spindleAngle: this.runtime?.spindleAngle || 0,
       offsets: { ...(this.runtime?.offsets || {}) },
       angles: { ...(this.runtime?.angles || {}) },

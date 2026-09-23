@@ -6,6 +6,7 @@ test('demo workpiece mounts and unmounts after moving each lathe axis',async({pa
  await page.goto('/?inspect=1#/lathe');
  const button=page.locator('.workpiece-button');
  await expect(button).toBeEnabled({timeout:60000});
+ await page.getByText('全部軸向與行程調整',{exact:true}).click();
  for(const axis of await page.locator('.axis-control input').all()){
   const min=Number(await axis.getAttribute('min')),max=Number(await axis.getAttribute('max'));
   await axis.fill(String(Number((min+(max-min)*.6).toFixed(4))));

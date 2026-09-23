@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { MachineSession } from '../machining/MachineSession.js';
 import { MachineRegistry } from '../machines/core/MachineRegistry.js';
 import { MACHINES } from '../machines/catalog.js';
 import useMachineControls from '../hooks/useMachineControls.js';
 import MachineScene from '../components/MachineScene.jsx';
 import ControlPanel from '../components/ControlPanel.jsx';
 import DeveloperPanel from '../components/DeveloperPanel.jsx';
+import { HAMMER_LEVELS } from '../levels/hammerPrototype.js';
 
 export default function GameWorkspace({ initialMachineId = 'lathe' }) {
   const [currentId, setCurrentId] = useState(initialMachineId || 'lathe');
@@ -12,18 +14,22 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
   const [model, setModel] = useState(null);
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(0);
-  const [version, setVersion] = useState(0);
-
-  const controls = useMachineControls(model);
+  const [session, setSession] = useState(null);
+  const sessionRef = useRef(null);
+  const controls = useMachineControls(session);
   const abortControllerRef = useRef(null);
 
   const loadMachine = useCallback(async (targetId) => {
+    if (sessionRef.current && !sessionRef.current.canCommand()) throw new Error('機台輸入已鎖定');
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     const abort = new AbortController();
     abortControllerRef.current = abort;
 
+    sessionRef.current?.dispose();
+    sessionRef.current = null;
+    setSession(null);setModel(null);setMachineInstance(null);
     setError('');
     setProgress(5);
     setCurrentId(targetId);
@@ -35,6 +41,9 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
       });
 
       if (!abort.signal.aborted) {
+        const nextSession = new MachineSession(instance);
+        sessionRef.current = nextSession;
+        setSession(nextSession);
         setMachineInstance(instance);
         setModel(instance.runtime);
         setProgress(100);
@@ -42,7 +51,7 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
         if (location.hash !== `#/${targetId}`) {
           history.replaceState(null, '', `#/${targetId}`);
         }
-        return instance;
+        return nextSession;
       }
     } catch (err) {
       if (!abort.signal.aborted) {
@@ -60,6 +69,8 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      sessionRef.current?.dispose();
+      sessionRef.current = null;
       MachineRegistry.unload();
     };
   }, [initialMachineId, loadMachine]);
@@ -70,8 +81,12 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
     number: '01',
   };
 
-  const handleRefresh = () => {
-    setVersion(v => v + 1);
+  const handleUnload = async () => {
+    if (sessionRef.current && !sessionRef.current.canCommand()) throw new Error('機台輸入已鎖定');
+    abortControllerRef.current?.abort();
+    sessionRef.current?.dispose(); sessionRef.current = null;
+    setSession(null);setModel(null);setMachineInstance(null);
+    await MachineRegistry.unload();
   };
 
   return (
@@ -98,9 +113,11 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
         </div>
 
         <span className="lesson-tag">
-          動態模組載入 · {currentDef.number}
+          自由操作 · {currentDef.number}
         </span>
       </div>
+
+      <section className="classroom-modes" aria-label="教室學習模式"><div><strong>自由操作</strong><p>在下方探索機台；也可以先選擇一段加工示範。</p></div><div className="classroom-demo-links">{HAMMER_LEVELS.map(level => <a key={level.id} href={'#/demo/'+level.id}>{level.title.replace(/^第.關：/, '')}示範 ↗</a>)}<a href="#/levels">查看關卡目標 →</a></div></section>
 
       <div className="workspace">
         <div className="left-column">
@@ -117,7 +134,8 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
             currentMachineId={currentId}
             onSelectMachine={loadMachine}
             currentMachineInstance={machineInstance}
-            onRefresh={handleRefresh}
+            session={session}
+            onUnload={handleUnload}
           />
 
           <section className="status-panel">
@@ -133,10 +151,14 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
                   {controls.rpm} / {Math.round(model?.rpm || 0)}
                 </strong>
               </div>
+              {controls.state?.lathe && <>
+                <div><span>教學 X／直徑相對值</span><strong>{controls.state.lathe.xDiameterMm.toFixed(2)} mm</strong></div>
+                <div><span>教學 Z／長度相對值</span><strong>{controls.state.lathe.zMm.toFixed(2)} mm</strong></div>
+              </>}
               {model?.config.axes.map(a => (
                 <div key={a.id}>
                   <span>{a.label}</span>
-                  <strong>{(model.offsets[a.id] || 0).toFixed(3)}</strong>
+                  <strong>{((model.offsets[a.id] || 0) * 1000).toFixed(2)} mm</strong>
                 </div>
               ))}
               {machineInstance?.currentTool && (
@@ -157,46 +179,10 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
             </div>
           </section>
 
-          {model && (
-            <section className="status-panel mapping-status">
-              <h2>節點核對與模型限制</h2>
-              <p>
-                {model.audit.filter(a => a.found).length} 筆節點參照已找到；
-                {model.errors.length} 項對照問題。
-              </p>
-              {model.errors.length > 0 && (
-                <div role="alert" className="missing-parts">
-                  {model.errors.map(e => (
-                    <p key={e}>{e}</p>
-                  ))}
-                </div>
-              )}
-              <ul>
-                {model.config.notes.map(note => (
-                  <li key={note}>{note}</li>
-                ))}
-              </ul>
-              <details>
-                <summary>查看節點、軸向、Pivot 與 Mount Points</summary>
-                <pre>
-                  {JSON.stringify(
-                    {
-                      mounts: model.config.mounts,
-                      axes: model.config.axes,
-                      wheels: model.config.wheels,
-                      spindle: model.config.spindle,
-                      audit: model.audit,
-                    },
-                    null,
-                    2
-                  )}
-                </pre>
-              </details>
-            </section>
-          )}
+
         </div>
 
-        <ControlPanel controls={controls} model={model} />
+        <ControlPanel key={currentId} controls={controls} model={model} />
       </div>
     </main>
   );

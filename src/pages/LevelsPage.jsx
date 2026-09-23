@@ -1,127 +1,14 @@
-export const SAMPLE_LEVELS = [
-  {
-    id: 'lathe_01',
-    title: '第一關：外圓粗車與端面切削',
-    machine: 'lathe',
-    machineName: '普通車床 16K20',
-    workpiece: {
-      type: 'cylinder',
-      diameter: 30,
-      length: 100,
-      material: 'aluminum',
-    },
-    allowedTools: ['turning_tool', 'caliper'],
-    objective: {
-      operation: 'external_turning',
-      targetDiameter: 25,
-      targetLength: 40,
-      tolerance: '±0.05 mm',
-    },
-    description: '使用外徑精車刀對 Ø30 鋁棒進行端面削平與階梯外圓車削至 Ø25mm。',
-  },
-  {
-    id: 'milling_01',
-    title: '第二關：平面端銑與溝槽銑削',
-    machine: 'milling',
-    machineName: '立式銑床',
-    workpiece: {
-      type: 'block',
-      width: 100,
-      height: 40,
-      length: 60,
-      material: 'aluminum',
-    },
-    allowedTools: ['end_mill', 'face_mill', 'caliper'],
-    objective: {
-      operation: 'slotting',
-      slotWidth: 16,
-      slotDepth: 5,
-      tolerance: '±0.1 mm',
-    },
-    description: '使用四刃立銑刀在方塊工件頂面精確銑削一條 16mm 寬度對稱溝槽。',
-  },
-  {
-    id: 'drill_01',
-    title: '第三關：定位鑽孔與深孔加工',
-    machine: 'drill',
-    machineName: '桌上鑽床 TB 145',
-    workpiece: {
-      type: 'block',
-      width: 100,
-      height: 40,
-      length: 60,
-      material: 'aluminum',
-    },
-    allowedTools: ['drill_bit', 'caliper'],
-    objective: {
-      operation: 'drilling',
-      holeDiameter: 12,
-      holeDepth: 25,
-      tolerance: '±0.1 mm',
-    },
-    description: '操作鑽床進給手柄，控制套筒 (Quill) 進給深度，鑽出 Ø12mm 垂直通孔。',
-  },
-];
-
+import { HAMMER_LEVELS, STOCK } from '../levels/hammerPrototype.js';
 export default function LevelsPage() {
-  return (
-    <main className="info-page levels-page">
-      <div className="info-header">
-        <a className="back-link" href="#/">← 返回首頁</a>
-        <h1>加工關卡規劃預覽 (Level System Preview)</h1>
-        <p className="subtitle">Data-Driven Machining Challenges & Objectives</p>
-      </div>
-
-      <div className="levels-notice">
-        <span className="badge">架構契約已就緒 (Machine System v1.0 Frozen)</span>
-        <p>
-          本頁面展示未來 Level System 的資料描述格式。在正式關卡實作時，Level Runner 僅需讀取關卡 JSON 中的 <code>machine</code>、<code>workpiece</code> 與 <code>allowedTools</code>，即可自動透過 <code>MachineRegistry</code>、<code>WorkpieceRegistry</code> 與 <code>ToolRegistry</code> 動態組裝 3D 場景。
-        </p>
-      </div>
-
-      <div className="levels-grid">
-        {SAMPLE_LEVELS.map(lvl => (
-          <article className="level-card" key={lvl.id}>
-            <div className="level-badge">{lvl.machine.toUpperCase()}</div>
-            <h2>{lvl.title}</h2>
-            <p className="level-desc">{lvl.description}</p>
-
-            <div className="level-details">
-              <div>
-                <span>指定工具機：</span>
-                <strong>{lvl.machineName}</strong>
-              </div>
-              <div>
-                <span>工件規格：</span>
-                <strong>
-                  {lvl.workpiece.type === 'cylinder'
-                    ? `圓棒 Ø${lvl.workpiece.diameter}×${lvl.workpiece.length}mm`
-                    : `方塊 ${lvl.workpiece.width}×${lvl.workpiece.height}×${lvl.workpiece.length}mm`}
-                </strong>
-              </div>
-              <div>
-                <span>允許刀具：</span>
-                <strong>{lvl.allowedTools.join(', ')}</strong>
-              </div>
-              <div>
-                <span>目標公差：</span>
-                <strong>{lvl.objective.tolerance}</strong>
-              </div>
-            </div>
-
-            <div className="level-json">
-              <details>
-                <summary>檢視 Level JSON 契約資料</summary>
-                <pre>{JSON.stringify(lvl, null, 2)}</pre>
-              </details>
-            </div>
-
-            <a className="level-action" href={`#/${lvl.machine}`}>
-              進入 {lvl.machineName} 場景體驗 →
-            </a>
-          </article>
-        ))}
-      </div>
-    </main>
-  );
+ return <main className="info-page levels-page">
+  <div className="info-header"><a className="back-link" href="#/">← 返回首頁</a><span className="eyebrow green">製作一把槌子</span><h1>加工關卡預覽</h1><p className="subtitle">先了解加工目標，再開始體驗。每關都可以觀看局部加工動畫。</p></div>
+  <div className="lesson-summary"><strong>01 握柄 → 02 前端</strong><p>從 Ø{STOCK.radius * 2} × {STOCK.length} mm 圓棒開始，逐關完成槌柄。第二關優先沿用第一關成果；尚未完成時，使用標準握柄工件練習。</p></div>
+  <div className="levels-grid">{HAMMER_LEVELS.map((level,index)=><article className="level-card lesson-card" key={level.id}>
+   <span className="level-badge">車床 · {String(index+1).padStart(2,'0')}</span><h2>{level.title}</h2><p className="level-desc">{level.description}</p>
+   <h3>本關目標</h3><ul className="lesson-objectives"><li>設定進給零點，觀察主軸與刀具移動。</li><li>將 {level.end}–{level.start} mm 區段加工至 Ø{level.radius*2} mm。</li><li>完成 {level.start-level.end} mm 進給，在目標位置停止。</li><li>{index===0?'保留加工後工件，供前端加工使用。':'保留握柄輪廓，完成前端較細的接合區。'}</li></ul>
+   <p className="lesson-stock">起始工件：{index===0?'固定尺寸圓棒':'上一關成果／標準握柄工件'}</p>
+   <div className="lesson-actions"><a className="level-action" href={'#/experience/'+level.id}>開始體驗 →</a><a href={'#/demo/'+level.id}>觀看示範</a></div>
+  </article>)}</div>
+  <p className="lesson-roadmap">後續課程：階梯與錐度 → 壓花 → 螺紋 → 槌頭加工 → 組裝。完成後將逐步開放。</p>
+ </main>;
 }

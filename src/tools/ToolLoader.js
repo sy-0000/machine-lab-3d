@@ -70,6 +70,8 @@ function buildTurningToolProcedural(group, def) {
   // Carbide Insert (菱形/三角形)
   const insert = new Mesh(new CylinderGeometry(0.0118, 0.0118, 0.0042, 3), goldInsert);
   insert.rotation.y = -Math.PI / 2;
+  // Upper cutting corner in this insert's local world units; consumed only by the adapter.
+  insert.userData.cuttingTipLocal = [0, insert.geometry.parameters.height / 2, insert.geometry.parameters.radiusTop];
   insert.position.set(-0.195, 0.009 + 0.0042 / 2, 0);
   group.add(insert);
 

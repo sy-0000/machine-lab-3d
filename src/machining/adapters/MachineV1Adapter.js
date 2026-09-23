@@ -1,0 +1,234 @@
+import { Vector3 } from 'three';
+import { isVisibleObject } from '../../machines/runtime.js';
+import { RevolvedWorkpiece } from './RevolvedWorkpiece.js';
+import { cutRevolvedProfile } from '../CuttingSimulation.js';
+import { ToolRegistry } from '../../tools/ToolRegistry.js';
+import { WorkpieceRegistry } from '../../workpieces/WorkpieceRegistry.js';
+import { createLatheCoordinates, LATHE_AXES, diameterToRadiusMm, finite } from './latheCoordinates.js';
+
+// The v1 scene uses metres. No magnitude-dependent unit inference at this boundary.
+export const mmToWorld = mm => finite(mm, 'mm') / 1000;
+export const worldToMm = world => finite(world, 'world') * 1000;
+// Compatibility for the existing HTML range controls; their old DOM values remain metres.
+export const legacySliderCommand = (axisId, worldValue) => ({
+  type: 'machineAxis.set', axisId, valueMm: worldToMm(Number(worldValue)),
+});
+const AXES = {
+  lathe: LATHE_AXES,
+  milling: { X: 'X_Axis_Table', Y: 'Y_Axis_Saddle', Z: 'Knee_Z_Slide' },
+  drill: { quill: 'quill', table: 'table' },
+};
+
+/** Sole machining boundary to v1. No node/runtime references escape its state query. */
+export class MachineV1Adapter {
+  #machine;
+  #coordinates;
+  #offsets = {};
+  #clock = Symbol('machine-session-clock');
+  #disposed = false;
+  constructor(machine, { latheCoordinates = {}, tools = ToolRegistry, workpieces = WorkpieceRegistry } = {}) {
+    if (!machine?.runtime || !AXES[machine.id]) throw new Error('A loaded supported machine is required');
+    this.#machine = machine;
+    this.#coordinates = createLatheCoordinates(latheCoordinates);
+    this.tools = tools;
+    this.workpieces = workpieces;
+    machine.claimUpdateClock(this.#clock);
+  }
+  get available() { return !this.#disposed && !!this.#machine.runtime; }
+  #requireMachine() { if (!this.available) throw new Error('Machine session is disposed or unloaded'); }
+  #machineMm() { return Object.fromEntries(Object.entries(this.#machine.getState().offsets).map(([id, value]) => [id, worldToMm(value)])); }
+  #axisId(axis) {
+    const id = AXES[this.#machine.id][axis];
+    if (!id) throw new Error('Unsupported teaching axis: ' + axis);
+    return id;
+  }
+  getState() {
+    this.#requireMachine();
+    const m = this.#machine, state = m.getState(), machineAxesMm = this.#machineMm();
+    const axesMm = Object.fromEntries(Object.entries(AXES[m.id]).map(([axis, id]) => [axis, (machineAxesMm[id] || 0) - (this.#offsets[axis] || 0)]));
+    let lathe = null;
+    if (m.id === 'lathe') {
+      lathe = this.#coordinates.fromMachineMm({ longitudinalMm: machineAxesMm.x, radialMm: machineAxesMm.y }, this.#offsets);
+      axesMm.X = lathe.xDiameterMm; axesMm.Z = lathe.zMm;
+    }
+    const workpiece = m.currentWorkpiece;
+    const dimensions = workpiece?.dimensions;
+    const dimensionsMm = !dimensions ? null : workpiece.type === 'cylinder'
+      ? { radiusMm: worldToMm(dimensions.radius), diameterMm: worldToMm(dimensions.radius * 2), lengthMm: worldToMm(dimensions.lengthMeters) }
+      : { widthMm: worldToMm(dimensions.widthMeters), heightMm: worldToMm(dimensions.heightMeters), lengthMm: worldToMm(dimensions.lengthMeters) };
+    const { gap, ...warning } = state.safety;
+    return {
+      id: m.id, name: m.name, units: 'mm', running: state.running, direction: state.direction,
+      rpm: state.rpm, requestedRpm: state.targetRpm, targetRpm: state.effectiveTargetRpm,
+      spindleAvailable: state.spindleAvailable, spindleAngle: state.spindleAngle,
+      leverAngle: state.leverAngle, teaching: m.teaching,
+      axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets },
+      activeCuttingTool: state.activeCuttingTool,
+      cuttingTipMm: this.#cuttingSample()?.position || null,
+      workpiece: workpiece ? { id: workpiece.id, name: workpiece.name, type: workpiece.type, dimensionsMm, machinable: workpiece instanceof RevolvedWorkpiece } : null,
+      hasDemoWorkpiece: !!m.runtime.workpiece && m.runtime.workpieceOwner !== 'module',
+      warning: { ...warning, ...(gap === undefined ? {} : { gapMm: Number.isFinite(gap) ? worldToMm(gap) : null }) },
+    };
+  }
+  setMachineAxisMm(axisId, valueMm) {
+    this.#requireMachine();
+    const before = this.#cuttingSample();
+    this.#machine.setAxisPosition(axisId, mmToWorld(valueMm));
+    this.#cut(before, this.#cuttingSample());
+  }
+  moveAxis({ axis, valueMm, mode = 'absolute', representation }) {
+    this.#requireMachine(); finite(valueMm);
+    if (!['absolute', 'relative'].includes(mode)) throw new Error('Motion mode must be absolute or relative');
+    const m = this.#machine, id = this.#axisId(axis), current = this.#machineMm()[id];
+    let target;
+    if (m.id === 'lathe' && ['X', 'Z'].includes(axis)) {
+      target = this.#coordinates.toMachineMm(axis, valueMm, representation, mode === 'absolute' ? this.#offsets[axis] || 0 : 0);
+    } else target = valueMm + (mode === 'absolute' ? this.#offsets[axis] || 0 : 0);
+    this.setMachineAxisMm(id, target + (mode === 'relative' ? current : 0));
+  }
+  setReadout({ axis, valueMm = 0, representation }) {
+    this.#requireMachine(); finite(valueMm);
+    const m = this.#machine, id = this.#axisId(axis), actual = this.#machineMm()[id];
+    if (m.id === 'lathe' && axis === 'X') {
+      if (!['diameter', 'radial'].includes(representation)) throw new Error('X requires diameter or radial representation');
+      this.#offsets.X = actual * this.#coordinates.radialSign - (representation === 'diameter' ? diameterToRadiusMm(valueMm) : valueMm);
+    } else this.#offsets[axis] = actual * (m.id === 'lathe' && axis === 'Z' ? this.#coordinates.longitudinalSign : 1) - valueMm;
+  }
+  start(direction = 1) {
+    this.#requireMachine();
+    if (![1, -1].includes(direction)) throw new Error('Direction must be +1 or -1');
+    if (!this.#machine.getState().spindleAvailable) throw new Error('Spindle unavailable');
+    if (!this.#machine.startSpindle(direction)) throw new Error('Spindle start rejected');
+  }
+  stop() { this.#machine.stopSpindle(); }
+  setSpeed(rpm) {
+    this.#requireMachine(); finite(rpm, 'rpm');
+    if (rpm < 0 || rpm > this.#machine.config.maxRpm) throw new Error('RPM outside machine range');
+    const selectors = this.#machine.config.speedSelectors;
+    if (selectors) {
+      const pairs = selectors.baseRpm.flatMap((base, gear) => selectors.multipliers.map((factor, mode) => ({ gear, mode, rpm: base * factor })));
+      const pair = pairs.find(pair => pair.rpm === rpm);
+      if (!pair) throw new Error('RPM must match an available spindle detent');
+      this.#machine.setControlDetent(selectors.gear, pair.gear);
+      this.#machine.setControlDetent(selectors.mode, pair.mode);
+    }
+    this.#machine.setSpindleRPM(rpm);
+  }
+  validateWheel(key, direction) {
+    const wheel = this.#machine.config.wheels.find(wheel => wheel.id === key);
+    if (!wheel || ![1, -1].includes(direction)) throw new Error('Invalid handwheel command');
+    if (wheel.needsCalibration && !this.#machine.teaching) throw new Error('Teaching ratio must be enabled');
+  }
+  control(type, command) {
+    this.#requireMachine(); const m = this.#machine;
+    switch (type) {
+      case 'teaching.set': m.setTeachingEnabled(command.enabled); break;
+      case 'detent.set': {
+        const def = m.config.actions?.find(action => action.id === command.key && action.type === 'detent');
+        if (!def || !Number.isInteger(command.index) || command.index < 0 || command.index >= def.degrees.length) throw new Error('Invalid detent');
+        m.setControlDetent(command.key, command.index); break;
+      }
+      case 'detent.step': {
+        if (!m.config.actions?.some(action => action.id === command.key && action.type === 'detent') || ![1, -1].includes(command.direction)) throw new Error('Invalid detent command');
+        m.stepControlDetent(command.key, command.direction); break;
+      }
+      case 'tool.index': if (![1, -1].includes(command.direction)) throw new Error('Invalid index direction'); m.indexToolPost(command.direction); break;
+      case 'spindle.brake': m.emergencyBrake(); break;
+      case 'spindle.releaseBrake': m.releaseEmergencyBrake(); break;
+      case 'workpiece.toggleDemo': if (!m.toggleDemoWorkpiece()) throw new Error('Demo workpiece cannot be toggled while running or a modular workpiece is mounted'); break;
+      default: throw new Error('Unsupported control: ' + type);
+    }
+  }
+  #requireStopped() {
+    this.#requireMachine(); const state = this.#machine.getState();
+    if (state.running || state.rpm > 0 || state.leverAngle !== 0) throw new Error('Stop the spindle before changing tools or workpieces');
+  }
+  async selectTool(id, stillCurrent) {
+    this.#requireStopped();
+    const def = id === null ? null : this.tools.get(id);
+    if (id !== null && (!def || def.type === 'measuring' || (def.compatibleMachines && !def.compatibleMachines.includes(this.#machine.id)))) throw new Error('Unsupported cutting tool for this machine');
+    const tool = def ? await this.tools.load(id) : null;
+    if (!stillCurrent() || !this.available) { tool?.dispose(); return false; }
+    try { this.#requireStopped(); } catch (error) { tool?.dispose(); throw error; }
+    const previous = this.#machine.currentTool;
+    if (tool) await this.#machine.mountTool(tool); else await this.#machine.unmountTool();
+    previous?.dispose();
+    return true;
+  }
+  exportWorkpieceState() {
+    this.#requireMachine();
+    if (!(this.#machine.currentWorkpiece instanceof RevolvedWorkpiece)) throw new Error('No machinable handle mounted');
+    return this.#machine.currentWorkpiece.exportState();
+  }
+  async mountWorkpieceState(state, stillCurrent) {
+    this.#requireStopped();
+    if (this.#machine.id !== 'lathe') throw new Error('Revolved workpieces require a lathe');
+    const workpiece = new RevolvedWorkpiece(state, mmToWorld);
+    if (!stillCurrent()) { workpiece.dispose(); return false; }
+    const previous = this.#machine.currentWorkpiece;
+    await this.#machine.mountWorkpiece(workpiece);
+    previous?.dispose(); return true;
+  }
+  // Physical tip expressed in a non-spinning workpiece frame, independent of UI work offsets.
+  // The v1 workpiece's local +X is teaching Z; transverse U/V retain tool height information.
+  #cuttingSample() {
+    const m = this.#machine, workpiece = m.currentWorkpiece;
+    if (m.id !== 'lathe' || !(workpiece instanceof RevolvedWorkpiece)) return null;
+    const active = m.getActiveCuttingTool();
+    if (active?.type !== 'turning') return null;
+    const root = active.source === 'module' ? m.currentTool.object3D : m.runtime.lookup[active.id];
+    if (!root || !isVisibleObject(root)) return null;
+    let insert = null;
+    root.traverse(node => { if (node.userData.cuttingTipLocal && isVisibleObject(node)) insert = node; });
+    // Imported tools need an explicit tip calibration; never fall back to a bounding-box guess.
+    if (!insert) return null;
+    m.rootScene.updateWorldMatrix(true, true);
+    const scenePoint = point => m.rootScene.worldToLocal(point);
+    const origin = scenePoint(workpiece.object3D.localToWorld(new Vector3()));
+    const axis = scenePoint(workpiece.object3D.localToWorld(new Vector3(1, 0, 0))).sub(origin).normalize();
+    const u = new Vector3(0, 1, 0).addScaledVector(axis, -axis.y).normalize();
+    const v = new Vector3().crossVectors(axis, u).normalize();
+    const point = scenePoint(insert.localToWorld(new Vector3().fromArray(insert.userData.cuttingTipLocal))).sub(origin);
+    const mm = value => Math.round(worldToMm(value) * 1e9) / 1e9;
+    return { toolId: active.id, rpm: m.runtime.rpm,
+      position: { zMm: mm(point.dot(axis)), uMm: mm(point.dot(u)), vMm: mm(point.dot(v)) } };
+  }
+  #cut(before, after) {
+    if (!after || !before || before.toolId !== after.toolId) return;
+    // On the first rotating frame, contact at the final tip only; no sweep through a stopped move.
+    const from = before.rpm > 0 ? before.position : after.position;
+    this.#machine.currentWorkpiece.cut(state => cutRevolvedProfile(state, from, after.position,
+      { rpm: before.rpm > 0 ? before.rpm : after.rpm, toolId: after.toolId }));
+  }
+  async mountWorkpiece(spec, stillCurrent) {
+    this.#requireStopped();
+    if (typeof spec !== 'string') {
+      if (!spec || !['cylinder', 'block'].includes(spec.type) || (spec.units !== undefined && spec.units !== 'mm')) throw new Error('Session workpiece specs must use mm');
+      for (const key of spec.type === 'cylinder' ? ['diameter', 'length'] : ['width', 'height', 'length']) {
+        if (!Number.isFinite(spec[key]) || spec[key] <= 0) throw new Error('Required positive dimension in mm: ' + key);
+      }
+    }
+    const workpiece = await this.workpieces.load(typeof spec === 'string' ? spec : { ...spec, units: 'mm' });
+    if (!stillCurrent() || !this.available) { workpiece.dispose(); return false; }
+    try { this.#requireStopped(); } catch (error) { workpiece.dispose(); throw error; }
+    const previous = this.#machine.currentWorkpiece;
+    await this.#machine.mountWorkpiece(workpiece);
+    previous?.dispose(); return true;
+  }
+  async unmountWorkpiece(stillCurrent) {
+    this.#requireStopped(); if (!stillCurrent()) return false;
+    const workpiece = await this.#machine.unmountWorkpiece(); workpiece?.dispose(); return true;
+  }
+  reset() { this.#requireMachine(); this.#machine.reset(); this.#machine.setTeachingEnabled(false); this.#offsets = {}; }
+  step(dt, heldControl) {
+    if (!this.available) return false;
+    const before = this.#cuttingSample();
+    const active = this.#machine.step(dt, { owner: this.#clock, heldControl });
+    if (dt > 0) this.#cut(before, this.#cuttingSample());
+    return active;
+  }
+  dispose() {
+    if (this.#disposed) return;
+    this.stop(); this.#machine.releaseUpdateClock(this.#clock); this.#disposed = true;
+  }
+}

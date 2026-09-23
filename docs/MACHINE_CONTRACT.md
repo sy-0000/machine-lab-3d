@@ -256,3 +256,9 @@ await machine.mountWorkpiece(workpiece);
 3. ❌ 禁止手動將 Tool 或 Workpiece 加入至任何非 `ToolMount` / `WorkpieceMount` 的任意 Mesh。
 4. ❌ 禁止繞過 Controller 直接設定主軸角度或導軌距離。
 5. ❌ 禁止在 Level System 中寫死特定 GLB 模型內部路徑或硬編碼節點名稱。
+
+## 相容層補充（以目前程式為準）
+
+原文件部分車床軸向、行程與掛載數值已落後於現行 JSON。現行 runtime 為 `x` 縱向、`y` 橫向、`z` 高度；舊 Controller `moveX` 保留縱向，`moveZ` 保留高度，不能直接當作教學 X/Z。新增 Session 經 Adapter 將教學 X 映射到 runtime `y`、教學 Z 映射到 runtime `x`，詳見 [MachineSession 相容層](MACHINE_SESSION.md)。本次不改 GLB、不重新定義舊方法。
+
+MachineBase 新增 `setAxisPosition`、手輪／檔位控制、active cutting tool 查詢及更新時鐘所有權。`step(dt)` 在未被 Session 接管時維持原用法；接管後只有 Session 的 clock owner 可更新。Level / Demo 必須呼叫 Session，不可直接操作 runtime 或 Three.js 節點。

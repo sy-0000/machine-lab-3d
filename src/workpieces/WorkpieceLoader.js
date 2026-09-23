@@ -6,6 +6,7 @@ import {
   MeshStandardMaterial,
 } from 'three';
 import { WorkpieceBase } from './WorkpieceBase.js';
+import { legacyWorkpieceToMeters } from './legacyWorkpieceUnits.js';
 
 const MATERIAL_PRESETS = {
   aluminum: { color: '#cbd5e1', metalness: 0.75, roughness: 0.28 },
@@ -30,6 +31,10 @@ export class WorkpieceLoader {
    * @returns {WorkpieceBase}
    */
   static create(spec) {
+    if (spec.units !== undefined && !['mm', 'm'].includes(spec.units)) throw new Error('Workpiece units must be mm or m');
+    if (spec.units) for (const key of ['diameter', 'length', 'width', 'height']) {
+      if (spec[key] !== undefined && (!Number.isFinite(spec[key]) || spec[key] <= 0)) throw new Error('Invalid workpiece dimension: ' + key);
+    }
     const group = new Group();
     const type = spec.type || 'cylinder';
     const matConfig = MATERIAL_PRESETS[spec.material] || MATERIAL_PRESETS.aluminum;
@@ -41,7 +46,7 @@ export class WorkpieceLoader {
 
     const toMeters = val => {
       if (val === undefined || val === null) return 0.1;
-      return val > 1 ? val / 1000 : val;
+      return spec.units === 'mm' ? val / 1000 : spec.units === 'm' ? val : legacyWorkpieceToMeters(val);
     };
 
     let mesh;
