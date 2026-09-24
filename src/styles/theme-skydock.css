@@ -95,9 +95,7 @@ output{font-family:var(--display)}
 .switcher-tab.active{background:var(--teal);color:#fff;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
 
 /* 3D 視窗：天空、地平線、遠方浮島 */
-.viewport{border:var(--line);background:linear-gradient(#5fb0cf,#a8d6e3 55%,#a8d6e3)}
-.viewport::before{content:'';position:absolute;inset:6% 4% auto auto;width:220px;height:70px;background:#f2ead8;opacity:.75;clip-path:polygon(0 70%,12% 40%,30% 45%,42% 10%,58% 30%,74% 5%,88% 38%,100% 60%,82% 100%,20% 100%);pointer-events:none}
-.viewport::after{content:'';position:absolute;inset:14% auto auto 8%;width:140px;height:46px;background:#e9dcc0;opacity:.7;clip-path:polygon(0 60%,20% 20%,45% 35%,62% 0,82% 30%,100% 55%,70% 100%,15% 100%);pointer-events:none}
+.viewport{border:var(--line);background:linear-gradient(#5fb0cf,#b9dbe6 60%,#b9dbe6)}
 .viewport canvas{position:relative;z-index:1}
 .view-top,.view-bottom{z-index:2}
 .view-bar{background:transparent;border:0;padding:0;gap:0}
