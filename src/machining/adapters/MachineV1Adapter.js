@@ -39,6 +39,9 @@ export class MachineV1Adapter {
   #events = [];
   #chipSystem = null;
   #cutCount = 0; // material-removal events, for the machining sound
+  // Taper attachment: while engaged, every carriage (Z) move drags the cross slide along a guide bar set to
+  // angleDeg (taper half-angle from Z; positive = diameter grows toward the chuck), so feeding Z alone cuts a taper.
+  #taper = { enabled: false, angleDeg: 3 };
   #dt = 0; // current frame step; 0 for one-off commands
   #unsafe = false;
   constructor(machine, { latheCoordinates = {}, tools = ToolRegistry, workpieces = WorkpieceRegistry } = {}) {
@@ -95,6 +98,7 @@ export class MachineV1Adapter {
     const headBefore=this.head.sample();
     const before = this.#cuttingSample();
     this.#machine.setAxisPosition(axisId, mmToWorld(valueMm));
+    if (axisId === 'x') this.#followTaper(before);
     this.#cut(before, this.#cuttingSample());
     this.head.cut(headBefore,this.head.sample());
   }
@@ -308,6 +312,26 @@ export class MachineV1Adapter {
       ring.scale.setScalar(mmToWorld(m.diameterAtTipMm / 2 + 0.3));
     }
   }
+  setTaperAttachment({ enabled, angleDeg = this.#taper.angleDeg }) {
+    if (this.#machine.id !== 'lathe') throw new Error('錐度靠模只用於車床');
+    finite(angleDeg, 'angleDeg');
+    if (Math.abs(angleDeg) > 10) throw new Error('錐度靠模角度限 ±10°');
+    this.#taper = { enabled: !!enabled, angleDeg };
+  }
+  // The tip's Z change since `before` moves the cross slide by −ΔZ·tanθ radially (a single straight sweep, so
+  // the following #cut removes a true taper). Held at the cross-slide travel limit; X jogs still add depth on top.
+  #followTaper(before) {
+    const taper = this.#taper;
+    if (!taper.enabled || !before) return;
+    const after = this.#cuttingSample();
+    if (!after || after.toolId !== before.toolId) return;
+    const dz = after.position.zMm - before.position.zMm;
+    if (Math.abs(dz) < 1e-9) return;
+    const radial = -dz * Math.tan(taper.angleDeg * Math.PI / 180);
+    const [low, high] = this.#machine.config.axes.find(a => a.id === 'y').range.map(worldToMm);
+    // Same convention as moveMachiningAxis: +radial is −machine y.
+    this.#machine.setAxisPosition('y', mmToWorld(Math.max(low, Math.min(high, this.#machineMm().y - radial))));
+  }
   setMachiningMode(mode) {
     if (!['turning','facing'].includes(mode)) throw new Error('Unsupported cutting mode');
     this.#machiningMode=mode;
@@ -323,7 +347,7 @@ export class MachineV1Adapter {
       const protectedZone=!!p && p.zMm<=state.clamping.endZMm;
       const unsafe=!!p && entersChuck(p,p,this.#danger(state));
       const x=p?-p.vMm:null;
-      return {mode:this.#machiningMode, lengthMm:state.lengthMm, clamping:{...state.clamping},
+      return {mode:this.#machiningMode, taperAttachment:{...this.#taper}, lengthMm:state.lengthMm, clamping:{...state.clamping},
         facingMaxDepthMm:LATHE_MACHINING.facing.maxDepthMm,
         centerAligned:!!p && Math.abs(p.uMm)<=LATHE_MACHINING.facing.centerToleranceMm,
         heightErrorMm:p?.uMm??null, xRadialMm:x, xDiameterMm:p?2*(x-this.#datum.X):null,
@@ -399,7 +423,7 @@ export class MachineV1Adapter {
     if(headPosition)this.head.workpiece.object3D.position.copy(headPosition);
     this.head.calibrateTool();
     this.#machine.setTeachingEnabled(false); this.#offsets = {}; this.#datum = {X:0,Z:0};
-    this.#unsafe=false;
+    this.#unsafe=false; this.#taper = { ...this.#taper, enabled: false };
     if (this.#cuttingSample()) this.alignCuttingTip();
   }
   step(dt, heldControl) {
@@ -407,6 +431,7 @@ export class MachineV1Adapter {
     const headBefore=this.head.sample();
     const before = this.#cuttingSample();
     const active = this.#machine.step(dt, { owner: this.#clock, heldControl });
+    this.#followTaper(before);
     this.#dt = dt;
     if (dt > 0) this.#cut(before, this.#cuttingSample());
     if (dt > 0) this.head.cut(headBefore,this.head.sample());

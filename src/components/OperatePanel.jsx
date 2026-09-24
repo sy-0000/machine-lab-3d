@@ -30,6 +30,7 @@ export default function OperatePanel({ session, controls, model, machineId, leve
   const [axisId, setAxisId] = useState(axes[0]?.id);
   const [step, setStep] = useState(0.1);
   const [angle, setAngle] = useState(3);
+  const [taperAngle, setTaperAngle] = useState('3');
   const [stopDepth, setStopDepth] = useState('-10');
   const [message, setMessage] = useState('');
   const [target, setTarget] = useState({ X: '', Z: '' });
@@ -114,7 +115,8 @@ export default function OperatePanel({ session, controls, model, machineId, leve
       <section className="op-section">
         <div className="op-heading"><h3>進給</h3><span className={'contact-pill ' + contactLevel} data-testid="contact-state" role="status">● {contactText}</span></div>
         <div className="segmented" role="radiogroup" aria-label="移動軸">
-          {available.map(a => <button key={a.id} role="radio" aria-checked={a.id === axis?.id} onClick={() => { endHold(); setAxisId(a.id); }}>{a.label}</button>)}
+          {/* The compound rest is always listed so students can find it; it needs a mounted stock to cut along. */}
+          {axes.map(a => <button key={a.id} role="radio" aria-checked={a.id === axis?.id} disabled={!available.includes(a)} title={available.includes(a) ? undefined : '先放上工件才能使用小刀架'} onClick={() => { endHold(); setAxisId(a.id); }}>{a.label}</button>)}
         </div>
         {axis?.compound && <label className="op-field">小刀架角度（°，由 Z 軸算起）
           <input aria-label="小刀架角度" type="number" step="0.5" min="-45" max="45" value={angle} onChange={e => setAngle(Math.max(-45, Math.min(45, Number(e.target.value) || 0)))} /></label>}
@@ -128,6 +130,8 @@ export default function OperatePanel({ session, controls, model, machineId, leve
             <strong>{label(axis)}{d < 0 ? '−' : '＋'} 微調</strong><small id={'jog-hint-' + d}>{d < 0 ? axis.minus : axis.plus}</small>
           </button>)}
         </div>}
+        {machineId === 'lathe' && !machining && <p className="op-help">放上工件後可選「小刀架」斜向進給車錐度。</p>}
+        {machining && m.taperAttachment?.enabled && axis?.id === 'Z' && <p className="notice caution">錐度靠模已接上：Z 移動時 X 會自動跟著走 {m.taperAttachment.angleDeg}°。</p>}
         <p className="op-help">{axis?.lever ? `按住下降鑽孔，放開自動回到最上面；速度跟著進給量（約 ${Math.min(40, Math.max(0.08, step * 8)).toFixed(1)} mm/s）。` : axis?.compound ? `沿小刀架斜向移動 ${step} mm：Z 與 X 同時動，車出錐度。錐度半角 = atan((大徑 − 小徑) ÷ (2 × 長度))。` : `點一下移動 ${step} mm；按住不放會連續轉動手輪。`}</p>
         {machineId === 'drill' && <div className="op-field depth-stop">
           <label className="op-check"><input type="checkbox" checked={state?.feedStopMm != null} onChange={e => send({ type: 'feed.stop', axisId: 'quill', depthMm: e.target.checked ? Number(stopDepth) : null })} /> 深度擋塊</label>
@@ -151,6 +155,13 @@ export default function OperatePanel({ session, controls, model, machineId, leve
       {machining && <section className="op-section">
         <div className="op-heading"><h3>車削</h3></div>
         <label className="op-field">加工模式<select aria-label="加工模式" value={m.mode || 'turning'} onChange={e => send({ type: 'machining.mode', mode: e.target.value })}><option value="turning">外徑車削</option><option value="facing">端面車削</option></select></label>
+        <div className="op-field taper-attachment">
+          <label className="op-check"><input type="checkbox" checked={!!m.taperAttachment?.enabled}
+            onChange={e => send({ type: 'machining.taperAttachment', enabled: e.target.checked, angleDeg: Number(taperAngle) || 0 })} /> 錐度靠模</label>
+          <input aria-label="錐度靠模角度（°）" type="number" step="0.5" min="-10" max="10" value={taperAngle}
+            onChange={e => { setTaperAngle(e.target.value); const v = Number(e.target.value); if (e.target.value !== '' && Number.isFinite(v) && Math.abs(v) <= 10) send({ type: 'machining.taperAttachment', enabled: !!m.taperAttachment?.enabled, angleDeg: v }); }} /> <small>°（半角）</small>
+        </div>
+        <p className="op-help">接上靠模後只要搖 Z，X 會沿導軌自動跟著動而車出錐度（正角度：越往夾頭直徑越大）。吃刀深度仍用 X 設定。</p>
         <dl className="op-measure"><dt>目前長度</dt><dd><output data-testid="cut-length">{show(m.lengthMm)}</output> mm</dd>
           <dt>刀尖處直徑</dt><dd>Ø <output data-testid="cut-stock-diameter">{show(m.diameterAtTipMm)}</output> mm</dd></dl>
         <details className="op-details" open={targetOpen} onToggle={e => setTargetOpen(e.currentTarget.open)}><summary>移動到工件座標</summary>

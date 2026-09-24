@@ -114,4 +114,4 @@
 .stars span.on{color:#ffcf5a;text-shadow:0 0 12px #ffb54766}
 .op-check{display:flex;align-items:center;gap:8px;font-size:12px;color:#aabcc3;margin-top:10px}
 .op-field input[type=number]{width:80px;background:#0f171b;color:#e6ecee;border:1px solid #34434b;border-radius:6px;padding:6px 8px;font:inherit;font-size:12px}
-@media(max-width:1000px){.challenge-cards{grid-template-columns:1fr}}
+@media(max-width:1000px){.challenge-cards{grid-template-columns:1fr}}.taper-attachment{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.taper-attachment .op-check{margin-top:0}

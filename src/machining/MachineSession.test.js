@@ -187,3 +187,33 @@ test('asynchronous tool load cannot mount after input handoff or session disposa
     f.session.unlockInput(lease);
   }finally{await f.close();}
 });
+
+test('taper attachment: feeding Z alone (jog or held carriage wheel) cuts a taper at the set half-angle', async () => {
+  const { session, tick, close } = await fixture();
+  try {
+    assert.equal((await session.command({ type: 'workpiece.createHandle' })).ok, true);
+    const angle = 4, slope = 2 * Math.tan(angle * Math.PI / 180); // diameter change per mm of Z
+    const m0 = session.getState().machining;
+    send(session, { type: 'machining.move', axis: 'Z', valueMm: m0.lengthMm + 2 - m0.physicalZMm, mode: 'relative' });
+    send(session, { type: 'machining.move', axis: 'X', valueMm: 16 - session.getState().machining.xDiameterMm - 2 * session.getState().machining.datumMm.X, mode: 'relative', representation: 'diameter' });
+    send(session, { type: 'machining.taperAttachment', enabled: true, angleDeg: angle });
+    send(session, { type: 'spindle.start', direction: 1 });
+    for (let i = 0; i < 240; i++) tick(1 / 60);
+    const start = session.getState().machining;
+    for (let i = 0; i < 20; i++) send(session, { type: 'machining.move', axis: 'Z', valueMm: -.5, mode: 'relative' });
+    // Held carriage handwheel toward the chuck: the attachment follows every frame.
+    send(session, { type: 'wheel.hold', key: 'carriageHandwheel', direction: -1 });
+    for (let i = 0; i < 60; i++) tick(1 / 60);
+    send(session, { type: 'wheel.release' });
+    const end = session.getState().machining;
+    assert.ok(start.physicalZMm - end.physicalZMm > 12, 'carriage fed toward the chuck');
+    near(end.xDiameterMm - start.xDiameterMm, slope * (start.physicalZMm - end.physicalZMm));
+    const w = session.exportWorkpieceState(), res = w.profile.resolutionMm, dia = z => 2 * w.profile.radiusMm[Math.floor(z / res)];
+    // Sample inside the cut: the taper leaves the Ø20 stock after (20 − 16) / slope ≈ 28.6 mm.
+    const z1 = w.lengthMm - 1, z2 = w.lengthMm - 20;
+    assert.ok(Math.abs((dia(z2) - dia(z1)) / (z1 - z2) - slope) < .01, 'profile slope matches the attachment angle');
+    assert.ok(dia(z1) < 20 && dia(z1) > 15.5, 'small end was cut');
+    send(session, { type: 'spindle.stop' });
+    assert.equal(session.command({ type: 'machining.taperAttachment', enabled: true, angleDeg: 15 }).ok, false);
+  } finally { await close(); }
+});

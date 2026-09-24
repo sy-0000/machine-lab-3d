@@ -77,6 +77,7 @@ export class MachineSession {
         case 'machining.datum': this.#adapter.setMachiningDatum(command); break;
         case 'machining.clearDatum': this.#adapter.clearMachiningDatum(); break;
         case 'machining.mode': this.#adapter.setMachiningMode(command.mode); break;
+        case 'machining.taperAttachment': this.#adapter.setTaperAttachment(command); break;
         case 'machining.alignCenter': this.#adapter.alignCuttingTip(); break;
         case 'axis.move': this.#adapter.moveAxis(command); break;
         case 'workOffset.set': this.#adapter.setReadout(command); break;
