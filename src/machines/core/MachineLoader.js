@@ -1,4 +1,5 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { normalizeConfig } from '../config.js';
 import { LATHE_CONFIG } from '../lathe/lathe.config.js';
 import { MILLING_CONFIG } from '../milling/milling.config.js';
@@ -109,7 +110,7 @@ export class MachineLoader {
     }
 
     onProgress(90);
-    const gltfLoader = new GLTFLoader();
+    const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const gltf = await gltfLoader.parseAsync(glbBuffer, new URL(root, location.href).href);
     onProgress(95);
 

@@ -9,6 +9,7 @@ import {
   MeshStandardMaterial,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { ToolBase } from './ToolBase.js';
 
 function flutedGeometry(radius, length, flutes, tipLength = 0) {
@@ -215,7 +216,7 @@ export class ToolLoader {
         const url = `${root}${toolDef.modelPath.startsWith('/') ? '' : '/'}${toolDef.modelPath}`;
         const res = await fetch(url, { method: 'HEAD' });
         if (res.ok) {
-          const gltfLoader = new GLTFLoader();
+          const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
           const gltf = await gltfLoader.loadAsync(url);
           group.add(gltf.scene);
           loadedFromGLB = true;

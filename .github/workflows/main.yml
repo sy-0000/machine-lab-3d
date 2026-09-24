@@ -15,8 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
+
+      # 只下載網頁用模型；assets-src/ 的原始模型不部署，省 LFS 流量
+      - run: git lfs pull --include="public/**"
 
       - uses: actions/setup-node@v4
         with:

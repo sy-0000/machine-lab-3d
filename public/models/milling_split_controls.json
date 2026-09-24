@@ -416,10 +416,10 @@
     "Y 手輪、傳動盒與操作附件獨立掛在 MillingYControlsFixed，不繼承 Z 升降；Z 只帶動工作臺滑座。"
   ],
   "provenance": {
-    "manifest": "deliver_milling_machine_split/milling_machine_split_manifest.json",
+    "manifest": "../../assets-src/milling/milling_machine_split_manifest.json",
     "readmes": [
       "millingREADME.md",
-      "deliver_milling_machine_split/README.txt"
+      "../../assets-src/milling/README.txt"
     ],
     "evidence": "reports/v2-*.png and split-correspondence.json; explicit reviewed membership, not proximity grouping"
   },

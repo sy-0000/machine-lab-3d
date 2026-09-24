@@ -49,14 +49,14 @@ npm run dev
 | 銑床 | `machines/milling/milling.glb` | `milling_split_controls.json` | `src/machines/milling/` |
 | 鑽床 | `machines/drill/drill.glb` | `drill_press_parts.json` | `src/machines/drill/` |
 
-三個 GLB 是現行模型唯一來源，透過 Git LFS 儲存；銑床約 181 MiB。不要另存模型到舊路徑。
+三個 GLB 透過 Git LFS 儲存。銑床網頁版（約 15 MiB，meshopt 幾何壓縮＋WebP 貼圖）由 `assets-src/milling/milling.source.glb`（原始 181 MiB）以 `npm run optimize:milling` 產生；改原始模型後重新執行，不要手動編輯網頁版。
 
 - `src/machines/core/`：機台載入、註冊、卸載、刀具與工件掛載。
 - `src/machines/runtime.js`：各軸運動、主軸、刀架、煞車與示範工件。
 - `src/machines/config.js`：將三種 JSON 轉為共用結構。
 - `src/lathe.js`、`src/latheParts.js`：現行車床幾何轉接與預設資料，**仍在使用，不可當舊檔刪除**。
 - `src/tools/`、`src/workpieces/`：模組刀具與工件。`src/machines/cuttingTools.js` 建立機台預設教學刀具。
-- `public/models/deliver_milling_machine_split/`：保留來源 README 與節點 manifest；模型稽核仍使用 manifest。
+- `assets-src/milling/`：銑床原始模型、來源 README 與節點 manifest；不會部署，模型稽核仍使用 manifest。
 
 掛載設定的 `position` 是相對父節點的局部座標，不能直接填世界座標。修改機械資料後需跑測試與模型稽核。
 
