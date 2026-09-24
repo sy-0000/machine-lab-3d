@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import ControlPanel from './ControlPanel.jsx';
-import { createHeadStock } from '../levels/headCampaign.js';
+import { createBlockStock } from '../levels/challenges.js';
 
-// Student-facing controls shared by the classroom and every level:
+// Student-facing controls shared by the classroom and every challenge:
 // spindle → axis + step → jog / hold → DRO with zero → contact cue.
 const AXES = {
   lathe: [
     { id: 'X', label: 'X 徑向', minus: '進刀', plus: '退刀', wheel: 'crossSlideHandwheel', holdSign: -1, diameter: true },
     { id: 'Z', label: 'Z 縱向', minus: '往夾頭', plus: '往尾端', wheel: 'carriageHandwheel', holdSign: 1 },
+    // Compound rest: feeds along a set angle from Z, i.e. X and Z together → a real taper.
+    { id: 'C', short: '小刀架', label: '小刀架', minus: '斜向往夾頭', plus: '斜向退回', wheel: null, compound: true },
   ],
   milling: [
     { id: 'X', label: 'X 工作臺', minus: '左移', plus: '右移', wheel: 'X_Handwheel_Right_Group', holdSign: 1 },
@@ -20,23 +22,28 @@ const AXES = {
   ],
 };
 const STEPS = [0.01, 0.05, 0.1, 0.5, 1, 5];
-const HEAD_TOOLS = { milling: [['head_end_mill', '立銑刀 Ø8']], drill: [['head_drill_85', '鑽頭 Ø8.5'], ['head_tap_m10', 'M10 絲攻']] };
+const HEAD_TOOLS = { milling: [['head_face_mill', '面銑刀 Ø58'], ['head_end_mill', '立銑刀 Ø8']], drill: [['head_drill_85', '鑽頭 Ø8.5'], ['head_tap_m10', 'M10 絲攻']] };
 const show = v => v == null ? '—' : (Math.abs(v) < 0.0005 ? 0 : v).toFixed(3);
 
 export default function OperatePanel({ session, controls, model, machineId, levelMode = false, children }) {
   const axes = AXES[machineId] || [];
   const [axisId, setAxisId] = useState(axes[0]?.id);
   const [step, setStep] = useState(0.1);
+  const [angle, setAngle] = useState(3);
   const [message, setMessage] = useState('');
   const [target, setTarget] = useState({ X: '', Z: '' });
   // Remember the expanded section across stock changes (the lathe section remounts with each new stock).
   const [targetOpen, setTargetOpen] = useState(false);
   const holdTimer = useRef(null), repeatTimer = useRef(null);
   const state = controls.state, m = state?.machining, head = state?.headMachining;
-  const axis = axes.find(a => a.id === axisId) || axes[0];
+  const machining = machineId === 'lathe' && !!m;
+  const available = axes.filter(a => !a.compound || machining);
+  const axis = available.find(a => a.id === axisId) || available[0];
   const stopped = !!state && !state.running && state.rpm === 0 && state.leverAngle === 0;
   const running = state?.rpm > 0;
   useEffect(() => { setAxisId(axes[0]?.id); }, [machineId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Drill press: quill lock on by default so a single feed click stays down instead of springing back.
+  useEffect(() => { if (machineId === 'drill' && session?.canCommand() && state && !state.feedLocked) session.command({ type: 'feed.lock', locked: true }); }, [session, machineId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const send = command => {
     const result = session?.command(command);
@@ -44,11 +51,17 @@ export default function OperatePanel({ session, controls, model, machineId, leve
     setMessage(result && !result.ok ? result.reason : ''); controls.refresh(); return result;
   };
   // Lathe with a cuttable stock uses the machining work coordinates; everything else uses the DRO offsets.
-  const machining = machineId === 'lathe' && !!m;
   const readout = a => machining ? (a.id === 'X' ? m.xDiameterMm : m.zMm) : state?.axesMm?.[a.id];
-  const jog = (a, delta) => send(machining
-    ? { type: 'machining.move', axis: a.id, valueMm: delta, mode: 'relative', ...(a.diameter ? { representation: 'diameter' } : {}) }
-    : { type: 'axis.move', axis: a.id, valueMm: delta, mode: 'relative', ...(a.diameter ? { representation: 'diameter' } : {}) });
+  const jog = (a, delta) => {
+    if (a.compound) {
+      // Along the compound slide: Δz = d·cosθ, Δdiameter = −2·d·sinθ (feeding toward the chuck grows the diameter).
+      const t = angle * Math.PI / 180;
+      return send({ type: 'machining.line', xDiameterMm: m.xDiameterMm - 2 * delta * Math.sin(t), zMm: m.zMm + delta * Math.cos(t) });
+    }
+    return send(machining
+      ? { type: 'machining.move', axis: a.id, valueMm: delta, mode: 'relative', ...(a.diameter ? { representation: 'diameter' } : {}) }
+      : { type: 'axis.move', axis: a.id, valueMm: delta, mode: 'relative', ...(a.diameter ? { representation: 'diameter' } : {}) });
+  };
   const zero = a => send(machining
     ? { type: 'machining.datum', axis: a.id, valueMm: 0, ...(a.diameter ? { representation: 'diameter' } : {}) }
     : { type: 'workOffset.zero', axis: a.id, ...(a.diameter ? { representation: 'diameter' } : {}) });
@@ -75,9 +88,10 @@ export default function OperatePanel({ session, controls, model, machineId, leve
     if (!state?.activeCuttingTool || !HEAD_TOOLS[machineId].some(([id]) => id === state.activeCuttingTool.id)) {
       const r = await send({ type: 'tool.select', toolId: HEAD_TOOLS[machineId][0][0] }); if (!r?.ok) return;
     }
-    return send({ type: 'workpiece.mountState', state: createHeadStock() });
+    return send({ type: 'workpiece.mountState', state: createBlockStock() });
   };
   const disabled = !session?.canCommand() || state?.busy;
+  const label = a => a.short || a.id;
 
   return <aside className="panel operate-panel" aria-label="操作面板">
     {children}
@@ -93,35 +107,38 @@ export default function OperatePanel({ session, controls, model, machineId, leve
       <section className="op-section">
         <div className="op-heading"><h3>進給</h3><span className={'contact-pill ' + contactLevel} data-testid="contact-state" role="status">● {contactText}</span></div>
         <div className="segmented" role="radiogroup" aria-label="移動軸">
-          {axes.map(a => <button key={a.id} role="radio" aria-checked={a.id === axis?.id} onClick={() => { endHold(); setAxisId(a.id); }}>{a.label}</button>)}
+          {available.map(a => <button key={a.id} role="radio" aria-checked={a.id === axis?.id} onClick={() => { endHold(); setAxisId(a.id); }}>{a.label}</button>)}
         </div>
+        {axis?.compound && <label className="op-field">小刀架角度（°，由 Z 軸算起）
+          <input aria-label="小刀架角度" type="number" step="0.5" min="-45" max="45" value={angle} onChange={e => setAngle(Math.max(-45, Math.min(45, Number(e.target.value) || 0)))} /></label>}
         <div className="segmented steps" role="radiogroup" aria-label="每次進給量">
           {STEPS.map(s => <button key={s} role="radio" aria-checked={s === step} onClick={() => setStep(s)}>{s}</button>)}
           <span className="unit">mm</span>
         </div>
         {axis && <div className="jog-row">
-          {[-1, 1].map(d => <button key={d} className="jog" aria-label={`${axis.short || axis.id}${d < 0 ? '−' : '＋'} 微調`} aria-describedby={'jog-hint-' + d} onPointerDown={e => beginHold(e, d)} onPointerUp={endHold} onPointerCancel={endHold} onLostPointerCapture={endHold}
+          {[-1, 1].map(d => <button key={d} className="jog" aria-label={`${label(axis)}${d < 0 ? '−' : '＋'} 微調`} aria-describedby={'jog-hint-' + d} onPointerDown={e => beginHold(e, d)} onPointerUp={endHold} onPointerCancel={endHold} onLostPointerCapture={endHold}
             onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); jog(axis, d * step); } }} onContextMenu={e => e.preventDefault()}>
-            <strong>{axis.short || axis.id}{d < 0 ? '−' : '＋'} 微調</strong><small id={'jog-hint-' + d}>{d < 0 ? axis.minus : axis.plus}</small>
+            <strong>{label(axis)}{d < 0 ? '−' : '＋'} 微調</strong><small id={'jog-hint-' + d}>{d < 0 ? axis.minus : axis.plus}</small>
           </button>)}
         </div>}
-        <p className="op-help">點一下移動 {step} mm；按住不放會連續轉動手輪。</p>
+        <p className="op-help">{axis?.compound ? `沿小刀架斜向移動 ${step} mm：Z 與 X 同時動，車出錐度。錐度半角 = atan((大徑 − 小徑) ÷ (2 × 長度))。` : `點一下移動 ${step} mm；按住不放會連續轉動手輪。`}</p>
+        {machineId === 'drill' && <label className="op-check"><input type="checkbox" checked={!!state?.feedLocked} onChange={e => send({ type: 'feed.lock', locked: e.target.checked })} /> 套筒鎖定（進給停在原位，不回彈）</label>}
       </section>
 
       <section className="op-section">
         <div className="op-heading"><h3>座標讀值</h3>{machining && <small>{m.centerAligned ? '中心高已對準' : '中心高未對準'}</small>}</div>
         <div className="dro">
-          {axes.map(a => <div key={a.id} className={a.id === axis?.id ? 'active' : ''}>
+          {axes.filter(a => !a.compound).map(a => <div key={a.id} className={a.id === axis?.id ? 'active' : ''}>
             <span>{a.label}{a.diameter ? '（直徑）' : ''}</span>
             <strong><output data-testid={machineId === 'lathe' ? 'cut-' + (a.id === 'X' ? 'x-diameter' : 'z') : 'dro-' + a.id}>{show(readout(a))}</output><small> mm</small></strong>
-            <button onClick={() => zero(a)} disabled={!state?.axesMm}>{a.short || a.id} 歸零</button>
+            <button onClick={() => zero(a)} disabled={!state?.axesMm}>{label(a)} 歸零</button>
           </div>)}
         </div>
         {machineId === 'lathe' && <p className="op-help">刀尖接觸：<output data-testid="cut-contact">{m?.contact ? '是' : '否'}</output>。歸零只設定讀值基準，不移動刀具；X 讀值是直徑，變化 1 mm = 刀尖徑向 0.5 mm。</p>}
         {m?.unsafe && <p role="alert" className="notice danger">刀尖進入夾頭危險區，本段禁止切削。請退刀。</p>}
       </section>
 
-      {machineId === 'lathe' && m && <section className="op-section">
+      {machining && <section className="op-section">
         <div className="op-heading"><h3>車削</h3></div>
         <label className="op-field">加工模式<select aria-label="加工模式" value={m.mode || 'turning'} onChange={e => send({ type: 'machining.mode', mode: e.target.value })}><option value="turning">外徑車削</option><option value="facing">端面車削</option></select></label>
         <dl className="op-measure"><dt>目前長度</dt><dd><output data-testid="cut-length">{show(m.lengthMm)}</output> mm</dd>
@@ -137,12 +154,12 @@ export default function OperatePanel({ session, controls, model, machineId, leve
         <div className="op-heading"><h3>工件</h3>{state?.workpiece && <small>{state.workpiece.name}</small>}</div>
         {machineId !== 'lathe' && <label className="op-field">刀具<select aria-label="刀具" value={state?.activeCuttingTool?.id || ''} disabled={!stopped} onChange={e => send({ type: 'tool.select', toolId: e.target.value })}>
           {!HEAD_TOOLS[machineId].some(([id]) => id === state?.activeCuttingTool?.id) && <option value="">原機台刀具</option>}
-          {HEAD_TOOLS[machineId].map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>}
+          {HEAD_TOOLS[machineId].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
         <div className="op-row">
           <button disabled={!stopped} onClick={mountStock}>{state?.workpiece?.machinable ? '換新毛胚' : machineId === 'lathe' ? '放上工件 Ø20×300' : '放上工件 20×20×90'}</button>
           <button disabled={!stopped || !state?.workpiece} onClick={() => send({ type: 'workpiece.unmount' })}>卸下工件</button>
         </div>
-        <p className="op-help">{machineId === 'lathe' ? '毛胚由夾頭夾持，刀尖會自動對準中心高。' : '方料由虎鉗與平行塊夾持。'}停機後才能換工件或刀具。</p>
+        <p className="op-help">{machineId === 'lathe' ? '毛胚由夾頭夾持，刀尖會自動對準中心高。' : machineId === 'drill' ? '方料由虎鉗夾持，已對準鑽頭正下方。' : '方料由虎鉗夾持，順著工作臺 X 方向擺放。'}停機後才能換工件或刀具。</p>
       </section>}
 
       <button className="reset" onClick={controls.reset}>↺ 重設操作與視角</button>

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
-import { LEVEL_1 } from './levels/level1.js';
+import { challengeById } from './levels/challenges.js';
 
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
@@ -47,10 +47,8 @@ export default function App() {
   }, []);
 
   const isGameRoute = ['lathe', 'milling', 'drill', 'game'].includes(route);
-  // level/<id> is the older Level 1 link; it opens the handle campaign.
-  const isHandleCampaign = route === 'level/' + LEVEL_1.id || route === 'campaign/handle';
-  const isHeadCampaign = route === 'campaign/head';
-  const isLevelRoute = route === 'levels' || isHandleCampaign || isHeadCampaign;
+  const challenge = route.startsWith('challenge/') ? challengeById(route.slice(10)) : null;
+  const isLevelRoute = route === 'levels' || !!challenge;
 
   return (
     <>
@@ -98,10 +96,8 @@ export default function App() {
         <Suspense fallback={<main>正在載入關卡路線…</main>}>
           <LevelsPage />
         </Suspense>
-      ) : isHeadCampaign ? (
-        <GameWorkspace key="head-campaign" initialMachineId="milling" campaign="head" />
-      ) : isHandleCampaign ? (
-        <GameWorkspace key="handle-campaign" initialMachineId="lathe" campaign="handle" />
+      ) : challenge ? (
+        <GameWorkspace key={'challenge-' + challenge.id} challenge={challenge} />
       ) : isGameRoute ? (
         <GameWorkspace initialMachineId={route === 'game' ? 'lathe' : route} key="shared-game-scene" />
       ) : (
@@ -122,7 +118,7 @@ export default function App() {
             <li><a href="#/safety"><b>01</b>工安守則<small>進工場前必讀</small></a></li>
             <li><a href="#/tools"><b>02</b>刀具介紹<small>認識加工刀具</small></a></li>
             <li><a href="#/lathe"><b>03</b>加工教室<small>車床・銑床・鑽床功能</small></a></li>
-            <li><a href="#/levels"><b>04</b>加工關卡<small>槌柄 → 槌頭 → 組裝</small></a></li>
+            <li><a href="#/levels"><b>04</b>加工關卡<small>車床・銑床・鑽床 各 5 分鐘</small></a></li>
           </ol>
 
           <section className="machine-cards" aria-label="選擇工具機">

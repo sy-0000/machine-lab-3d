@@ -1,20 +1,19 @@
 import {test,expect} from '@playwright/test';
-test('levels roadmap: handle first, head locked, assembly pending; opens the level brief',async({page})=>{
+test('levels page: three machine challenges, each opens its task step',async({page})=>{
  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/#/levels');
- const handle=page.getByRole('region',{name:'槌柄路線'}),head=page.getByRole('region',{name:'槌頭路線'});
- await expect(handle.locator('.route-node.current')).toContainText('基礎車削');
- await expect(head).toHaveClass(/locked/);
- await expect(head.getByRole('link')).toHaveCount(0);
- await expect(page.getByRole('region',{name:'組裝'})).toContainText('即將推出');
- await page.screenshot({path:'reports/levels-roadmap-desktop.png',fullPage:true});
+ const cards=page.locator('.challenge-card');
+ await expect(cards).toHaveCount(3);
+ await expect(cards.nth(0)).toContainText('車床');await expect(cards.nth(1)).toContainText('銑床');await expect(cards.nth(2)).toContainText('鑽床');
+ await page.screenshot({path:'reports/levels-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.setViewportSize({width:1440,height:900});
- await handle.getByRole('link',{name:'開始 →'}).click();
+ await cards.nth(0).getByRole('link',{name:'開始 →'}).click();
+ await expect(page).toHaveURL(/#\/challenge\/lathe$/);
  await expect(page.getByRole('list',{name:'關卡流程'})).toBeVisible();
- await expect(page.getByRole('button',{name:'開始實作',exact:true})).toBeEnabled({timeout:60000});
- await expect(page.getByRole('button',{name:'觀看示範',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'開始（5 分鐘）'})).toBeEnabled({timeout:60000});
+ await expect(page.getByRole('button',{name:'觀看示範'})).toHaveCount(0);
  expect(errors).toEqual([]);
 });
 const AXIS={lathe:{testid:'cut-x-diameter',minus:'X− 微調',zero:'X 歸零',node:'y'},milling:{testid:'dro-X',minus:'X− 微調',zero:'X 歸零',node:'X_Axis_Table'},drill:{testid:'dro-quill',minus:'進給− 微調',zero:'進給 歸零',node:'quill'}};

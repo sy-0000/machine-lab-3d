@@ -149,6 +149,7 @@ export function stepMachine(m,running,rpm,dt,direction=1){
 }
 export function stepReturn(m,heldKey,dt){
  let returning=false;
+ if(m.returnLocked)return false; // quill lock holds a spring-return feed where it is
  for(const w of m.config.wheels){if(!w.springReturn||w.id===heldKey||m.angles[w.id]===0)continue;const current=m.angles[w.id],next=current-Math.sign(current)*Math.min(Math.abs(current),w.springReturn.speed*dt);m.angles[w.id]=next;setAxis(m,w.drives,next*w.ratio);rotate(m,w.node,w.axis,next);returning=returning||next!==0;}
  return returning;
 }

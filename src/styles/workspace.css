@@ -1,6 +1,5 @@
 /* Classroom / level workspace: camera bar, operate panel, level flow, roadmap. */
 [hidden]{display:none!important}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .workspace{grid-template-columns:minmax(0,1fr) 360px}
 .workspace>.viewport{position:sticky;top:14px}
 .machining-sidebar{display:grid;gap:14px;min-width:0}
@@ -25,8 +24,7 @@
 .op-row>*{flex:1}
 .op-row button{font-size:13px;min-height:40px}
 .op-help{font-size:11px;line-height:1.7;color:#8196a0;margin:8px 0 0}
-.op-field{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#aabcc3;margin:4px 0 8px}
-.op-field select,.op-target input,.op-target-grid input,.line-feed input{background:#0f171b;color:#e6ecee;border:1px solid #34434b;border-radius:6px;padding:7px 8px;font:inherit;font-size:12px}
+.op-field{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#aabcc3;margin:4px 0 8px}.op-field select,.op-target input{background:#0f171b;color:#e6ecee;border:1px solid #34434b;border-radius:6px;padding:7px 8px;font:inherit;font-size:12px}
 .segmented{display:flex;gap:3px;background:#0f171b;border:1px solid #2a3940;border-radius:8px;padding:3px;margin-bottom:8px;align-items:center}
 .segmented button{flex:1;padding:7px 4px;font-size:12px;border:none;background:transparent;color:#9fb2ba;border-radius:5px}
 .segmented button[aria-checked=true]{background:#2b4a45;color:#bdf5de;font-weight:600;box-shadow:inset 0 0 0 1px #4f8f7c}
@@ -53,12 +51,7 @@
 .op-details{font-size:12px;margin-top:8px}
 .op-details summary{cursor:pointer;color:#86d5b8;padding:4px 0}
 .op-details.advanced .control-console{padding:12px;margin-top:8px;background:#10181c}
-.op-target{display:flex;align-items:end;gap:8px;margin:6px 0}
-.op-target label,.op-target-grid label,.line-feed label{display:grid;gap:4px;font-size:11px;color:#8da1ab;flex:1}
-.op-target-grid{border:0;padding:0;margin:6px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.op-target-grid button{grid-column:span 3}
-.line-feed{border:1px solid #2a3940;border-radius:8px;padding:10px;display:grid;gap:8px}
-.line-feed legend{font-size:12px;color:#aabcc3;padding:0 4px}
+.op-target{display:flex;align-items:end;gap:8px;margin:6px 0}.op-target label{display:grid;gap:4px;font-size:11px;color:#8da1ab;flex:1}
 
 /* Level flow */
 .level-panel{padding:18px;display:grid;gap:12px}
@@ -66,8 +59,7 @@
 .level-tag{font-size:11px;letter-spacing:1px;color:#96e8c7}
 .level-body{display:grid;gap:10px;font-size:13px;line-height:1.7}
 .level-body>p{margin:0;color:#c3d1d6}
-.level-foot{font-size:10px;color:#6f8791;margin:0}
-.level-stepper{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0;padding:0;counter-reset:s}
+.level-stepper{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0;padding:0}
 .level-stepper li{display:flex;align-items:center;gap:6px;font-size:12px;color:#6f8791;padding:6px 4px;border-bottom:2px solid #243238}
 .level-stepper span{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid currentColor;font-size:10px}
 .level-stepper li.done{color:#7fbfa9;border-color:#3f6d61}
@@ -81,21 +73,6 @@
 .practice-timer span{font-size:11px;color:#8da1ab}
 .practice-timer.warn strong{color:#ffcf7d}
 .practice-timer.over{border-color:#8a6424}.practice-timer.over strong{color:#ffb08a}
-.demo-bar{display:grid;gap:8px}
-.demo-bar p{margin:0;font-size:12px}.demo-bar small{color:#8da1ab}
-.demo-progress{height:6px;background:#0f171b;border-radius:3px;overflow:hidden}
-.demo-progress span{display:block;height:100%;background:#9becce;transition:width .3s}
-.demo-bar fieldset{border:0;padding:0;margin:0}
-.checklist ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.checklist>ol>li{padding:8px 10px;border:1px solid #243238;border-radius:8px;background:#0f171b}
-.checklist>ol>li.current{border-color:#4f8f7c}
-.checklist>ol>li.done{opacity:.7}
-.checklist>ol>li>strong{font-size:12px;color:#cfdde2}
-.checklist ul{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12px;color:#8196a0}
-.checklist ul li.done{color:#7fbfa9}
-.checklist ul li.current{color:#e6f4ef;font-weight:600}
-.checklist-hint{margin:8px 0 0;font-size:12px;line-height:1.7;color:#d7e4e8;background:#16302a;border:1px solid #2f5b4e;border-radius:8px;padding:8px 10px}
-.checklist-hint b{display:block;font-size:10px;letter-spacing:1px;color:#96e8c7}
 .result-banner{margin:0;padding:10px 12px;border-radius:8px;font-weight:600}
 .result-banner.pass{background:#16302a;color:#9becce;border:1px solid #3f6d61}
 .result-banner.fail{background:#3a1f1d;color:#ffb2ad;border:1px solid #7d403d}
@@ -113,30 +90,28 @@
 .course-route a:hover{border-color:#5eb499}
 .course-route b{font-size:11px;color:#96e8c7;letter-spacing:2px}
 .course-route small{font-weight:400;color:#8da1ab;font-size:12px}
-
-/* Levels roadmap */
-.route-map{display:grid;gap:16px}
-.route-track{border:1px solid #2c3b43;border-radius:12px;background:#151e23;padding:18px 20px}
-.route-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
-.route-head span{font-size:12px;color:#8da1ab}
-.route-track.locked{opacity:.6}
-.route-track.assembly p{margin:0;color:#8da1ab;font-size:13px}
-.route-nodes{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative}
-.route-node{position:relative;display:grid;gap:8px;align-content:start;padding:14px;border:1px solid #243238;border-radius:10px;background:#0f171b}
-.route-node:not(:last-child)::after{content:'';position:absolute;right:-11px;top:26px;width:12px;border-top:2px solid #2c3b43}
-.route-node>div{display:grid;gap:2px}
-.route-node strong{font-size:14px}
-.route-node small{font-size:11px;color:#8196a0;line-height:1.6}
-.route-node em{font-style:normal;font-size:10px;color:#f6d57d}
 .node-dot{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px solid #3d4f57;font-size:12px;color:#8da1ab}
-.route-node.done .node-dot{background:#2b4a45;border-color:#4f8f7c;color:#bdf5de}
-.route-node.current{border-color:#9becce;box-shadow:0 0 0 1px #9becce33}
-.route-node.current .node-dot{background:#9becce;color:#0f241e;border-color:#9becce}
-.route-node.locked{opacity:.55}
-.route-reset{margin-top:12px;font-size:11px;padding:6px 10px;background:transparent}
 .level-howto{margin-top:24px;border:1px dashed #2c3b43;border-radius:12px;padding:16px 20px}
 .level-howto ol{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 0;padding-left:18px;font-size:13px;color:#aabcc3}
 .level-howto b{display:block;color:#e6ecee}
 
-@media(max-width:1000px){.workspace{grid-template-columns:minmax(0,1fr) 320px}.route-nodes,.course-route,.level-howto ol{grid-template-columns:repeat(2,1fr)}.route-node::after{display:none}}
-@media(max-width:760px){.workspace{grid-template-columns:1fr}.workspace>.viewport{position:relative;top:0}.route-nodes,.course-route,.level-howto ol{grid-template-columns:1fr}.view-bar button{padding:6px 8px}}
+@media(max-width:1000px){.workspace{grid-template-columns:minmax(0,1fr) 320px}.course-route,.level-howto ol{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.workspace{grid-template-columns:1fr}.workspace>.viewport{position:relative;top:0}.course-route,.level-howto ol{grid-template-columns:1fr}.view-bar button{padding:6px 8px}}
+
+/* Challenges */
+.challenge-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.challenge-card{display:grid;grid-template-rows:auto 1fr auto;gap:12px;padding:20px;border:1px solid #2c3b43;border-radius:12px;background:#151e23}
+.challenge-card .node-dot{background:#9becce;color:#0f241e;border-color:#9becce}
+.challenge-card-body{display:grid;gap:8px;align-content:start}
+.challenge-card-body small{font-size:11px;letter-spacing:1px;color:#96e8c7}
+.challenge-card-body h2{margin:0;font-size:18px}
+.challenge-card-body p{margin:0;font-size:13px;line-height:1.7;color:#aabcc3}
+.primary-link{background:#a4edcf;color:#113027;border-color:#a4edcf;font-weight:600}
+.primary-link:hover{background:#c0ffe7}
+.step-hints{margin:0;padding-left:20px;display:grid;gap:4px;font-size:12px;color:#aabcc3;line-height:1.6}
+.stars{margin:0;font-size:40px;letter-spacing:6px;text-align:center;line-height:1}
+.stars span{color:#2c3b43}
+.stars span.on{color:#ffcf5a;text-shadow:0 0 12px #ffb54766}
+.op-check{display:flex;align-items:center;gap:8px;font-size:12px;color:#aabcc3;margin-top:10px}
+.op-field input[type=number]{width:80px;background:#0f171b;color:#e6ecee;border:1px solid #34434b;border-radius:6px;padding:6px 8px;font:inherit;font-size:12px}
+@media(max-width:1000px){.challenge-cards{grid-template-columns:1fr}}

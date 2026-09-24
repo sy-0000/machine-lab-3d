@@ -1,8 +1,8 @@
 # MACHINE LAB｜工具機 3D 互動教學
 
-React、Vite、Three.js、React Three Fiber 與 Drei 製作的純前端網站，提供工安守則、刀具介紹、車床／銑床／鑽床加工教室，以及「做一把槌子」的加工關卡。套件版本為 3.0.0，模組架構名稱為 Machine System v1.0。
+React、Vite、Three.js、React Three Fiber 與 Drei 製作的純前端網站，提供工安守則、刀具介紹、車床／銑床／鑽床加工教室，以及三個 5 分鐘的加工小關卡。套件版本為 3.0.0，模組架構名稱為 Machine System v1.0。
 
-首頁不下載機台模型，進入加工教室後才載入。關卡頁是一張路線圖：先做[槌柄](docs/HANDLE_CAMPAIGN.md)（完成第 1–3 關後開放[槌頭](docs/HEAD_CAMPAIGN.md)），組裝關卡待開放。每一關固定四步：任務 → 示範 → 實作（5 分鐘倒數）→ 結果；工件沿用上一關的實際成果並自動存在本機。尺寸缺少正式公差或製程資料時保持 draft；尚無星級或評分。
+首頁不下載機台模型，進入加工教室後才載入。加工關卡是三個獨立小關卡（車床外徑車削、銑床面銑平面、鑽床定深鑽孔）：任務 → 實作 5 分鐘 → 繳交，依量到的尺寸誤差給 0–3 顆星。每次開始都用新毛胚，不保留關卡進度。
 
 ## 專案根目錄與啟動
 
@@ -28,8 +28,8 @@ npm run dev
 | 工安守則 | `#/safety` | `src/pages/SafetyPage.jsx` |
 | 刀具介紹版面 | `#/tools` | `src/pages/ToolsPage.jsx` |
 | 刀具名稱、說明、尺寸與用途 | `#/tools` | `src/tools/tool.config.js` |
-| 關卡路線圖 | `#/levels` | `src/pages/LevelsPage.jsx` |
-| 關卡流程（任務／示範／實作／結果） | `#/campaign/handle`、`#/campaign/head` | `src/components/level/` |
+| 關卡列表 | `#/levels` | `src/pages/LevelsPage.jsx` |
+| 關卡流程（任務／實作／結果）與打星規則 | `#/challenge/lathe`、`#/challenge/milling`、`#/challenge/drill` | `src/components/level/`、`src/levels/challenges.js` |
 | 加工教室與關卡共用版面 | `#/lathe`、`#/milling`、`#/drill` | `src/pages/GameWorkspace.jsx` |
 | 操作面板（主軸、進給量、座標歸零、接觸提示、放上工件） | 加工教室／關卡 | `src/components/OperatePanel.jsx` |
 | 進階機台控制（收合於操作面板內） | 加工教室／關卡 | `src/components/ControlPanel.jsx` |
@@ -133,5 +133,4 @@ npm run preview
 
 完整機台教室的玩家輸入經過 `MachineSession` → `MachineV1Adapter` → 既有 Machine System。API、教學 X/Z、單位、輸入鎖與更新時鐘見 [MachineSession 文件](docs/MACHINE_SESSION.md)。正式 Level 1 沿用同一入口；尚未新增 DemoSequence、評分或完整切削。
 
-- 可持久化車床槌柄與最小切削：[WorkpieceState](docs/WORKPIECE_STATE.md)（加工教室操作面板：放上工件、X/Z 歸零、手輪與加工尺寸）。
-- 正式 [槌柄 Campaign](docs/HANDLE_CAMPAIGN.md)：加工關卡 → 槌柄路線，串接基礎加工、錐度、倒角與待確認製程；實際工件 checkpoint、本機重載與共用 Session 示範。L1 不要求 Ø16.3 等徑區；未知公差／壓花／螺紋不算驗收通過。
+- 可持久化車床工件與最小切削：[WorkpieceState](docs/WORKPIECE_STATE.md)（加工教室操作面板：放上工件、X/Z 歸零、小刀架斜向進給、手輪與加工尺寸）。

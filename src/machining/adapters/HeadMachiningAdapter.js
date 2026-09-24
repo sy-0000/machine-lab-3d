@@ -85,6 +85,13 @@ export class HeadMachiningAdapter{
   state(){const p=this.sample();return this.workpiece?{kind:'prismatic',tipMm:p?.position??null,bounds:headBounds(this.workpiece.state),
     features:this.workpiece.exportState().features,contact:this.contact(p),operations:this.workpiece.state.operationHistory.length,
     coordinateNote:'X 圖面左端→右端；Y 毛胚前側→後側；Z 毛胚底面向上。單位 mm。'}:null;}
+  /** Mount position: the drill press has no table X/Y feed, so its stock is set centred under the spindle;
+   *  on the mill the cutter starts just outside the left end, centred across the width. */
+  defaultSetup(){
+    const s=this.workpiece.state.stock,p=this.sample();
+    if(this.machine.id==='drill')return {xMm:s.lengthMm/2,yMm:s.widthMm/2};
+    return {xMm:-(p.tool.diameterMm/2+8),yMm:s.widthMm/2};
+  }
   // A fixture/setup placement, not removal. No drawing target is involved.
   place({xMm=0,yMm=0,clearanceMm=5,tipZMm}={}){
     if(this.machine.running||this.machine.runtime.rpm>0)throw new Error('停機後才能重新定位裝夾');

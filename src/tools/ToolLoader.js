@@ -5,7 +5,7 @@ import {
   CylinderGeometry,
   MeshStandardMaterial,
 } from 'three';
-import { buildEndMill, buildTwistDrill, buildTap, createTurningInsert } from './toolGeometry.js';
+import { buildEndMill, buildFaceMill, buildTwistDrill, buildTap, createTurningInsert } from './toolGeometry.js';
 import { ToolBase } from './ToolBase.js';
 
 function buildTurningToolProcedural(group, def) {
@@ -130,6 +130,7 @@ export class ToolLoader {
       case 'threading_tool': buildThreadingToolProcedural(group, toolDef); break;
       case 'knurling_tool': buildKnurlingToolProcedural(group, toolDef); break;
       case 'face_mill': buildFaceMillProcedural(group, toolDef); break;
+      case 'head_face_mill': buildFaceMill(group, axial, toolDef.id); break;
       default:
         if (toolDef.type === 'tapping') buildTap(group, axial, toolDef.id);
         else if (toolDef.type === 'drilling') buildTwistDrill(group, axial, toolDef.id);

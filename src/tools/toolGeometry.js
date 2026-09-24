@@ -1,4 +1,4 @@
-import {Group,Mesh,BufferGeometry,Float32BufferAttribute,CylinderGeometry,TorusGeometry,MeshStandardMaterial,DoubleSide} from 'three';
+import {Group,Mesh,BufferGeometry,Float32BufferAttribute,BoxGeometry,CylinderGeometry,TorusGeometry,MeshStandardMaterial,DoubleSide} from 'three';
 
 // Procedural cutting-tool meshes (world metres). The tool tip is always at local (0,-(shank+cutting),0);
 // the adapters read that point, so nothing here may move it.
@@ -57,6 +57,30 @@ export function buildEndMill(group,{radius,shankLength,cuttingLength},name='EndM
     return radius*flute(a+t*helix,4,.62)*lead;
   },{maxRadius:radius}),coat,name+'_Flutes');
   cutter.position.y=-shankLength;group.add(cutter);
+}
+
+/**
+ * Indexable face mill (same look as the machine's original teaching FaceMill): arbor, flange,
+ * conical body and square gold inserts whose bottom faces sit exactly on the tool tip plane.
+ */
+export function buildFaceMill(group,{radius,shankLength,cuttingLength},name='FaceMill'){
+  const dark=materials.dark(),body=materials.carbide(),gold=materials.gold(),tip=-(shankLength+cuttingLength);
+  const at=(m,y)=>{m.position.y=y;group.add(m);return m;};
+  at(mesh(new CylinderGeometry(radius*.55,radius*.55,.024,32),dark,name+'_ArborShank'),-.012);
+  at(mesh(new CylinderGeometry(radius*.86,radius*.86,.01,32),body,name+'_ArborFlange'),-.029);
+  for(const angle of [0,Math.PI]){const key=mesh(new BoxGeometry(.006,.008,.01),dark,name+'_DriveKey');key.position.set(radius*.69*Math.cos(angle),-.029,radius*.69*Math.sin(angle));key.rotation.y=angle;group.add(key);}
+  at(mesh(new CylinderGeometry(radius*.48,radius*.48,-.034-(tip+.021),32),dark,name+'_ArborNeck'),(-.034+tip+.021)/2);
+  const bodyTop=tip+.021,bodyBottom=tip+.003;
+  at(mesh(new CylinderGeometry(radius*.69,radius*.93,bodyTop-bodyBottom,40),body,name+'_CutterBody'),(bodyTop+bodyBottom)/2);
+  at(mesh(new CylinderGeometry(radius*.34,radius*.34,.004,24),dark,name+'_CenterBolt'),bodyBottom-.001);
+  const size=radius*.27,count=5;
+  for(let i=0;i<count;i++){
+    const a=i*Math.PI*2/count,pocket=new Group();pocket.name=`${name}_InsertPocket_${i}`;
+    pocket.position.set((radius-size/2)*Math.cos(a),tip+size/2,(radius-size/2)*Math.sin(a));pocket.rotation.y=-a;
+    const insert=mesh(new BoxGeometry(size,size,size*.42),gold,`${name}_Insert_${i}`);pocket.add(insert);
+    const screw=mesh(new CylinderGeometry(size*.18,size*.18,size*.5,12),dark,`${name}_InsertScrew_${i}`);screw.rotation.x=Math.PI/2;screw.position.z=size*.3;pocket.add(screw);
+    group.add(pocket);
+  }
 }
 
 /** Twist drill with 118° point and two helical flutes. */

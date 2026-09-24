@@ -72,7 +72,7 @@ export class MachineV1Adapter {
       rpm: state.rpm, requestedRpm: state.targetRpm, targetRpm: state.effectiveTargetRpm,
       spindleAvailable: state.spindleAvailable, spindleAngle: state.spindleAngle,
       leverAngle: state.leverAngle, teaching: m.teaching,
-      axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets },
+      axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets }, feedLocked: !!m.runtime.returnLocked,
       activeCuttingTool: state.activeCuttingTool,
       cuttingTipMm: this.#cuttingSample()?.position || null,
       machining: this.#machiningState(), headMachining:this.head.state(),
@@ -146,6 +146,8 @@ export class MachineV1Adapter {
         m.stepControlDetent(command.key, command.direction); break;
       }
       case 'tool.index': if (![1, -1].includes(command.direction)) throw new Error('Invalid index direction'); m.indexToolPost(command.direction); break;
+      // Quill lock: a spring-return feed lever keeps its position (real drill presses have a quill lock).
+      case 'feed.lock': m.runtime.returnLocked = !!command.locked; break;
       case 'spindle.brake': m.emergencyBrake(); break;
       case 'spindle.releaseBrake': m.releaseEmergencyBrake(); break;
       case 'workpiece.toggleDemo': if (!m.toggleDemoWorkpiece()) throw new Error('Demo workpiece cannot be toggled while running or a modular workpiece is mounted'); break;
@@ -184,7 +186,9 @@ export class MachineV1Adapter {
       if(!stillCurrent()){w.dispose();return false;}
       const previous=this.#machine.currentWorkpiece;
       await this.#machine.mountWorkpiece(w);previous?.dispose();
-      if(this.head.sample())this.head.place();else this.head.fitFixture();return true;
+      // Milling: stock lies along the table's long (X) travel so one feed pass covers its length.
+      if(this.#machine.id==='milling')w.object3D.rotation.y=Math.PI/2;
+      if(this.head.sample())this.head.place(this.head.defaultSetup());else this.head.fitFixture();return true;
     }
     if (this.#machine.id !== 'lathe') throw new Error('Revolved workpieces require a lathe');
     const workpiece = new RevolvedWorkpiece(state, mmToWorld);
