@@ -6,6 +6,7 @@ import useMachineControls from '../hooks/useMachineControls.js';
 import MachineScene from '../components/MachineScene.jsx';
 import OperatePanel from '../components/OperatePanel.jsx';
 import ChallengeLevel from '../components/level/ChallengeLevel.jsx';
+import useMachineSounds from '../hooks/useMachineSounds.js';
 
 /** One 3D workspace for the classroom (challenge = null) and the three machine challenges. */
 export default function GameWorkspace({ initialMachineId = 'lathe', challenge = null }) {
@@ -16,6 +17,7 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
   const [session, setSession] = useState(null);
   const sessionRef = useRef(null), abortControllerRef = useRef(null);
   const controls = useMachineControls(session);
+  const [muted, setMuted] = useMachineSounds(session, currentId);
 
   const loadMachine = useCallback(async (targetId) => {
     if (sessionRef.current && !sessionRef.current.canCommand()) throw new Error('機台輸入已鎖定');
@@ -61,9 +63,12 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
           <h1>{challenge ? challenge.title : currentDef.name + '教室'}</h1>
           <p>{currentDef.subtitle}</p>
         </div>
-        {!challenge && <div className="machine-switcher" role="tablist" aria-label="切換工具機">
-          {MACHINES.map(m => <button key={m.id} role="tab" aria-selected={currentId === m.id} className={`switcher-tab ${currentId === m.id ? 'active' : ''}`} onClick={() => loadMachine(m.id)}>{m.name}</button>)}
-        </div>}
+        <div className="intro-actions">
+          <button className="sound-toggle" aria-pressed={!muted} onClick={() => setMuted(!muted)} title="加工音效：主軸馬達、切削、手輪">{muted ? '🔇 音效關' : '🔊 音效開'}</button>
+          {!challenge && <div className="machine-switcher" role="tablist" aria-label="切換工具機">
+            {MACHINES.map(m => <button key={m.id} role="tab" aria-selected={currentId === m.id} className={`switcher-tab ${currentId === m.id ? 'active' : ''}`} onClick={() => loadMachine(m.id)}>{m.name}</button>)}
+          </div>}
+        </div>
       </div>
 
       <div className="workspace">

@@ -1,6 +1,6 @@
 /* 「天空船塢」主題（1c）：低多邊形、亮色插畫感、細墨線框、無圓角。
-   只覆蓋外觀（顏色、字體、形狀、材質），版面與功能沿用 app.css / workspace.css。 */
-:root{
+   只在淺色模式（<html data-theme="light">）生效，選擇器以 :where() 限定所以權重不變；只覆蓋外觀（顏色、字體、形狀、材質），版面與功能沿用 app.css / workspace.css。 */
+:root[data-theme=light]{
   --ivory:#f4efe3;--card:#fffaf0;--sand:#e4dccb;--sand-2:#efe6d2;
   --ink:#1f3a44;--teal:#2f7f96;--gold:#e0a33c;
   --text:#1f2a2e;--text-2:#4b5a5c;--text-3:#5b6a6c;--muted:#6a7a7c;--off:#8a9496;
@@ -13,139 +13,139 @@
   --sans:'Noto Sans TC',sans-serif;--serif:'Noto Serif TC',serif;--display:'Space Grotesk','Noto Sans TC',sans-serif;--mono:'IBM Plex Mono',monospace;
   color-scheme:light;color:var(--text);background:var(--ivory);font-family:var(--sans);
 }
-body{background:var(--ivory)}
-*,*::before,*::after{border-radius:0!important}
-h1,h2{font-family:var(--serif);letter-spacing:.05em;color:var(--ink)}
-h1{font-weight:900}h2{font-weight:700}
-h3{color:var(--ink);font-weight:700}
-main{padding-left:32px;padding-right:32px}
-a{color:var(--teal)}
-.eyebrow,.eyebrow.green,.green{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)!important;text-transform:uppercase}
-.intro p,.info-header .subtitle,.home-intro p{color:var(--text-2)}
-.back-link{color:var(--teal)}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+:where(:root[data-theme=light]) body{background:var(--ivory)}
+:where(:root[data-theme=light]) *,:where(:root[data-theme=light]) *::before,:where(:root[data-theme=light]) *::after{border-radius:0!important}
+:where(:root[data-theme=light]) h1,:where(:root[data-theme=light]) h2{font-family:var(--serif);letter-spacing:.05em;color:var(--ink)}
+:where(:root[data-theme=light]) h1{font-weight:900}:where(:root[data-theme=light]) h2{font-weight:700}
+:where(:root[data-theme=light]) h3{color:var(--ink);font-weight:700}
+:where(:root[data-theme=light]) main{padding-left:32px;padding-right:32px}
+:where(:root[data-theme=light]) a{color:var(--teal)}
+:where(:root[data-theme=light]) .eyebrow,:where(:root[data-theme=light]) .eyebrow.green,:where(:root[data-theme=light]) .green{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)!important;text-transform:uppercase}
+:where(:root[data-theme=light]) .intro p,:where(:root[data-theme=light]) .info-header .subtitle,:where(:root[data-theme=light]) .home-intro p{color:var(--text-2)}
+:where(:root[data-theme=light]) .back-link{color:var(--teal)}
+:where(:root[data-theme=light]) button:focus-visible,:where(:root[data-theme=light]) a:focus-visible,:where(:root[data-theme=light]) input:focus-visible,:where(:root[data-theme=light]) select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 
 /* 導覽列 */
-header{background:var(--ink) linear-gradient(115deg,transparent 0 30%,rgba(255,255,255,.05) 30% 48%,transparent 48% 70%,rgba(255,255,255,.08) 70% 82%,transparent 82%);border-bottom:0}
-.brand{color:#fff;font-family:var(--display)}
-.brand-light{color:var(--gold)}
-.brand small{color:var(--nav-text-2);font-family:var(--mono)}
-.brand-mark{background:var(--gold);color:var(--ink);clip-path:var(--hex);width:42px;height:46px}
-.brand-mark span{display:none}
-.nav-link{color:var(--nav-text);background:transparent}
-.nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
-.nav-link.active{background:var(--ivory);color:var(--ink);font-weight:700;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
-.header-tag{color:var(--nav-text-2)}
+:where(:root[data-theme=light]) header{background:var(--ink) linear-gradient(115deg,transparent 0 30%,rgba(255,255,255,.05) 30% 48%,transparent 48% 70%,rgba(255,255,255,.08) 70% 82%,transparent 82%);border-bottom:0}
+:where(:root[data-theme=light]) .brand{color:#fff;font-family:var(--display)}
+:where(:root[data-theme=light]) .brand-light{color:var(--gold)}
+:where(:root[data-theme=light]) .brand small{color:var(--nav-text-2);font-family:var(--mono)}
+:where(:root[data-theme=light]) .brand-mark{background:var(--gold);color:var(--ink);clip-path:var(--hex);width:42px;height:46px}
+:where(:root[data-theme=light]) .brand-mark span{display:none}
+:where(:root[data-theme=light]) .nav-link{color:var(--nav-text);background:transparent}
+:where(:root[data-theme=light]) .nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
+:where(:root[data-theme=light]) .nav-link.active{background:var(--ivory);color:var(--ink);font-weight:700;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
+:where(:root[data-theme=light]) .header-tag{color:var(--nav-text-2)}
 
 /* 按鈕 */
-button{background:var(--card);color:var(--ink);border:var(--line);font-family:var(--sans);font-weight:500}
-button:hover:not(:disabled){background:var(--sand-2)}
-button:disabled{background:var(--sand-2);color:var(--off);border-color:#c9bfa9;opacity:1}
-.primary,button.primary,.primary-link{background:var(--gold)!important;color:var(--ink)!important;border-color:var(--gold)!important;font-weight:700;clip-path:var(--cut)}
-.primary:hover:not(:disabled),.primary-link:hover{background:#eab458!important}
-button.primary:disabled{background:var(--sand-2)!important;border-color:var(--sand-2)!important;color:var(--off)!important}
-.reset{background:transparent}
-.level-action{background:var(--ink);color:var(--card);border:var(--line)}
-.level-action:hover{background:#2a4d59;border-color:var(--ink)}
-input,select{border-radius:0}
-select,.op-field select,.op-target input,.op-field input[type=number],.console-step select,.control-console select{background:var(--card)!important;color:var(--ink)!important;border:var(--line)!important}
-input[type=checkbox]{accent-color:var(--teal)}
+:where(:root[data-theme=light]) button{background:var(--card);color:var(--ink);border:var(--line);font-family:var(--sans);font-weight:500}
+:where(:root[data-theme=light]) button:hover:not(:disabled){background:var(--sand-2)}
+:where(:root[data-theme=light]) button:disabled{background:var(--sand-2);color:var(--off);border-color:#c9bfa9;opacity:1}
+:where(:root[data-theme=light]) .primary,:where(:root[data-theme=light]) button.primary,:where(:root[data-theme=light]) .primary-link{background:var(--gold)!important;color:var(--ink)!important;border-color:var(--gold)!important;font-weight:700;clip-path:var(--cut)}
+:where(:root[data-theme=light]) .primary:hover:not(:disabled),:where(:root[data-theme=light]) .primary-link:hover{background:#eab458!important}
+:where(:root[data-theme=light]) button.primary:disabled{background:var(--sand-2)!important;border-color:var(--sand-2)!important;color:var(--off)!important}
+:where(:root[data-theme=light]) .reset{background:transparent}
+:where(:root[data-theme=light]) .level-action{background:var(--ink);color:var(--card);border:var(--line)}
+:where(:root[data-theme=light]) .level-action:hover{background:#2a4d59;border-color:var(--ink)}
+:where(:root[data-theme=light]) input,:where(:root[data-theme=light]) select{border-radius:0}
+:where(:root[data-theme=light]) select,:where(:root[data-theme=light]) .op-field select,:where(:root[data-theme=light]) .op-target input,:where(:root[data-theme=light]) .op-field input[type=number],:where(:root[data-theme=light]) .console-step select,:where(:root[data-theme=light]) .control-console select{background:var(--card)!important;color:var(--ink)!important;border:var(--line)!important}
+:where(:root[data-theme=light]) input[type=checkbox]{accent-color:var(--teal)}
 
 /* 卡片與面板 */
-.panel,.operate-panel,.level-panel,.control-console,.challenge-card,.tool-card,.safety-card,.machine-card,.course-route a,.level-howto{background:var(--card);border:var(--line);box-shadow:none}
-.op-details.advanced .control-console{background:var(--ivory)}
-.op-section{border-top:1.5px solid rgba(31,58,68,.2)}
-.op-heading h3,.console-section h3{color:var(--ink);font-size:14px}
-.operate-panel{counter-reset:section;padding:22px}
-.operate-panel .op-section .op-heading h3{display:flex;align-items:center;gap:8px}
-.operate-panel .op-section .op-heading h3::before{counter-increment:section;content:counter(section,decimal-leading-zero);display:grid;place-items:center;width:24px;height:26px;background:var(--teal);color:#fff;clip-path:var(--hex);font:600 10px var(--mono)}
-.op-heading small,.op-state,.op-help,.console-help,.level-foot{color:var(--muted)}
-.op-state.is-running{color:var(--teal);font-weight:700}
-.op-field,.op-check,.op-target label{color:var(--text-2)}
-.op-details summary{color:var(--teal);font-weight:500}
-.notice{background:#eef4f0;border:var(--line);color:var(--ink)}
-.notice.caution{background:#fbecc9;color:#6b4a10;border-color:#b78424}
-.notice.danger{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
+:where(:root[data-theme=light]) .panel,:where(:root[data-theme=light]) .operate-panel,:where(:root[data-theme=light]) .level-panel,:where(:root[data-theme=light]) .control-console,:where(:root[data-theme=light]) .challenge-card,:where(:root[data-theme=light]) .tool-card,:where(:root[data-theme=light]) .safety-card,:where(:root[data-theme=light]) .machine-card,:where(:root[data-theme=light]) .course-route a,:where(:root[data-theme=light]) .level-howto{background:var(--card);border:var(--line);box-shadow:none}
+:where(:root[data-theme=light]) .op-details.advanced .control-console{background:var(--ivory)}
+:where(:root[data-theme=light]) .op-section{border-top:1.5px solid rgba(31,58,68,.2)}
+:where(:root[data-theme=light]) .op-heading h3,:where(:root[data-theme=light]) .console-section h3{color:var(--ink);font-size:14px}
+:where(:root[data-theme=light]) .operate-panel{counter-reset:section;padding:22px}
+:where(:root[data-theme=light]) .operate-panel .op-section .op-heading h3{display:flex;align-items:center;gap:8px}
+:where(:root[data-theme=light]) .operate-panel .op-section .op-heading h3::before{counter-increment:section;content:counter(section,decimal-leading-zero);display:grid;place-items:center;width:24px;height:26px;background:var(--teal);color:#fff;clip-path:var(--hex);font:600 10px var(--mono)}
+:where(:root[data-theme=light]) .op-heading small,:where(:root[data-theme=light]) .op-state,:where(:root[data-theme=light]) .op-help,:where(:root[data-theme=light]) .console-help,:where(:root[data-theme=light]) .level-foot{color:var(--muted)}
+:where(:root[data-theme=light]) .op-state.is-running{color:var(--teal);font-weight:700}
+:where(:root[data-theme=light]) .op-field,:where(:root[data-theme=light]) .op-check,:where(:root[data-theme=light]) .op-target label{color:var(--text-2)}
+:where(:root[data-theme=light]) .op-details summary{color:var(--teal);font-weight:500}
+:where(:root[data-theme=light]) .notice{background:#eef4f0;border:var(--line);color:var(--ink)}
+:where(:root[data-theme=light]) .notice.caution{background:#fbecc9;color:#6b4a10;border-color:#b78424}
+:where(:root[data-theme=light]) .notice.danger{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
 
 /* 分段選單與進給 */
-.segmented{background:var(--sand);border:0;padding:3px}
-.segmented button{background:transparent;color:var(--text-2);border:0}
-.segmented button[aria-checked=true]{background:var(--teal);color:#fff;box-shadow:none;clip-path:var(--arrow)}
-.segmented .unit{color:var(--muted);font-family:var(--mono)}
-.jog{background:var(--card);border:var(--line)}
-.jog:active:not(:disabled){background:var(--sand)}
-.jog strong{color:var(--ink);font-family:var(--display)}
-.jog small{color:var(--muted)}
-.contact-pill{background:var(--sand-2);border:0;color:var(--text-3);clip-path:var(--para);padding:4px 12px}
-.contact-pill.touch{background:var(--gold);color:var(--ink)}
-.contact-pill.cutting{background:#c9612f;color:#fff}
-.dro>div{background:var(--ivory);border:var(--line)}
-.dro>div.active{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
-.dro span{color:var(--text-3)}
-.dro strong{color:var(--ink);font-family:var(--display)}
-.dro strong small{color:var(--muted)}
-.op-measure dt{color:var(--text-3)}
-output{font-family:var(--display)}
-.console-rpm strong{font:700 52px/1 var(--display);color:var(--ink)}
+:where(:root[data-theme=light]) .segmented{background:var(--sand);border:0;padding:3px}
+:where(:root[data-theme=light]) .segmented button{background:transparent;color:var(--text-2);border:0}
+:where(:root[data-theme=light]) .segmented button[aria-checked=true]{background:var(--teal);color:#fff;box-shadow:none;clip-path:var(--arrow)}
+:where(:root[data-theme=light]) .segmented .unit{color:var(--muted);font-family:var(--mono)}
+:where(:root[data-theme=light]) .jog{background:var(--card);border:var(--line)}
+:where(:root[data-theme=light]) .jog:active:not(:disabled){background:var(--sand)}
+:where(:root[data-theme=light]) .jog strong{color:var(--ink);font-family:var(--display)}
+:where(:root[data-theme=light]) .jog small{color:var(--muted)}
+:where(:root[data-theme=light]) .contact-pill{background:var(--sand-2);border:0;color:var(--text-3);clip-path:var(--para);padding:4px 12px}
+:where(:root[data-theme=light]) .contact-pill.touch{background:var(--gold);color:var(--ink)}
+:where(:root[data-theme=light]) .contact-pill.cutting{background:#c9612f;color:#fff}
+:where(:root[data-theme=light]) .dro>div{background:var(--ivory);border:var(--line)}
+:where(:root[data-theme=light]) .dro>div.active{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+:where(:root[data-theme=light]) .dro span{color:var(--text-3)}
+:where(:root[data-theme=light]) .dro strong{color:var(--ink);font-family:var(--display)}
+:where(:root[data-theme=light]) .dro strong small{color:var(--muted)}
+:where(:root[data-theme=light]) .op-measure dt{color:var(--text-3)}
+:where(:root[data-theme=light]) output{font-family:var(--display)}
+:where(:root[data-theme=light]) .console-rpm strong{font:700 52px/1 var(--display);color:var(--ink)}
 
 /* 機台切換（箭頭分段） */
-.machine-switcher{background:var(--sand);border:0;padding:3px}
-.switcher-tab{background:transparent;color:var(--text-2);border:0}
-.switcher-tab:hover{background:rgba(31,58,68,.08);color:var(--ink)}
-.switcher-tab.active{background:var(--teal);color:#fff;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
+:where(:root[data-theme=light]) .machine-switcher{background:var(--sand);border:0;padding:3px}
+:where(:root[data-theme=light]) .switcher-tab{background:transparent;color:var(--text-2);border:0}
+:where(:root[data-theme=light]) .switcher-tab:hover{background:rgba(31,58,68,.08);color:var(--ink)}
+:where(:root[data-theme=light]) .switcher-tab.active{background:var(--teal);color:#fff;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
 
 /* 3D 視窗：天空、地平線、遠方浮島 */
-.viewport{border:var(--line);background:linear-gradient(#5fb0cf,#b9dbe6 60%,#b9dbe6)}
-.viewport canvas{position:relative;z-index:1}
-.view-top,.view-bottom{z-index:2}
-.view-bar{background:transparent;border:0;padding:0;gap:0}
-.view-bar button{background:var(--ink);color:var(--nav-text);border:0;font-family:var(--mono);letter-spacing:.08em;padding:7px 12px}
-.view-bar button:hover:not(:disabled){background:#2a4d59;color:#fff}
-.view-bar button[aria-pressed=true]{background:var(--teal);color:#fff;font-weight:600}
-.view-bar kbd{border-color:currentColor;opacity:.8}
-.view-bottom{color:var(--ink);font-family:var(--mono)}
-.view-bottom>span{background:var(--card);border:var(--line);padding:4px 8px}
-.part-tooltip{background:var(--card);border:var(--line);color:var(--ink)}
-.scene-overlay{background:var(--ivory);color:var(--ink)}
-.spinner{border-color:var(--sand);border-top-color:var(--teal)}
+:where(:root[data-theme=light]) .viewport{border:var(--line);background:linear-gradient(#b98a55,#e2bf8a 55%,#ecd3a6)}
+:where(:root[data-theme=light]) .viewport canvas{position:relative;z-index:1}
+:where(:root[data-theme=light]) .view-top,:where(:root[data-theme=light]) .view-bottom{z-index:2}
+:where(:root[data-theme=light]) .view-bar{background:transparent;border:0;padding:0;gap:0}
+:where(:root[data-theme=light]) .view-bar button{background:var(--ink);color:var(--nav-text);border:0;font-family:var(--mono);letter-spacing:.08em;padding:7px 12px}
+:where(:root[data-theme=light]) .view-bar button:hover:not(:disabled){background:#2a4d59;color:#fff}
+:where(:root[data-theme=light]) .view-bar button[aria-pressed=true]{background:var(--teal);color:#fff;font-weight:600}
+:where(:root[data-theme=light]) .view-bar kbd{border-color:currentColor;opacity:.8}
+:where(:root[data-theme=light]) .view-bottom{color:var(--ink);font-family:var(--mono)}
+:where(:root[data-theme=light]) .view-bottom>span{background:var(--card);border:var(--line);padding:4px 8px}
+:where(:root[data-theme=light]) .part-tooltip{background:var(--card);border:var(--line);color:var(--ink)}
+:where(:root[data-theme=light]) .scene-overlay{background:var(--ivory);color:var(--ink)}
+:where(:root[data-theme=light]) .spinner{border-color:var(--sand);border-top-color:var(--teal)}
 
 /* 關卡 */
-.level-tag,.challenge-card-body small{font-family:var(--mono);letter-spacing:.12em;color:var(--teal)}
-.level-stepper li{color:var(--muted);border-bottom:3px solid var(--sand)}
-.level-stepper span{clip-path:var(--hex);border:0;background:var(--sand);color:var(--text-2);width:22px;height:24px}
-.level-stepper li.done{color:var(--text-2);border-color:var(--teal)}
-.level-stepper li.current{color:var(--ink);border-color:var(--gold)}
-.level-stepper li.current span{background:var(--gold);color:var(--ink)}
-.level-body>p,.challenge-card-body p,.step-hints{color:var(--text-2)}
-.target-list div{background:var(--ivory);border:var(--line)}
-.target-list dt{color:var(--text-3)}.target-list dd{color:var(--ink)}
-.practice-timer{background:var(--ink);border:0;clip-path:var(--cut)}
-.practice-timer strong{color:var(--gold);font-family:var(--display)}
-.practice-timer span{color:var(--nav-text)}
-.practice-timer.warn strong{color:#ffd27a}.practice-timer.over strong{color:#ff9d6b}
-.stars span{color:var(--sand)}
-.stars span.on{color:var(--gold);text-shadow:none}
-.result-banner{border:var(--line)}
-.result-banner.pass{background:#dcefe9;color:var(--ink)}
-.result-banner.draft{background:#fbecc9;color:#6b4a10;border-color:#b78424}
-.result-banner.fail{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
-.level-measurement-scroll th,.level-measurement-scroll td{border-bottom:1.5px solid rgba(31,58,68,.2);color:var(--text)}
-.level-measurement-scroll thead th{color:var(--muted);font-family:var(--mono)}
-.node-dot{clip-path:var(--hex);border:0;width:30px;height:32px;background:var(--teal)!important;color:#fff!important;font-family:var(--mono)}
-.level-howto{border-style:dashed}
-.level-howto ol{color:var(--text-2)}.level-howto b{color:var(--ink)}
+:where(:root[data-theme=light]) .level-tag,:where(:root[data-theme=light]) .challenge-card-body small{font-family:var(--mono);letter-spacing:.12em;color:var(--teal)}
+:where(:root[data-theme=light]) .level-stepper li{color:var(--muted);border-bottom:3px solid var(--sand)}
+:where(:root[data-theme=light]) .level-stepper span{clip-path:var(--hex);border:0;background:var(--sand);color:var(--text-2);width:22px;height:24px}
+:where(:root[data-theme=light]) .level-stepper li.done{color:var(--text-2);border-color:var(--teal)}
+:where(:root[data-theme=light]) .level-stepper li.current{color:var(--ink);border-color:var(--gold)}
+:where(:root[data-theme=light]) .level-stepper li.current span{background:var(--gold);color:var(--ink)}
+:where(:root[data-theme=light]) .level-body>p,:where(:root[data-theme=light]) .challenge-card-body p,:where(:root[data-theme=light]) .step-hints{color:var(--text-2)}
+:where(:root[data-theme=light]) .target-list div{background:var(--ivory);border:var(--line)}
+:where(:root[data-theme=light]) .target-list dt{color:var(--text-3)}:where(:root[data-theme=light]) .target-list dd{color:var(--ink)}
+:where(:root[data-theme=light]) .practice-timer{background:var(--ink);border:0;clip-path:var(--cut)}
+:where(:root[data-theme=light]) .practice-timer strong{color:var(--gold);font-family:var(--display)}
+:where(:root[data-theme=light]) .practice-timer span{color:var(--nav-text)}
+:where(:root[data-theme=light]) .practice-timer.warn strong{color:#ffd27a}:where(:root[data-theme=light]) .practice-timer.over strong{color:#ff9d6b}
+:where(:root[data-theme=light]) .stars span{color:var(--sand)}
+:where(:root[data-theme=light]) .stars span.on{color:var(--gold);text-shadow:none}
+:where(:root[data-theme=light]) .result-banner{border:var(--line)}
+:where(:root[data-theme=light]) .result-banner.pass{background:#dcefe9;color:var(--ink)}
+:where(:root[data-theme=light]) .result-banner.draft{background:#fbecc9;color:#6b4a10;border-color:#b78424}
+:where(:root[data-theme=light]) .result-banner.fail{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
+:where(:root[data-theme=light]) .level-measurement-scroll th,:where(:root[data-theme=light]) .level-measurement-scroll td{border-bottom:1.5px solid rgba(31,58,68,.2);color:var(--text)}
+:where(:root[data-theme=light]) .level-measurement-scroll thead th{color:var(--muted);font-family:var(--mono)}
+:where(:root[data-theme=light]) .node-dot{clip-path:var(--hex);border:0;width:30px;height:32px;background:var(--teal)!important;color:#fff!important;font-family:var(--mono)}
+:where(:root[data-theme=light]) .level-howto{border-style:dashed}
+:where(:root[data-theme=light]) .level-howto ol{color:var(--text-2)}:where(:root[data-theme=light]) .level-howto b{color:var(--ink)}
 
 /* 首頁與資訊頁 */
-.machine-card:hover,.course-route a:hover{background:#fff}
-.card-number,.tool-badge{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)}
-.machine-card p,.machine-card small,.tool-desc,.safety-card ul,.home-notes,.course-route small{color:var(--text-2)}
-.card-visual{background:linear-gradient(#5fb0cf,#a8d6e3)}
-.card-visual svg g{stroke:var(--ink)}
-.course-route b{color:var(--gold);font-family:var(--mono)}
-.course-route a{color:var(--ink)}
-.home-notes b{color:var(--teal)}
-footer{color:var(--muted);border-top:1.5px solid rgba(31,58,68,.2);font-family:var(--mono)}
-output{color:inherit}
-.view-bottom>span:first-child,.view-bottom>span:last-child{background:var(--card);border:var(--line);color:var(--ink);padding:4px 8px}
-.card-action{color:var(--teal)!important;font-weight:700}
-.machine-card h2 span{color:var(--gold)}
+:where(:root[data-theme=light]) .machine-card:hover,:where(:root[data-theme=light]) .course-route a:hover{background:#fff}
+:where(:root[data-theme=light]) .card-number,:where(:root[data-theme=light]) .tool-badge{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)}
+:where(:root[data-theme=light]) .machine-card p,:where(:root[data-theme=light]) .machine-card small,:where(:root[data-theme=light]) .tool-desc,:where(:root[data-theme=light]) .safety-card ul,:where(:root[data-theme=light]) .home-notes,:where(:root[data-theme=light]) .course-route small{color:var(--text-2)}
+:where(:root[data-theme=light]) .card-visual{background:linear-gradient(#c79a62,#ecd3a6)}
+:where(:root[data-theme=light]) .card-visual svg g{stroke:var(--ink)}
+:where(:root[data-theme=light]) .course-route b{color:var(--gold);font-family:var(--mono)}
+:where(:root[data-theme=light]) .course-route a{color:var(--ink)}
+:where(:root[data-theme=light]) .home-notes b{color:var(--teal)}
+:where(:root[data-theme=light]) footer{color:var(--muted);border-top:1.5px solid rgba(31,58,68,.2);font-family:var(--mono)}
+:where(:root[data-theme=light]) output{color:inherit}
+:where(:root[data-theme=light]) .view-bottom>span:first-child,:where(:root[data-theme=light]) .view-bottom>span:last-child{background:var(--card);border:var(--line);color:var(--ink);padding:4px 8px}
+:where(:root[data-theme=light]) .card-action{color:var(--teal)!important;font-weight:700}
+:where(:root[data-theme=light]) .machine-card h2 span{color:var(--gold)}

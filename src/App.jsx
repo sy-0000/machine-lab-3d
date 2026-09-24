@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
+import { useTheme } from './theme.js';
 import { challengeById } from './levels/challenges.js';
 
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
@@ -39,6 +40,7 @@ function MachineIcon({ id }) {
 
 export default function App() {
   const [route, setRoute] = useState(location.hash.slice(2));
+  const [theme, toggleTheme] = useTheme();
 
   useEffect(() => {
     const change = () => setRoute(location.hash.slice(2));
@@ -81,7 +83,12 @@ export default function App() {
           </a>
         </nav>
 
-        <span className="header-tag">觀察構造 · 理解連動</span>
+        <div className="header-end">
+          <span className="header-tag">觀察構造 · 理解連動</span>
+          <button className="theme-toggle" onClick={toggleTheme} aria-label={theme === 'dark' ? '切換為淺色模式' : '切換為深色模式'} title={theme === 'dark' ? '切換為淺色模式' : '切換為深色模式'}>
+            {theme === 'dark' ? '☀️ 淺色' : '🌙 深色'}
+          </button>
+        </div>
       </header>
 
       {route === 'safety' ? (

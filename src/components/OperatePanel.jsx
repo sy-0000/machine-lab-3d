@@ -54,8 +54,9 @@ export default function OperatePanel({ session, controls, model, machineId, leve
   const jog = (a, delta) => {
     if (a.compound) {
       // Along the compound slide: Δz = d·cosθ, Δdiameter = −2·d·sinθ (feeding toward the chuck grows the diameter).
-      const t = angle * Math.PI / 180;
-      return send({ type: 'machining.line', xDiameterMm: m.xDiameterMm - 2 * delta * Math.sin(t), zMm: m.zMm + delta * Math.cos(t) });
+      // Read the tip fresh: a held button repeats this from a timer whose render-time state is stale.
+      const t = angle * Math.PI / 180, now = session?.getState().machining || m;
+      return send({ type: 'machining.line', xDiameterMm: now.xDiameterMm - 2 * delta * Math.sin(t), zMm: now.zMm + delta * Math.cos(t) });
     }
     return send(machining
       ? { type: 'machining.move', axis: a.id, valueMm: delta, mode: 'relative', ...(a.diameter ? { representation: 'diameter' } : {}) }

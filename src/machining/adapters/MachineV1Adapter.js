@@ -38,6 +38,7 @@ export class MachineV1Adapter {
   #datum = {X:0,Z:0};
   #events = [];
   #chipSystem = null;
+  #cutCount = 0; // material-removal events, for the machining sound
   #dt = 0; // current frame step; 0 for one-off commands
   #unsafe = false;
   constructor(machine, { latheCoordinates = {}, tools = ToolRegistry, workpieces = WorkpieceRegistry } = {}) {
@@ -83,7 +84,7 @@ export class MachineV1Adapter {
       feedStopMm: m.runtime.feedStop ? worldToMm(m.runtime.feedStop.value) - (this.#offsets[m.runtime.feedStop.readout] || 0) : null,
       activeCuttingTool: state.activeCuttingTool,
       cuttingTipMm: this.#cuttingSample()?.position || null,
-      machining: this.#machiningState(), headMachining:this.head.state(),
+      machining: this.#machiningState(), headMachining:this.head.state(), cutCount: this.#cutCount,
       workpiece: workpiece ? { id: workpiece.id, name: workpiece.name, type: workpiece.type, dimensionsMm, machinable: workpiece instanceof RevolvedWorkpiece || workpiece instanceof PrismaticWorkpiece } : null,
       hasDemoWorkpiece: !!m.runtime.workpiece && m.runtime.workpieceOwner !== 'module',
       warning: { ...warning, ...(gap === undefined ? {} : { gapMm: Number.isFinite(gap) ? worldToMm(gap) : null }) },
@@ -262,7 +263,14 @@ export class MachineV1Adapter {
     }
   }
   #chips() { return this.#chipSystem ??= new ChipSystem(this.#machine.rootScene, this.#machine.id); }
-  #emitChips(at, away, travelMm, ignore) { if (at) this.#chips().emit(at, away, Math.max(10 * this.#dt, travelMm / 4), ignore); }
+  // [chips per second while cutting on a held handwheel, mm of tool travel per chip] for each machine.
+  static #CHIP_RATE = { lathe: [10, 4], milling: [20, 1.2], drill: [10, 1.2] };
+  #emitChips(at, away, travelMm, ignore) {
+    if (!at) return;
+    this.#cutCount++;
+    const [perSecond, mmPerChip] = MachineV1Adapter.#CHIP_RATE[this.#machine.id] || MachineV1Adapter.#CHIP_RATE.lathe;
+    this.#chips().emit(at, away, Math.max(perSecond * this.#dt, travelMm / mmPerChip), ignore);
+  }
   #clearChips() { this.#chipSystem?.clear(); }
   #danger(state) {
     return {...LATHE_MACHINING.chuckDanger,endZMm:state.clamping.endZMm};

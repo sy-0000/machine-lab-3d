@@ -3,8 +3,8 @@ import { useThree } from '@react-three/fiber';
 import { CanvasTexture, CylinderGeometry, CircleGeometry, Fog, RepeatWrapping, SRGBColorSpace, BackSide, DoubleSide } from 'three';
 
 // 「天空船塢」世界：機台立在懸空木甲板上，四周是霧中層層退後的蒸氣龐克城市剪影。
-// 全部以程式產生（無額外下載）。尺寸都以機台半徑 r 為單位。
-const HORIZON = '#b9dbe6';
+// 全部以程式產生（無額外下載）。尺寸都以機台半徑 r 為單位。淺色模式專用：暖金偏橘的朦朧空氣感。
+const HORIZON = '#ecd3a6';
 
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 
@@ -50,9 +50,9 @@ function deckTexture() {
 export default function SkyDockWorld({ r, floor, shadows = true }) {
   const { scene } = useThree();
   const layers = useMemo(() => [
-    { radius: r * 9, height: r * 1.7, color: '#7892a0', seed: 11, windows: true, tall: 1, repeat: 5, base: .55 },
-    { radius: r * 15, height: r * 2.6, color: '#9fbac3', seed: 23, airships: 2, tall: 1.2, repeat: 6, base: .95 },
-    { radius: r * 24, height: r * 4, color: '#c2d8de', seed: 37, airships: 3, tall: 1.4, repeat: 7, base: 1.5 },
+    { radius: r * 9, height: r * 1.7, color: '#9a7446', seed: 11, windows: true, tall: 1, repeat: 5, base: .55 },
+    { radius: r * 15, height: r * 2.6, color: '#c49a62', seed: 23, airships: 2, tall: 1.2, repeat: 6, base: .95 },
+    { radius: r * 24, height: r * 4, color: '#dfbf8c', seed: 37, airships: 3, tall: 1.4, repeat: 7, base: 1.5 },
   ].map(l => ({ ...l, texture: skylineTexture(l.seed, l.color, l), geometry: new CylinderGeometry(l.radius, l.radius, l.height, 96, 1, true) })), [r]);
   const deck = useMemo(() => ({ texture: deckTexture(), top: new CircleGeometry(r * 1.7, 96) }), [r]);
   useEffect(() => {
@@ -63,8 +63,8 @@ export default function SkyDockWorld({ r, floor, shadows = true }) {
   useEffect(() => () => { for (const l of layers) { l.texture.dispose(); l.geometry.dispose(); } deck.texture.dispose(); deck.top.dispose(); }, [layers, deck]);
   const posts = 28, deckR = r * 1.7;
   return <group>
-    <hemisphereLight args={['#cdeaf5', '#9c8158', .9]} />
-    <directionalLight position={[-r * 3, r * 2.2, r * 1.5]} intensity={1.2} color="#ffd9a0" />
+    <hemisphereLight args={['#ffe0b0', '#8a6a44', .6]} />
+    <directionalLight position={[-r * 3, r * 2.2, r * 1.5]} intensity={1} color="#ffc27a" />
     {/* Floating dock: plank deck, brass rim, low railing and a tapering hull underneath. */}
     <mesh geometry={deck.top} rotation={[-Math.PI / 2, 0, 0]} position={[0, floor, 0]} receiveShadow={shadows}>
       <meshStandardMaterial map={deck.texture} roughness={.85} metalness={.05} />

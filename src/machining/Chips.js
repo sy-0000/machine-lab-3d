@@ -16,8 +16,8 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const SHAPES = {
   // Sizes are slightly exaggerated so chips read at classroom viewing distance.
   lathe: () => ({ radius: rand(.005, .009), grow: rand(-.3, .4), turns: rand(2, 6), pitch: rand(.003, .008), thick: rand(.0005, .0008) }),
-  milling: () => ({ radius: rand(.0025, .005), grow: rand(-.4, .2), turns: rand(.35, .9), pitch: rand(0, .001), thick: rand(.0004, .0007) }),
-  drill: () => ({ radius: rand(.003, .0045), grow: 0, turns: rand(1.5, 3.5), pitch: rand(.003, .005), thick: rand(.0003, .0005) }),
+  milling: () => ({ radius: rand(.004, .007), grow: rand(-.4, .2), turns: rand(.4, 1.1), pitch: rand(0, .0015), thick: rand(.0006, .001) }),
+  drill: () => ({ radius: rand(.004, .006), grow: rand(-.1, .2), turns: rand(1.5, 3.5), pitch: rand(.003, .006), thick: rand(.0005, .0008) }),
 };
 const TINTS = ['#c9ced3', '#c9ced3', '#b8bec4', '#d7dce0', '#d9b35a', '#6f7fb8', '#8f73ad'];
 
@@ -32,13 +32,13 @@ export class ChipSystem {
   }
   get moving() { return this.chips.some(c => !c.rest); }
   /**
-   * at: cutting point (world); away: throw direction (world); amount: chips to add (fractional carries over);
-   * ignore: objects chips pass through (the tool, and a spinning lathe stock).
+   * at: cutting point (world), or a function returning a fresh [at, away] per chip; away: throw direction (world);
+   * amount: chips to add (fractional carries over); ignore: objects chips pass through (the tool, a spinning lathe stock).
    */
   emit(at, away, amount, ignore = []) {
     this.ignore = ignore;
     this.budget = Math.min(6, this.budget + amount);
-    while (this.budget >= 1) { this.budget--; this.spawn(at, away); }
+    while (this.budget >= 1) { this.budget--; const [p, d] = typeof at === 'function' ? at() : [at, away]; this.spawn(p, d); }
   }
   spawn(at, away) {
     let chip = this.chips.length >= MAX ? this.chips.shift() : null;
@@ -49,8 +49,8 @@ export class ChipSystem {
     // Start just outside the cut so the first collision test does not begin inside the stock.
     chip.mesh.position.copy(this.group.worldToLocal(this.from.copy(at).addScaledVector(away, .004)));
     chip.mesh.rotation.set(rand(0, 6.3), rand(0, 6.3), rand(0, 6.3));
-    // Lathe coils are flung clear of the tool toward the operator; mill and drill chips stay closer.
-    const speed = this.kind === 'drill' ? rand(.15, .35) : this.kind === 'lathe' ? rand(.45, .85) : rand(.3, .7);
+    // Lathe coils and face-mill chips are flung clear of the cutter; drill chips spill out of the hole.
+    const speed = this.kind === 'drill' ? rand(.25, .5) : rand(.45, .85);
     chip.velocity = new Vector3(away.x + rand(-.5, .5), away.y + rand(.2, .8), away.z + rand(-.5, .5)).normalize().multiplyScalar(speed);
     chip.spin = new Vector3(rand(-9, 9), rand(-9, 9), rand(-9, 9));
     chip.rest = false; chip.bounces = 0; chip.age = 0;

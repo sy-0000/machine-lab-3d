@@ -1,7 +1,7 @@
 import {Vector3,Matrix3,Raycaster} from 'three';
 import {PrismaticWorkpiece} from './PrismaticWorkpiece.js';
 import {cutHead} from '../HeadCuttingSimulation.js';
-import {headBounds} from '../HeadWorkpieceState.js';
+import {headBounds,surfaceAt} from '../HeadWorkpieceState.js';
 import {createVise,createContactMarker} from '../fixtures.js';
 import {isVisibleObject} from '../../machines/runtime.js';
 
@@ -41,12 +41,24 @@ export class HeadMachiningAdapter{
     if(!before||!after||before.tool.id!==after.tool.id)return;
     const from=before.running&&before.rpm>0?before.position:after.position;
     if(!this.workpiece.cut(s=>cutHead(s,from,after.position,after.tool,after))||!this.onChips)return;
-    const m=this.machine,tip=m.currentTool.object3D.localToWorld(new Vector3(...after.tool.tip));
-    // Milling flings short chips sideways; drilling lifts spiral chips up the flutes.
-    const away=m.id==='drill'?new Vector3(0,1,0):new Vector3(Math.random()-.5,.35,Math.random()-.5).normalize();
+    const m=this.machine,w=this.workpiece,p=after.position,st=w.state.stock,radius=after.tool.diameterMm/2,dir=after.direction||1;
+    const local=(x,y,z)=>new Vector3(this.mmToWorld(x-st.lengthMm/2),this.mmToWorld(z),this.mmToWorld(y-st.widthMm/2));
+    const clamp=(v,hi)=>Math.max(-1,Math.min(hi+1,v));
+    // Each chip leaves from the cutter rim (never hidden under the cutter or inside the hole), flung along
+    // the spindle rotation and outward. Milling chips leave at the cut depth; drill chips climb the flutes
+    // and spill over the hole mouth.
+    const source=()=>{
+      const a=Math.random()*Math.PI*2,c=Math.cos(a),s=Math.sin(a),drill=m.id==='drill';
+      const x=clamp(p.xMm+radius*c,st.lengthMm),y=clamp(p.yMm+radius*s,st.widthMm);
+      const z=drill?surfaceAt(w.state,p.xMm,p.yMm)+1:Math.max(0,p.zMm)+.5;
+      const at=w.object3D.localToWorld(local(x,y,z));
+      const away=new Vector3(c*(drill?.7:.6)-s*dir*(drill?.5:.8),drill?.9:.5,s*(drill?.7:.6)+c*dir*(drill?.5:.8))
+        .transformDirection(w.object3D.matrixWorld);
+      return [at,away];
+    };
     // Chips may land on the stock and vise; they pass through the cutter and the contact ring.
-    this.onChips(tip,away,Math.hypot(after.position.xMm-from.xMm,after.position.yMm-from.yMm,after.position.zMm-from.zMm),
-      [m.currentTool.object3D,this.workpiece.object3D.getObjectByName('ContactMarker')].filter(Boolean));
+    this.onChips(source,null,Math.hypot(p.xMm-from.xMm,p.yMm-from.yMm,p.zMm-from.zMm),
+      [m.currentTool.object3D,w.object3D.getObjectByName('ContactMarker')].filter(Boolean));
   }
   /** Tool touches stock: any sampled surface under / beside the cutter reaches the tip height. */
   contact(sample=this.sample()){
