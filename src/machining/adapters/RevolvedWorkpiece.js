@@ -9,10 +9,10 @@ export function profileGeometry(state, mmToWorld) {
   radiusMm.forEach((radius, i) => {
     if (i === 0 || radius !== radiusMm[i - 1]) points.push(new Vector2(radius, i * resolutionMm));
     if (i === radiusMm.length - 1 || radius !== radiusMm[i + 1]) {
-      points.push(new Vector2(radius, Math.min((i + 1) * resolutionMm, state.actualLengthMm)));
+      points.push(new Vector2(radius, Math.min((i + 1) * resolutionMm, state.lengthMm)));
     }
   });
-  points.push(new Vector2(0, state.actualLengthMm));
+  points.push(new Vector2(0, state.lengthMm));
   const geometry = new LatheGeometry(points, 48);
   // Teaching Z is the lathe's existing local +X spindle axis, starting at the chuck face.
   geometry.rotateZ(-Math.PI / 2);
@@ -32,8 +32,9 @@ export class RevolvedWorkpiece extends WorkpieceBase {
   }
   #dimensions() {
     this.dimensions = { radius: this.mmToWorld(Math.max(...this.#state.profile.radiusMm)),
-      lengthMeters: this.mmToWorld(this.#state.actualLengthMm) };
+      lengthMeters: this.mmToWorld(this.#state.lengthMm) };
   }
+  inspect(read) { return read(this.#state); }
   exportState() { return cloneWorkpieceState(this.#state); }
   cut(simulate) {
     const next = simulate(this.#state);

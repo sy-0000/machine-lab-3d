@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
 import { HAMMER_LEVELS } from './levels/hammerPrototype.js';
+import { LEVEL_1 } from './levels/level1.js';
 
 const HammerPrototype = lazy(() => import('./pages/HammerPrototype'));
 
@@ -52,6 +53,8 @@ export default function App() {
   const lessonIndex = HAMMER_LEVELS.findIndex(level => level.id === lessonId);
   const isLessonRoute = ['experience', 'demo'].includes(lessonMode) && lessonIndex >= 0;
   const isGameRoute = ['lathe', 'milling', 'drill', 'game'].includes(route);
+  const isLevel1=route==='level/'+LEVEL_1.id||route==='campaign/handle';
+  const isHeadCampaign=route==='campaign/head';
 
   return (
     <>
@@ -76,7 +79,7 @@ export default function App() {
           <a className={`nav-link ${route === 'tools' ? 'active' : ''}`} href="#/tools">
             刀具介紹
           </a>
-          <a className={`nav-link ${(route === 'levels' || isLessonRoute) ? 'active' : ''}`} href="#/levels">
+          <a className={`nav-link ${(route === 'levels' || isLessonRoute || isLevel1 || isHeadCampaign) ? 'active' : ''}`} href="#/levels">
             關卡選擇
           </a>
           <a className={`nav-link ${isGameRoute ? 'active' : ''}`} href="#/lathe">
@@ -101,6 +104,10 @@ export default function App() {
         <Suspense fallback={<main>正在載入關卡規劃…</main>}>
           <LevelsPage />
         </Suspense>
+      ) : isHeadCampaign ? (
+        <GameWorkspace key="head-campaign" initialMachineId="milling" headCampaign/>
+      ) : isLevel1 ? (
+        <GameWorkspace key={LEVEL_1.id} initialMachineId="lathe" levelDefinition={LEVEL_1} campaignMode/>
       ) : isGameRoute ? (
         <GameWorkspace initialMachineId={route === 'game' ? 'lathe' : route} key="shared-game-scene" />
       ) : (

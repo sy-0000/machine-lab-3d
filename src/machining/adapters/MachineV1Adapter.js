@@ -1,7 +1,10 @@
 import { Vector3 } from 'three';
 import { isVisibleObject } from '../../machines/runtime.js';
 import { RevolvedWorkpiece } from './RevolvedWorkpiece.js';
-import { cutRevolvedProfile } from '../CuttingSimulation.js';
+import { PrismaticWorkpiece } from './PrismaticWorkpiece.js';
+import { HeadMachiningAdapter } from './HeadMachiningAdapter.js';
+import { LATHE_MACHINING } from '../latheMachining.config.js';
+import { cutRevolvedProfile, cutFacing, entersChuck } from '../CuttingSimulation.js';
 import { ToolRegistry } from '../../tools/ToolRegistry.js';
 import { WorkpieceRegistry } from '../../workpieces/WorkpieceRegistry.js';
 import { createLatheCoordinates, LATHE_AXES, diameterToRadiusMm, finite } from './latheCoordinates.js';
@@ -26,9 +29,15 @@ export class MachineV1Adapter {
   #offsets = {};
   #clock = Symbol('machine-session-clock');
   #disposed = false;
+  #calibration = null;
+  #machiningMode = 'turning';
+  #datum = {X:0,Z:0};
+  #events = [];
+  #unsafe = false;
   constructor(machine, { latheCoordinates = {}, tools = ToolRegistry, workpieces = WorkpieceRegistry } = {}) {
     if (!machine?.runtime || !AXES[machine.id]) throw new Error('A loaded supported machine is required');
     this.#machine = machine;
+    this.head = new HeadMachiningAdapter(machine,mmToWorld,worldToMm);
     this.#coordinates = createLatheCoordinates(latheCoordinates);
     this.tools = tools;
     this.workpieces = workpieces;
@@ -65,16 +74,19 @@ export class MachineV1Adapter {
       axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets },
       activeCuttingTool: state.activeCuttingTool,
       cuttingTipMm: this.#cuttingSample()?.position || null,
-      workpiece: workpiece ? { id: workpiece.id, name: workpiece.name, type: workpiece.type, dimensionsMm, machinable: workpiece instanceof RevolvedWorkpiece } : null,
+      machining: this.#machiningState(), headMachining:this.head.state(),
+      workpiece: workpiece ? { id: workpiece.id, name: workpiece.name, type: workpiece.type, dimensionsMm, machinable: workpiece instanceof RevolvedWorkpiece || workpiece instanceof PrismaticWorkpiece } : null,
       hasDemoWorkpiece: !!m.runtime.workpiece && m.runtime.workpieceOwner !== 'module',
       warning: { ...warning, ...(gap === undefined ? {} : { gapMm: Number.isFinite(gap) ? worldToMm(gap) : null }) },
     };
   }
   setMachineAxisMm(axisId, valueMm) {
     this.#requireMachine();
+    const headBefore=this.head.sample();
     const before = this.#cuttingSample();
     this.#machine.setAxisPosition(axisId, mmToWorld(valueMm));
     this.#cut(before, this.#cuttingSample());
+    this.head.cut(headBefore,this.head.sample());
   }
   moveAxis({ axis, valueMm, mode = 'absolute', representation }) {
     this.#requireMachine(); finite(valueMm);
@@ -150,23 +162,36 @@ export class MachineV1Adapter {
     const tool = def ? await this.tools.load(id) : null;
     if (!stillCurrent() || !this.available) { tool?.dispose(); return false; }
     try { this.#requireStopped(); } catch (error) { tool?.dispose(); throw error; }
+    this.#restoreCalibration();
     const previous = this.#machine.currentTool;
     if (tool) await this.#machine.mountTool(tool); else await this.#machine.unmountTool();
     previous?.dispose();
+    this.head.calibrateTool();
+    if (this.#cuttingSample()) this.alignCuttingTip();
     return true;
   }
   exportWorkpieceState() {
     this.#requireMachine();
-    if (!(this.#machine.currentWorkpiece instanceof RevolvedWorkpiece)) throw new Error('No machinable handle mounted');
+    if (!(this.#machine.currentWorkpiece instanceof RevolvedWorkpiece) && !(this.#machine.currentWorkpiece instanceof PrismaticWorkpiece)) throw new Error('No machinable workpiece mounted');
     return this.#machine.currentWorkpiece.exportState();
   }
   async mountWorkpieceState(state, stillCurrent) {
     this.#requireStopped();
+    if(state?.kind==='prismatic'){
+      if(!['milling','drill'].includes(this.#machine.id))throw new Error('Prismatic workpieces require milling/drill');
+      const w=new PrismaticWorkpiece(state,mmToWorld);
+      if(!stillCurrent()){w.dispose();return false;}
+      const previous=this.#machine.currentWorkpiece;
+      await this.#machine.mountWorkpiece(w);previous?.dispose();
+      if(this.head.sample())this.head.place();return true;
+    }
     if (this.#machine.id !== 'lathe') throw new Error('Revolved workpieces require a lathe');
     const workpiece = new RevolvedWorkpiece(state, mmToWorld);
     if (!stillCurrent()) { workpiece.dispose(); return false; }
     const previous = this.#machine.currentWorkpiece;
     await this.#machine.mountWorkpiece(workpiece);
+    this.#datum = {X:0,Z:0}; this.#machiningMode = 'turning'; this.#unsafe = false;
+    if (this.#cuttingSample()) this.alignCuttingTip();
     previous?.dispose(); return true;
   }
   // Physical tip expressed in a non-spinning workpiece frame, independent of UI work offsets.
@@ -179,7 +204,7 @@ export class MachineV1Adapter {
     const root = active.source === 'module' ? m.currentTool.object3D : m.runtime.lookup[active.id];
     if (!root || !isVisibleObject(root)) return null;
     let insert = null;
-    root.traverse(node => { if (node.userData.cuttingTipLocal && isVisibleObject(node)) insert = node; });
+    root.traverse(node => { if (node.userData.cuttingEdge?.version === 1 && node.userData.cuttingEdge.units === 'world' && isVisibleObject(node)) insert = node; });
     // Imported tools need an explicit tip calibration; never fall back to a bounding-box guess.
     if (!insert) return null;
     m.rootScene.updateWorldMatrix(true, true);
@@ -188,8 +213,8 @@ export class MachineV1Adapter {
     const axis = scenePoint(workpiece.object3D.localToWorld(new Vector3(1, 0, 0))).sub(origin).normalize();
     const u = new Vector3(0, 1, 0).addScaledVector(axis, -axis.y).normalize();
     const v = new Vector3().crossVectors(axis, u).normalize();
-    const point = scenePoint(insert.localToWorld(new Vector3().fromArray(insert.userData.cuttingTipLocal))).sub(origin);
-    const mm = value => Math.round(worldToMm(value) * 1e9) / 1e9;
+    const point = scenePoint(insert.localToWorld(new Vector3().fromArray(insert.userData.cuttingEdge.tip))).sub(origin);
+    const mm = value => Math.round(worldToMm(value) * 1e9) / 1e9 || 0;
     return { toolId: active.id, rpm: m.runtime.rpm,
       position: { zMm: mm(point.dot(axis)), uMm: mm(point.dot(u)), vMm: mm(point.dot(v)) } };
   }
@@ -197,8 +222,99 @@ export class MachineV1Adapter {
     if (!after || !before || before.toolId !== after.toolId) return;
     // On the first rotating frame, contact at the final tip only; no sweep through a stopped move.
     const from = before.rpm > 0 ? before.position : after.position;
-    this.#machine.currentWorkpiece.cut(state => cutRevolvedProfile(state, from, after.position,
-      { rpm: before.rpm > 0 ? before.rpm : after.rpm, toolId: after.toolId }));
+    const workpiece=this.#machine.currentWorkpiece;
+    const danger=workpiece.inspect(state=>this.#danger(state));
+    const unsafe=entersChuck(before.position,after.position,danger);
+    if (unsafe && !this.#unsafe) this.#events.push({type:'unsafe',code:'chuck-collision',
+      sequence:(this.#events.at(-1)?.sequence||0)+1,toolId:after.toolId,from:{...before.position},to:{...after.position}});
+    this.#events=this.#events.slice(-100); this.#unsafe=unsafe;
+    if (unsafe) return;
+    workpiece.cut(state => (this.#machiningMode==='facing'?cutFacing:cutRevolvedProfile)(state, from, after.position,
+      { rpm: before.rpm > 0 ? before.rpm : after.rpm, toolId: after.toolId, facing:LATHE_MACHINING.facing }));
+  }
+  #danger(state) {
+    return {...LATHE_MACHINING.chuckDanger,endZMm:state.clamping.endZMm};
+  }
+  #restoreCalibration() {
+    if (this.#calibration) this.#calibration.root.position.copy(this.#calibration.position);
+    this.#calibration=null;
+  }
+  alignCuttingTip() {
+    this.#requireStopped();
+    this.#restoreCalibration();
+    const sample=this.#cuttingSample();
+    if (!sample) throw new Error('Active tool has no calibrated turning edge');
+    const m=this.#machine,active=m.getActiveCuttingTool();
+    const root=active.source==='module'?m.currentTool.object3D:m.runtime.lookup[active.id];
+    this.#calibration={root,position:root.position.clone()};
+    // Move the actual procedural tool assembly, not just its reported tip / virtual offset.
+    const point=m.rootScene.worldToLocal(root.getWorldPosition(new Vector3()));
+    point.y-=mmToWorld(sample.position.uMm);
+    root.position.copy(root.parent.worldToLocal(m.rootScene.localToWorld(point)));
+    m.rootScene.updateWorldMatrix(true,true);
+  }
+  setMachiningMode(mode) {
+    if (!['turning','facing'].includes(mode)) throw new Error('Unsupported cutting mode');
+    this.#machiningMode=mode;
+  }
+  #machiningState() {
+    const wp=this.#machine.currentWorkpiece;
+    if (!(wp instanceof RevolvedWorkpiece)) return null;
+    const sample=this.#cuttingSample(),p=sample?.position;
+    return wp.inspect(state=>{
+      const index=p?Math.min(state.profile.radiusMm.length-1,Math.floor(p.zMm/state.profile.resolutionMm)):-1;
+      const atStock=p && p.zMm>=0 && p.zMm<=state.lengthMm;
+      const radius=atStock?state.profile.radiusMm[index]:null;
+      const protectedZone=!!p && p.zMm<=state.clamping.endZMm;
+      const unsafe=!!p && entersChuck(p,p,this.#danger(state));
+      const x=p?-p.vMm:null;
+      return {mode:this.#machiningMode, lengthMm:state.lengthMm, clamping:{...state.clamping},
+        facingMaxDepthMm:LATHE_MACHINING.facing.maxDepthMm,
+        centerAligned:!!p && Math.abs(p.uMm)<=LATHE_MACHINING.facing.centerToleranceMm,
+        heightErrorMm:p?.uMm??null, xRadialMm:x, xDiameterMm:p?2*(x-this.#datum.X):null,
+        zMm:p?p.zMm-this.#datum.Z:null, physicalZMm:p?.zMm??null, datumMm:{...this.#datum},
+        contact:!!p && !!atStock && !protectedZone && Math.hypot(p.uMm,p.vMm)<=radius+1e-7,
+        diameterAtTipMm:radius===null?null:radius*2, unsafe, events:this.#events.map(event=>({...event,from:{...event.from},to:{...event.to}}))};
+    });
+  }
+  moveMachiningAxis({axis,valueMm,representation,mode='absolute'}) {
+    finite(valueMm); if (!['absolute','relative'].includes(mode)) throw new Error('Invalid motion mode');
+    const p=this.#cuttingSample()?.position;
+    if (!p || !['X','Z'].includes(axis)) throw new Error('A mounted profile and turning edge are required');
+    if (axis==='X' && !['diameter','radial'].includes(representation)) throw new Error('X requires diameter or radial representation');
+    const value=axis==='X' && representation==='diameter'?diameterToRadiusMm(valueMm):valueMm;
+    const actual=axis==='X'?-p.vMm:p.zMm;
+    const delta=mode==='relative'?value:value+this.#datum[axis]-actual;
+    const id=axis==='X'?'y':'x', sign=axis==='X'?-1:1;
+    const target=this.#machineMm()[id]+sign*delta;
+    const limits=this.#machine.config.axes.find(a=>a.id===id).range.map(worldToMm);
+    if (target<limits[0]-1e-7 || target>limits[1]+1e-7) throw new Error('Requested tip position exceeds machine travel');
+    this.setMachineAxisMm(id,target);
+  }
+  // One physical linear sweep, not two axis-aligned cuts. Coordinates are work X diameter / Z, mm.
+  moveMachiningLine({xDiameterMm,zMm}) {
+    finite(xDiameterMm);finite(zMm);
+    const before=this.#cuttingSample();
+    if(!before)throw new Error('A mounted profile and turning edge are required');
+    const axes=this.#machineMm();
+    const targets={y:axes.y-(xDiameterMm/2+this.#datum.X+before.position.vMm),
+      x:axes.x+zMm+this.#datum.Z-before.position.zMm};
+    for(const [id,value] of Object.entries(targets)) {
+      const limits=this.#machine.config.axes.find(a=>a.id===id).range.map(worldToMm);
+      if(value<limits[0]-1e-7||value>limits[1]+1e-7)throw new Error('Requested tip position exceeds machine travel');
+    }
+    for(const [id,value] of Object.entries(targets))this.#machine.setAxisPosition(id,mmToWorld(value));
+    this.#cut(before,this.#cuttingSample());
+  }
+  setMachiningDatum({axis,valueMm=0,representation}) {
+    finite(valueMm); const p=this.#cuttingSample()?.position;
+    if (!p || !['X','Z'].includes(axis)) throw new Error('No machining coordinate frame');
+    if (axis==='X' && !['diameter','radial'].includes(representation)) throw new Error('X requires diameter or radial representation');
+    this.#datum[axis]=(axis==='X'?-p.vMm:p.zMm)-(axis==='X' && representation==='diameter'?valueMm/2:valueMm);
+  }
+  clearMachiningDatum() {
+    this.#requireMachine();
+    this.#datum = {X:0,Z:0};
   }
   async mountWorkpiece(spec, stillCurrent) {
     this.#requireStopped();
@@ -211,24 +327,36 @@ export class MachineV1Adapter {
     const workpiece = await this.workpieces.load(typeof spec === 'string' ? spec : { ...spec, units: 'mm' });
     if (!stillCurrent() || !this.available) { workpiece.dispose(); return false; }
     try { this.#requireStopped(); } catch (error) { workpiece.dispose(); throw error; }
+    this.#restoreCalibration();
     const previous = this.#machine.currentWorkpiece;
     await this.#machine.mountWorkpiece(workpiece);
     previous?.dispose(); return true;
   }
   async unmountWorkpiece(stillCurrent) {
     this.#requireStopped(); if (!stillCurrent()) return false;
+    this.#restoreCalibration();
     const workpiece = await this.#machine.unmountWorkpiece(); workpiece?.dispose(); return true;
   }
-  reset() { this.#requireMachine(); this.#machine.reset(); this.#machine.setTeachingEnabled(false); this.#offsets = {}; }
+  reset() {
+    const headPosition=this.head.workpiece?.object3D.position.clone();
+    this.#requireMachine(); this.#restoreCalibration(); this.#machine.reset();
+    if(headPosition)this.head.workpiece.object3D.position.copy(headPosition);
+    this.head.calibrateTool();
+    this.#machine.setTeachingEnabled(false); this.#offsets = {}; this.#datum = {X:0,Z:0};
+    this.#unsafe=false;
+    if (this.#cuttingSample()) this.alignCuttingTip();
+  }
   step(dt, heldControl) {
     if (!this.available) return false;
+    const headBefore=this.head.sample();
     const before = this.#cuttingSample();
     const active = this.#machine.step(dt, { owner: this.#clock, heldControl });
     if (dt > 0) this.#cut(before, this.#cuttingSample());
+    if (dt > 0) this.head.cut(headBefore,this.head.sample());
     return active;
   }
   dispose() {
     if (this.#disposed) return;
-    this.stop(); this.#machine.releaseUpdateClock(this.#clock); this.#disposed = true;
+    this.#restoreCalibration(); this.stop(); this.#machine.releaseUpdateClock(this.#clock); this.#disposed = true;
   }
 }

@@ -1,3 +1,5 @@
+import LatheMachiningDiagnostics from './LatheMachiningDiagnostics.jsx';
+import ControlPanel from './ControlPanel.jsx';
 import { useState, useEffect } from 'react';
 import { MachineRegistry } from '../machines/core/MachineRegistry.js';
 import { ToolRegistry } from '../tools/ToolRegistry.js';
@@ -8,6 +10,8 @@ export default function DeveloperPanel({
   onSelectMachine,
   currentMachineInstance,
   session,
+  controls,
+  model,
   onUnload,
 }) {
   const [open, setOpen] = useState(false);
@@ -144,18 +148,9 @@ export default function DeveloperPanel({
           </div>
 
           {currentMachineId === 'lathe' && <div className="dev-section">
-            <label>可切削槌柄（本機存檔）</label>
-            <div className="dev-row">
-              {[
-                ['workpiece.createHandle', '建立毛胚 Ø20 × 300 mm'],
-                ['workpiece.save', '儲存槌柄'],
-                ['workpiece.load', '載入槌柄'],
-              ].map(([type, label]) => <button key={type} className="dev-btn" onClick={async () => {
-                try { await run(session, {type}); showLog(label + '完成'); }
-                catch (error) { showLog(error.message); }
-              }}>{label}</button>)}
-            </div>
-            <small>300 mm 為毛胚長度；儲存會覆蓋本機槌柄存檔。載入／新建前請停止主軸。</small>
+            <LatheMachiningDiagnostics session={session} run={async command=>{
+              try { await run(session,command); } catch(error) { showLog(error.message); }
+            }}/>
           </div>}
 
           <div className="dev-section">
@@ -233,6 +228,7 @@ export default function DeveloperPanel({
           </div>
 
           {logMessage && <div className="dev-log">{logMessage}</div>}
+          {currentMachineId === 'lathe' && <details><summary>機台原始控制（診斷）</summary><ControlPanel controls={controls} model={model} diagnostic/></details>}
         </div>
       )}
     </div>

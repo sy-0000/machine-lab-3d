@@ -2,7 +2,7 @@
 
 React、Vite、Three.js、React Three Fiber 與 Drei 製作的純前端網站，提供工安守則、刀具介紹、關卡預覽，以及車床、銑床、鑽床互動教室。套件版本為 3.0.0，模組架構名稱為 Machine System v1.0。
 
-首頁不下載機台模型，進入加工教室後才載入。關卡頁目前是內容與規格預覽，尚未實作切削變形、評分或過關判定。
+首頁不下載機台模型，進入加工教室後才載入。關卡頁提供獨立的[槌柄流程](docs/HANDLE_CAMPAIGN.md)與[槌頭流程](docs/HEAD_CAMPAIGN.md)：實際加工、checkpoint、Demo 與本機存檔。尺寸缺少正式公差或製程資料時保持 draft；尚無星級或評分。
 
 ## 專案根目錄與啟動
 
@@ -128,6 +128,7 @@ npm run preview
 
 ## MachineSession 相容層
 
-完整機台教室的玩家輸入現已經過 `MachineSession` → `MachineV1Adapter` → 既有 Machine System；舊槌柄局部原型仍獨立保留。API、教學 X/Z、單位、輸入鎖與更新時鐘見 [MachineSession 文件](docs/MACHINE_SESSION.md)。尚未新增正式關卡、DemoSequence、評分或完整切削。
+完整機台教室的玩家輸入現已經過 `MachineSession` → `MachineV1Adapter` → 既有 Machine System；舊槌柄局部原型仍獨立保留。API、教學 X/Z、單位、輸入鎖與更新時鐘見 [MachineSession 文件](docs/MACHINE_SESSION.md)。正式 Level 1 沿用同一入口；尚未新增 DemoSequence、評分或完整切削。
 
-- 可持久化車床槌柄與最小切削：[WorkpieceState](docs/WORKPIECE_STATE.md)（現有車床開發者面板：建立／儲存／載入）。
+- 可持久化車床槌柄與最小切削：[WorkpieceState](docs/WORKPIECE_STATE.md)（正常車床側欄：建立／儲存／載入、X/Z 歸零、手輪與加工尺寸；不需開啟 DeveloperPanel）。
+- 正式 [槌柄 Campaign](docs/HANDLE_CAMPAIGN.md)：Levels → 開始／繼續槌柄 Campaign，串接基礎加工、錐度、倒角與待確認製程；實際工件 checkpoint、本機重載與共用 Session 示範。L1 不要求 Ø16.3 等徑區；未知公差／壓花／螺紋不算驗收通過。

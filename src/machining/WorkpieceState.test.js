@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHandleState, cloneWorkpieceState, validateWorkpieceState } from './WorkpieceState.js';
-import { cutRevolvedProfile } from './CuttingSimulation.js';
+import { LATHE_MACHINING } from './latheMachining.config.js';
+import { cutRevolvedProfile, cutFacing, entersChuck } from './CuttingSimulation.js';
 import { WorkpieceStore, WORKPIECE_SAVE_KEY } from './WorkpieceStore.js';
 import { profileGeometry } from './adapters/RevolvedWorkpiece.js';
 import { mmToWorld, worldToMm } from './adapters/MachineV1Adapter.js';
@@ -21,7 +22,7 @@ function memoryStorage() {
 
 test('handle stock is diameter 20, blank length 300, mm-only radius cells and deep-cloneable',()=>{
   const s=createHandleState();assert.equal(s.units,'mm');assert.equal(s.axis,'Z');
-  assert.equal(s.stock.radiusMm,10);assert.equal(s.stock.lengthMm,300);assert.equal(s.actualLengthMm,300);
+  assert.equal(s.stock.radiusMm,10);assert.equal(s.stock.lengthMm,300);assert.equal(s.lengthMm,300);
   assert.equal(s.profile.resolutionMm,0.5);assert.equal(s.profile.radiusMm.length,600);
   assert.ok(s.profile.radiusMm.every(r=>r===10));
   assert.deepEqual(JSON.parse(JSON.stringify(s)),s);
@@ -46,17 +47,17 @@ test('air, stopped spindle, missing/unsupported tools and out-of-stock moves do 
     cut(s,tip(20,2),tip(30,2),{toolId:null}),cut(s,tip(20,2),tip(30,2),{cutting:false})])assert.equal(result,s);
 });
 test('overcut is permanent; returning to a larger radius cannot add material',()=>{
-  const s=cut(createHandleState(),tip(20,5),tip(30,5));
-  assert.equal(cut(s,tip(20,8.15),tip(30,8.15)),s);
-  assert.equal(cut(s,tip(20,10),tip(30,10)),s);
-  assert.equal(s.profile.radiusMm[40],5);
+  const s=cut(createHandleState(),tip(60,5),tip(70,5));
+  assert.equal(cut(s,tip(60,8.15),tip(70,8.15)),s);
+  assert.equal(cut(s,tip(60,10),tip(70,10)),s);
+  assert.equal(s.profile.radiusMm[120],5);
 });
 test('diagonal/height-aware sweep is deterministic under subdivision, including a radial crossing',()=>{
-  const s=createHandleState(),a=tip(20,9,1),b=tip(40,5,3),middle=tip(30,7,2);
+  const s=createHandleState(),a=tip(60,9,1),b=tip(80,5,3),middle=tip(70,7,2);
   assert.deepEqual(cut(s,a,b).profile,cut(cut(s,a,middle),middle,b).profile);
-  const crossed=cut(s,tip(10,-8,3),tip(10,8,3));
-  near(crossed.profile.radiusMm[20],3);assert.equal(crossed.profile.radiusMm[19],10);
-  assert.notEqual(cut(s,a,b).profile.radiusMm[40],cut(s,a,b).profile.radiusMm[79]);
+  const crossed=cut(s,tip(50,-8,3),tip(50,8,3));
+  near(crossed.profile.radiusMm[100],3);assert.equal(crossed.profile.radiusMm[99],10);
+  assert.notEqual(cut(s,a,b).profile.radiusMm[120],cut(s,a,b).profile.radiusMm[159]);
 });
 test('save/reload preserves geometry, actual length and reserved surface/history data',()=>{
   const s=cut(createHandleState(),tip(20,8.15),tip(60,8.15));
@@ -67,14 +68,14 @@ test('save/reload preserves geometry, actual length and reserved surface/history
   assert.deepEqual(a.attributes.position.array,b.attributes.position.array);assert.deepEqual(a.index.array,b.index.array);
   near(a.boundingBox.max.x,0.3);near(a.boundingBox.min.x,0);a.dispose();b.dispose();
   // Schema is ready to retain an actual faced length; no facing operation/target is implemented yet.
-  const shorter=cloneWorkpieceState(s);shorter.actualLengthMm=299.7;
-  store.save(shorter);assert.equal(store.load().actualLengthMm,299.7);
+  const shorter=cloneWorkpieceState(s);shorter.lengthMm=299.7;
+  store.save(shorter);assert.equal(store.load().lengthMm,299.7);
   const geometry=profileGeometry(store.load(),mmToWorld);near(geometry.boundingBox.max.x,0.2997);geometry.dispose();
 });
 test('invalid/versioned/corrupt saves and storage failures are explicit',()=>{
   const valid=createHandleState();
-  for(const invalid of [{...valid,version:2},{...valid,units:'m'},
-    {...valid,actualLengthMm:301},{...valid,profile:{...valid.profile,radiusMm:[NaN]}},
+  for(const invalid of [{...valid,version:99},{...valid,units:'m'},
+    {...valid,lengthMm:301},{...valid,profile:{...valid.profile,radiusMm:[NaN]}},
     {...valid,profile:{...valid.profile,radiusMm:Array(600)}},
     {...valid,profile:{...valid.profile,radiusMm:valid.profile.radiusMm.map(()=>11)}},
     {...valid,features:[{bad:Infinity}]}])assert.throws(()=>validateWorkpieceState(invalid));
@@ -179,5 +180,131 @@ test('handwheel feeds cut only their swept cells; scene transforms and stopped t
     await f.send({type:'spindle.start'});f.tick(2);
     const restarted=f.session.exportWorkpieceState();near(restarted.profile.radiusMm[500],8.15);
     assert.equal(restarted.profile.radiusMm[400],10); // No segment spanning stopped positioning.
+  }finally{await f.close();}
+});
+
+
+test('facing requires real outside-to-center radial travel; partial facing preserves length and a core',()=>{
+  const options={rpm:500,toolId:'turning',facing:LATHE_MACHINING.facing};
+  const stock=createHandleState(),from=tip(299,-12),middle=tip(299,-5),center=tip(299,0);
+  const partial=cutFacing(stock,from,middle,options);
+  assert.equal(partial.lengthMm,300);assert.equal(partial.profile.radiusMm[599],5);
+  assert.equal(partial.profile.radiusMm[597],10);
+  const done=cutFacing(partial,middle,center,options);
+  assert.equal(done.lengthMm,299);assert.equal(done.profile.radiusMm.length,598);
+  assert.deepEqual(done.profile,cutFacing(stock,from,center,options).profile);
+  assert.equal(cutFacing(stock,from,center,{...options,rpm:0}),stock);
+  assert.equal(cutFacing(stock,center,center,options),stock);
+  assert.equal(cutFacing(stock,tip(299,-4),center,options),stock); // A stopped inside-stock jump is not a face pass.
+  assert.equal(cutFacing(stock,tip(200,-12),tip(200,0),options),stock); // No arbitrary long slice/target replacement.
+  assert.equal(cutFacing(stock,tip(299,-12,2),tip(299,0,2),options),stock);
+  assert.equal(cutFacing(stock,tip(299,-12),tip(298,0),options),stock);
+  const quantized=cutFacing(stock,tip(299.2,-12),tip(299.2,0),options);
+  assert.equal(quantized.lengthMm,299.5); // Never cuts behind actual tip Z.
+  const store=new WorkpieceStore(memoryStorage());store.save(partial);
+  assert.deepEqual(cutFacing(store.load(),middle,center,options),done);
+});
+test('clamping is config-driven, protected from material removal, with swept chuck detection',()=>{
+  const s=createHandleState();s.clamping.endZMm=60;
+  const result=cut(s,tip(20,5),tip(100,5));
+  result.profile.radiusMm.forEach((r,i)=>assert.equal(r,i>=120&&i<200?5:10));
+  const danger={startZMm:-10,endZMm:60,radiusMm:30};
+  assert.equal(entersChuck(tip(80,5),tip(-20,5),danger),true);
+  assert.equal(entersChuck(tip(80,35),tip(-20,35),danger),false);
+  assert.equal(entersChuck(tip(30,35),tip(30,-35),danger),true);
+  assert.equal(entersChuck(tip(100,5),tip(200,5),danger),false);
+  assert.equal(cutFacing(s,tip(30,-12),tip(30,0),{rpm:500,toolId:'turning',facing:{...LATHE_MACHINING.facing,maxDepthMm:300}}),s);
+});
+test('old actualLengthMm saves migrate to version 2 lengthMm without losing machining',()=>{
+  const state=createHandleState();state.profile.radiusMm[300]=8.15;
+  const {lengthMm,clamping,...data}=state;
+  const legacy={...data,version:1,actualLengthMm:lengthMm};
+  assert.deepEqual(cloneWorkpieceState(legacy),state);
+  assert.equal('actualLengthMm' in cloneWorkpieceState(legacy),false);
+});
+test('actual cutting corner is centered; physical X diameter/Z, datum and legacy API remain distinct',async()=>{
+  const f=await fixture(new WorkpieceStore(memoryStorage()));
+  try {
+    const original=f.machine.runtime.lookup.TurningTool.position.clone();
+    await f.send({type:'workpiece.createHandle'});
+    near(f.session.getState().cuttingTipMm.uMm,0);
+    assert.notEqual(f.machine.runtime.lookup.TurningTool.position.y,original.y);
+    assert.ok(Math.abs(f.session.getState().cuttingTipMm.zMm-196.1034)<1e-6); // Actual insert corner, not Group origin.
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',valueMm:20});
+    const before=f.session.getState().machineAxesMm.y;
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',valueMm:16.3});
+    near(f.session.getState().machineAxesMm.y-before,1.85);
+    near(f.session.getState().machining.xRadialMm,8.15);near(f.session.getState().machining.xDiameterMm,16.3);
+    await f.send({type:'machining.move',axis:'Z',valueMm:200});near(f.session.getState().machining.zMm,200);
+    const pose=f.session.getState().cuttingTipMm;
+    await f.send({type:'machining.datum',axis:'Z',valueMm:0});
+    near(f.session.getState().machining.zMm,0);assert.deepEqual(f.session.getState().cuttingTipMm,pose);
+    await f.send({type:'machining.move',axis:'Z',valueMm:10});near(f.session.getState().cuttingTipMm.zMm,210);
+    await f.send({type:'machine.reset'});near(f.session.getState().cuttingTipMm.uMm,0);
+    await f.send({type:'tool.select',toolId:'turning_tool'});near(f.session.getState().cuttingTipMm.uMm,0);
+    assert.equal(f.session.getState().activeCuttingTool.source,'module');
+    await f.send({type:'workpiece.unmount'});
+    assert.deepEqual(f.machine.runtime.lookup.TurningTool.position,original);
+  }finally{await f.close();}
+});
+test('Session facing updates length and geometry only after cutting, saves/reloads and continues turning',async()=>{
+  const store=new WorkpieceStore(memoryStorage()),f=await fixture(store);
+  const move=async(axis,value)=>f.send({type:'machining.move',axis,valueMm:value,...(axis==='X'?{representation:'diameter'}:{})});
+  try{
+    await f.send({type:'workpiece.createHandle'});await move('X',24);await move('Z',299);
+    await f.send({type:'machining.mode',mode:'facing'});await f.send({type:'spindle.start'});f.tick(2);
+    await move('X',10);assert.equal(f.session.exportWorkpieceState().lengthMm,300);
+    near(f.session.getState().machining.diameterAtTipMm,10);
+    await f.send({type:'spindle.stop'});f.tick(2);await f.send({type:'workpiece.save'});
+    await f.send({type:'workpiece.load'});await f.send({type:'machining.mode',mode:'facing'});
+    await f.send({type:'spindle.start'});f.tick(2);await move('X',0);
+    assert.equal(f.session.exportWorkpieceState().lengthMm,299);
+    near(f.machine.currentWorkpiece.mesh.geometry.boundingBox.max.x,0.299);
+    await f.send({type:'spindle.stop'});f.tick(2);await f.send({type:'workpiece.save'});
+    const state=f.session.exportWorkpieceState(),vertices=f.machine.currentWorkpiece.mesh.geometry.attributes.position.array.slice();
+    await f.send({type:'workpiece.unmount'});await f.send({type:'workpiece.load'});
+    assert.deepEqual(f.session.exportWorkpieceState(),state);
+    assert.deepEqual(f.machine.currentWorkpiece.mesh.geometry.attributes.position.array,vertices);
+    await move('X',24);await move('Z',180);await f.send({type:'spindle.start'});f.tick(2);await move('X',16.3);await move('Z',190);
+    near(f.session.exportWorkpieceState().profile.radiusMm[365],8.15);
+    assert.equal(f.session.exportWorkpieceState().lengthMm,299);
+  }finally{await f.close();}
+});
+test('work coordinate zero and clear never move the tip or alter geometry; offsets stay in setup',async()=>{
+  const store=new WorkpieceStore(memoryStorage()),f=await fixture(store);
+  try {
+    await f.send({type:'workpiece.createHandle'});
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',valueMm:20});
+    const pose=f.session.getState().cuttingTipMm,stock=f.session.exportWorkpieceState();
+    await f.send({type:'machining.datum',axis:'X',representation:'diameter'});
+    await f.send({type:'machining.datum',axis:'Z'});
+    near(f.session.getState().machining.xDiameterMm,0);near(f.session.getState().machining.zMm,0);
+    assert.deepEqual(f.session.getState().cuttingTipMm,pose);
+    assert.deepEqual(f.session.exportWorkpieceState(),stock);
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',mode:'relative',valueMm:2});
+    near(f.session.getState().machining.xDiameterMm,2);near(f.session.getState().machining.xRadialMm,11);
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',valueMm:0});
+    assert.deepEqual(f.session.getState().cuttingTipMm,pose);
+    await f.send({type:'machining.clearDatum'});
+    near(f.session.getState().machining.xDiameterMm,20);
+    assert.deepEqual(f.session.getState().cuttingTipMm,pose);
+    await f.send({type:'machining.datum',axis:'X',representation:'diameter'});
+    await f.send({type:'workpiece.save'});assert.deepEqual(store.load(),stock);
+    await f.send({type:'workpiece.load'});
+    assert.deepEqual(f.session.getState().machining.datumMm,{X:0,Z:0});
+  }finally{await f.close();}
+});
+test('Session emits one unsafe collision entry and does not cut in configured clamping zone',async()=>{
+  const f=await fixture(new WorkpieceStore(memoryStorage()));
+  try{
+    const s=createHandleState();s.clamping.endZMm=120;
+    await f.send({type:'workpiece.mountState',state:s});
+    await f.send({type:'machining.move',axis:'X',representation:'diameter',valueMm:16});
+    await f.send({type:'machining.move',axis:'Z',valueMm:100}); // Stopped intrusion also emits an event.
+    assert.equal(f.session.getState().machining.unsafe,true);
+    assert.equal(f.session.getState().machining.events[0].code,'chuck-collision');
+    await f.send({type:'spindle.start'});f.tick(2);f.tick(1);
+    assert.equal(f.session.getState().machining.events.length,1);
+    assert.deepEqual(f.session.exportWorkpieceState(),s);
   }finally{await f.close();}
 });

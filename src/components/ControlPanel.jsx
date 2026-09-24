@@ -1,5 +1,5 @@
 import { useState } from 'react';
-export default function ControlPanel({ controls: c, model }) {
+export default function ControlPanel({ controls: c, model, diagnostic = false }) {
  const [selected, setSelected] = useState('');
  const [step, setStep] = useState(1);
  const wheels = model?.config.wheels || [];
@@ -22,7 +22,7 @@ export default function ControlPanel({ controls: c, model }) {
   <fieldset disabled={!model || !c.inputEnabled}>
    <section className="console-section"><h3><span>01</span> 主軸啟停</h3>
     <div className="console-rpm"><strong>{Math.round(model?.rpm || 0)} <small>RPM</small></strong><span>設定 {c.rpm} RPM</span></div>
-    <div className="button-row console-primary"><button className="primary" onClick={() => c.start(c.direction)} disabled={c.running || model?.emergency || !model?.pivots[model?.config.spindle.node]}>▶ 啟動主軸</button><button onClick={c.stop} disabled={!c.running}>■ 停止主軸</button></div>
+    {!diagnostic && <div className="button-row console-primary"><button className="primary" onClick={() => c.start(c.direction)} disabled={c.running || model?.emergency || !model?.pivots[model?.config.spindle.node]}>▶ 啟動主軸</button><button onClick={c.stop} disabled={!c.running}>■ 停止主軸</button></div>}
     {model?.config.actions?.some(a => a.type === 'emergency') && <button className="console-brake" onClick={c.brake}>腳踏煞車（減速停止）</button>}
     <details className="console-details"><summary>轉速與旋轉方向</summary>
      {model?.config.lever?.bidirectional && <div className="button-row"><button aria-pressed={c.running && c.direction===1} onClick={() => c.start(1)} disabled={model.emergency}>外撥／正轉</button><button aria-pressed={c.running && c.direction===-1} onClick={() => c.start(-1)} disabled={model.emergency}>內撥／反轉</button></div>}
@@ -49,5 +49,6 @@ export default function ControlPanel({ controls: c, model }) {
    <button className="reset" onClick={c.reset}>↺ 重設操作與視角</button>
   </fieldset>
   {model?.errors.length > 0 && <p role="alert" className="notice danger">部分操作無法使用：{model.errors.join('；')}</p>}
+  {diagnostic && <p role="status" className={'notice '+c.warning.level}>{c.warning.text}</p>}
  </aside>;
 }

@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test src/lathe.test.js src/machines/runtime.test.js src/machines/v3.test.js src/machines/refinements.test.js src/machines/machineSystem.test.js src/levels/hammerPrototype.test.js src/machining/MachineSession.test.js src/machining/WorkpieceState.test.js",
+    "test": "node --test src/lathe.test.js src/machines/runtime.test.js src/machines/v3.test.js src/machines/refinements.test.js src/machines/machineSystem.test.js src/levels/hammerPrototype.test.js src/levels/LevelSession.test.js src/levels/measureWorkpiece.test.js src/levels/handleCampaign.test.js src/levels/headCampaign.test.js src/machining/MachineSession.test.js src/machining/WorkpieceState.test.js",
     "test:browser": "playwright test",
     "audit:models": "node scripts/audit-machines.mjs"
   },

@@ -54,6 +54,6 @@ test('corrupt save and leaving a running lesson are safe',async({page})=>{
  await expect(page.getByRole('button',{name:'座標歸零'})).toBeEnabled();
  await page.getByRole('button',{name:'觀看本關示範'}).click();
  await page.getByRole('link',{name:'返回關卡選擇',exact:false}).click();
- await expect(page.getByRole('heading',{name:/加工關卡預覽/})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'加工關卡',exact:true})).toBeVisible();
  expect(errors).toEqual([]);
 });

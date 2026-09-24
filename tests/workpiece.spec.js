@@ -1,9 +1,15 @@
 import {test,expect} from '@playwright/test';
+async function openLatheDiagnostics(page){
+ await page.goto('/?inspect=1#/lathe');
+ await expect(page.getByRole('button',{name:'開發者測試面板',exact:true})).toBeEnabled({timeout:60000});
+ await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
+ await page.getByText('機台原始控制（診斷）',{exact:true}).click();
+}
 
 test('demo workpiece mounts and unmounts after moving each lathe axis',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:1440,height:1700});
- await page.goto('/?inspect=1#/lathe');
+ await openLatheDiagnostics(page);
  const button=page.locator('.workpiece-button');
  await expect(button).toBeEnabled({timeout:60000});
  await page.getByText('全部軸向與行程調整',{exact:true}).click();
@@ -31,7 +37,7 @@ test('demo workpiece mounts and unmounts after moving each lathe axis',async({pa
 test('demo workpiece mounts after dragging a canvas handwheel',async({page})=>{
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.setViewportSize({width:1440,height:1700});
- await page.goto('/?inspect=1#/lathe');
+ await openLatheDiagnostics(page);
  const button=page.locator('.workpiece-button');
  await expect(button).toBeEnabled({timeout:60000});
  await expect.poll(()=>page.evaluate(()=>window.__MACHINE_DEBUG__?.picks.carriageHandwheel?.length||0)).toBeGreaterThan(0);

@@ -8,6 +8,7 @@ export class MachineSession {
   #workpieceStore;
   #inputs = new Set();
   #listeners = new Set();
+  #observers = new Set();
   #lock = null;
   #generation = 0;
   #held = null;
@@ -31,7 +32,10 @@ export class MachineSession {
     return !this.#disposed && this.#adapter.available && this.#inputs.has(input) && (!this.#lock || this.#lock.owner === input);
   }
   subscribe(listener) { this.#listeners.add(listener); return () => this.#listeners.delete(listener); }
-  #notify() { for (const listener of this.#listeners) listener(); }
+  // Optional read-only activity observers share the host clock; no second update loop.
+  observe(listener) { this.#observers.add(listener); return () => this.#observers.delete(listener); }
+  #observe(command = null) { for (const listener of this.#observers) listener(command); }
+  #notify(command = null) { for (const listener of this.#listeners) listener(); this.#observe(command); }
   lockInput(owner = null) {
     if (this.#disposed || this.#lock) throw new Error('Input lock unavailable');
     if (owner !== null && !this.#inputs.has(owner)) throw new Error('Unknown input owner');
@@ -58,6 +62,8 @@ export class MachineSession {
     if (this.#busy) return { ok: false, reason: 'asset-command-pending' };
     try {
       switch (command.type) {
+        case 'head.move': this.#adapter.head.move(command); break;
+        case 'head.setup': this.#adapter.head.place(command); break;
         case 'spindle.start': this.#adapter.start(command.direction ?? 1); break;
         case 'spindle.stop': this.#adapter.stop(); break;
         case 'spindle.speed': this.#adapter.setSpeed(command.rpm); break;
@@ -66,6 +72,12 @@ export class MachineSession {
           if (state.running && state.direction === direction) this.#adapter.stop(); else this.#adapter.start(direction);
           break;
         }
+        case 'machining.move': this.#adapter.moveMachiningAxis(command); break;
+        case 'machining.line': this.#adapter.moveMachiningLine(command); break;
+        case 'machining.datum': this.#adapter.setMachiningDatum(command); break;
+        case 'machining.clearDatum': this.#adapter.clearMachiningDatum(); break;
+        case 'machining.mode': this.#adapter.setMachiningMode(command.mode); break;
+        case 'machining.alignCenter': this.#adapter.alignCuttingTip(); break;
         case 'axis.move': this.#adapter.moveAxis(command); break;
         case 'workOffset.set': this.#adapter.setReadout(command); break;
         case 'workOffset.zero': this.#adapter.setReadout({ ...command, valueMm: 0 }); break;
@@ -92,7 +104,7 @@ export class MachineSession {
           if (command.type === 'spindle.brake' || command.type === 'teaching.set') this.#held = null;
           this.#adapter.control(command.type, command);
       }
-      this.#notify(); return { ok: true };
+      this.#notify(command); return { ok: true };
     } catch (error) { return { ok: false, reason: error.message }; }
   }
   async #assetCommand(input, operation) {
@@ -120,11 +132,12 @@ export class MachineSession {
     if (this.#held && !this.canCommand(this.#held.input)) this.#held = null;
     const active = this.#adapter.step(dt, this.#held);
     this.#updateCount++; this.#elapsedSeconds += dt;
+    if (dt > 0) this.#observe();
     return { advanced: true, active };
   }
   dispose() {
     if (this.#disposed) return;
     this.#generation++; this.#held = null; this.#clock = null;
-    this.#adapter.dispose(); this.#disposed = true; this.#notify(); this.#listeners.clear();
+    this.#adapter.dispose(); this.#disposed = true; this.#notify(); this.#listeners.clear(); this.#observers.clear();
   }
 }

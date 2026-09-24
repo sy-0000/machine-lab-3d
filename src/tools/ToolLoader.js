@@ -1,3 +1,4 @@
+import { defineTurningEdge } from './cuttingEdge.js';
 import {
   Group,
   Mesh,
@@ -71,7 +72,7 @@ function buildTurningToolProcedural(group, def) {
   const insert = new Mesh(new CylinderGeometry(0.0118, 0.0118, 0.0042, 3), goldInsert);
   insert.rotation.y = -Math.PI / 2;
   // Upper cutting corner in this insert's local world units; consumed only by the adapter.
-  insert.userData.cuttingTipLocal = [0, insert.geometry.parameters.height / 2, insert.geometry.parameters.radiusTop];
+  defineTurningEdge(insert);
   insert.position.set(-0.195, 0.009 + 0.0042 / 2, 0);
   group.add(insert);
 
@@ -246,7 +247,7 @@ export class ToolLoader {
           buildDrillBitProcedural(group, toolDef);
           break;
         default:
-          if (toolDef.type === 'drilling') {
+          if (toolDef.type === 'drilling' || toolDef.type === 'tapping') {
             buildDrillBitProcedural(group, toolDef);
           } else if (toolDef.type === 'milling') {
             buildEndMillProcedural(group, toolDef);
@@ -257,6 +258,12 @@ export class ToolLoader {
       }
     }
 
+    // Explicit procedural axial cutting reference; imported GLBs never get guessed tips.
+    if(!loadedFromGLB && ['milling','drilling','tapping'].includes(toolDef.type) && toolDef.id!=='face_mill'){
+      group.userData.axialCuttingEdge={units:'world',tip:[0,-(toolDef.dimensions.shankLength+toolDef.dimensions.cuttingLength),0],
+        diameterMm:toolDef.dimensions.radius*2000,cuttingLengthMm:toolDef.dimensions.cuttingLength*1000,
+        type:toolDef.type,id:toolDef.id,designation:toolDef.designation,pilotDiameterMm:toolDef.pilotDiameterMm};
+    }
     // Enable shadows on all tool meshes
     group.traverse(child => {
       if (child.isMesh) {

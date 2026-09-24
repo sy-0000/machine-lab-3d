@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 test('player UI, exclusive demo input, Group reset and single clock use one session', async ({page}) => {
+  test.setTimeout(600000);
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/?inspect=1#/lathe');
   await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});
@@ -44,6 +45,8 @@ test('player UI, exclusive demo input, Group reset and single clock use one sess
     const tool=await s.command({type:'tool.select',toolId:'threading_tool'});
     return {mounted,tool};
   })).toEqual({mounted:{ok:true},tool:{ok:true}});
+  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
+  await page.getByText('機台原始控制（診斷）',{exact:true}).click();
   await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();
   const reset=await page.evaluate(async()=>{
     const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');

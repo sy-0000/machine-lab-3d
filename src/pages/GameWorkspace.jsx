@@ -5,10 +5,19 @@ import { MACHINES } from '../machines/catalog.js';
 import useMachineControls from '../hooks/useMachineControls.js';
 import MachineScene from '../components/MachineScene.jsx';
 import ControlPanel from '../components/ControlPanel.jsx';
+import LatheMachiningPanel from '../components/LatheMachiningPanel.jsx';
 import DeveloperPanel from '../components/DeveloperPanel.jsx';
 import { HAMMER_LEVELS } from '../levels/hammerPrototype.js';
+import { LevelSession } from '../levels/LevelSession.js';
+import LevelPanel from '../components/LevelPanel.jsx';
+import { HandleCampaignSession } from '../levels/HandleCampaignSession.js';
+import CampaignPanel from '../components/CampaignPanel.jsx';
+import HeadCampaignPanel from '../components/HeadCampaignPanel.jsx';
+import {HeadCampaignSession} from '../levels/HeadCampaignSession.js';
+import {HeadCampaignStore} from '../levels/HeadCampaignStore.js';
+import {HEAD_LEVELS} from '../levels/headCampaign.js';
 
-export default function GameWorkspace({ initialMachineId = 'lathe' }) {
+export default function GameWorkspace({ initialMachineId = 'lathe', levelDefinition = null, campaignMode=false,headCampaign=false }) {
   const [currentId, setCurrentId] = useState(initialMachineId || 'lathe');
   const [machineInstance, setMachineInstance] = useState(null);
   const [model, setModel] = useState(null);
@@ -16,6 +25,8 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
   const [progress, setProgress] = useState(0);
   const [session, setSession] = useState(null);
   const sessionRef = useRef(null);
+  const levelRef=useRef(null);
+  const [levelSession,setLevelSession]=useState(null);
   const controls = useMachineControls(session);
   const abortControllerRef = useRef(null);
 
@@ -27,6 +38,7 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
     const abort = new AbortController();
     abortControllerRef.current = abort;
 
+    levelRef.current?.dispose();levelRef.current=null;setLevelSession(null);
     sessionRef.current?.dispose();
     sessionRef.current = null;
     setSession(null);setModel(null);setMachineInstance(null);
@@ -41,14 +53,18 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
       });
 
       if (!abort.signal.aborted) {
-        const nextSession = new MachineSession(instance);
+        const nextSession = new MachineSession(instance,(levelDefinition||headCampaign)?{workpieceStore:{
+          save(){throw new Error('正式關卡不寫入自由加工存檔');},load(){throw new Error('正式關卡使用獨立 working copy');},
+        }}:undefined);
+        if(headCampaign){levelRef.current=new HeadCampaignSession(nextSession);setLevelSession(levelRef.current);}
+        else if(levelDefinition){levelRef.current=campaignMode?new HandleCampaignSession(nextSession):new LevelSession(levelDefinition,nextSession);setLevelSession(levelRef.current);}
         sessionRef.current = nextSession;
         setSession(nextSession);
         setMachineInstance(instance);
         setModel(instance.runtime);
         setProgress(100);
         // Sync URL hash for deep linking and history
-        if (location.hash !== `#/${targetId}`) {
+        if (!levelDefinition && !headCampaign && location.hash !== `#/${targetId}`) {
           history.replaceState(null, '', `#/${targetId}`);
         }
         return nextSession;
@@ -61,19 +77,21 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
       }
     }
     return null;
-  }, []);
+  }, [levelDefinition,campaignMode,headCampaign]);
 
   useEffect(() => {
-    loadMachine(initialMachineId || 'lathe');
+    if(headCampaign){try{loadMachine(HEAD_LEVELS[new HeadCampaignStore().load().currentLevel].machine);}catch(e){setError(e.message);}}
+    else loadMachine(initialMachineId || 'lathe');
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      levelRef.current?.dispose();levelRef.current=null;
       sessionRef.current?.dispose();
       sessionRef.current = null;
       MachineRegistry.unload();
     };
-  }, [initialMachineId, loadMachine]);
+  }, [initialMachineId, loadMachine,headCampaign]);
 
   const currentDef = MACHINES.find(m => m.id === currentId) || {
     name: machineInstance?.name || '工具機',
@@ -94,11 +112,11 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
       <div className="intro">
         <div>
           <a className="back-link" href="#/">← 返回機器選單</a>
-          <h1>{currentDef.name}互動教室</h1>
+          <h1>{headCampaign?'槌頭製作流程':campaignMode?'槌柄製作流程':levelDefinition?.title||currentDef.name+'互動教室'}</h1>
           <p>{currentDef.subtitle}</p>
         </div>
 
-        <div className="machine-switcher" role="tablist" aria-label="切換工具機">
+        {!levelDefinition && !headCampaign && <div className="machine-switcher" role="tablist" aria-label="切換工具機">
           {MACHINES.map(m => (
             <button
               key={m.id}
@@ -110,14 +128,14 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
               {m.name}
             </button>
           ))}
-        </div>
+        </div>}
 
         <span className="lesson-tag">
-          自由操作 · {currentDef.number}
+          {headCampaign?'正式槌頭關卡':levelDefinition?'正式槌柄關卡':'自由操作 · '+currentDef.number}
         </span>
       </div>
 
-      <section className="classroom-modes" aria-label="教室學習模式"><div><strong>自由操作</strong><p>在下方探索機台；也可以先選擇一段加工示範。</p></div><div className="classroom-demo-links">{HAMMER_LEVELS.map(level => <a key={level.id} href={'#/demo/'+level.id}>{level.title.replace(/^第.關：/, '')}示範 ↗</a>)}<a href="#/levels">查看關卡目標 →</a></div></section>
+      {!levelDefinition && !headCampaign && <section className="classroom-modes" aria-label="教室學習模式"><div><strong>自由操作</strong><p>在下方探索機台；也可以先選擇一段加工示範。</p></div><div className="classroom-demo-links">{HAMMER_LEVELS.map(level => <a key={level.id} href={'#/demo/'+level.id}>{level.title.replace(/^第.關：/, '')}示範 ↗</a>)}<a href="#/levels">查看關卡目標 →</a></div></section>}
 
       <div className="workspace">
         <div className="left-column">
@@ -130,15 +148,17 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
             onError={setError}
           />
 
-          <DeveloperPanel
+          {!levelDefinition && !headCampaign && <DeveloperPanel
             currentMachineId={currentId}
             onSelectMachine={loadMachine}
             currentMachineInstance={machineInstance}
             session={session}
+            controls={controls}
+            model={model}
             onUnload={handleUnload}
-          />
+          />}
 
-          <section className="status-panel">
+          {currentId !== 'lathe' && <section className="status-panel">
             <h2>即時狀態 (Machine DRO & Telemetry)</h2>
             <div className="telemetry">
               <div>
@@ -177,12 +197,16 @@ export default function GameWorkspace({ initialMachineId = 'lathe' }) {
             <div role="status" className={`notice ${controls.warning.level}`}>
               {controls.warning.text}
             </div>
-          </section>
+          </section>}
 
 
         </div>
 
-        <ControlPanel key={currentId} controls={controls} model={model} />
+        {currentId === 'lathe'
+          ? <div className="machining-sidebar">{levelDefinition&&(campaignMode?<CampaignPanel campaign={levelSession} controls={controls}/>:<LevelPanel levelSession={levelSession} controls={controls}/>)}
+            <LatheMachiningPanel session={session} controls={controls} model={model} levelMode={!!levelDefinition}/></div>
+          : headCampaign?<div className="machining-sidebar"><HeadCampaignPanel campaign={levelSession} session={session} controls={controls} onNext={()=>loadMachine(HEAD_LEVELS[new HeadCampaignStore().load().currentLevel].machine)}/><ControlPanel key={currentId} controls={controls} model={model} /></div>
+          : <ControlPanel key={currentId} controls={controls} model={model} />}
       </div>
     </main>
   );

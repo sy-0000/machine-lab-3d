@@ -21,12 +21,33 @@ test('each lesson opens its own experience and demonstration',async({page})=>{
  expect(errors).toEqual([]);
 });
 for(const id of ['lathe','milling','drill'])test(id+' simplified controls support jog, spindle and reset',async({page})=>{
+ test.setTimeout(600000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/?inspect=1#/'+id);
  await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});
  await expect(page.getByText('節點核對與模型限制')).toHaveCount(0);
  const read=()=>page.evaluate(()=>window.__MACHINE_DEBUG__);
  await expect.poll(async()=>!!(await read())).toBe(true);
+ if(id==='lathe'){
+  await page.getByRole('button',{name:'建立毛胚 Ø20 × 300 mm'}).click();
+  const before=Number(await page.getByTestId('cut-x-diameter').textContent());
+  await page.getByRole('combobox',{name:'微調讀值'}).selectOption('1');
+  await page.getByRole('button',{name:'X− 微調',exact:true}).click();
+  await expect.poll(async()=>Number(await page.getByTestId('cut-x-diameter').textContent())).toBeCloseTo(before-1,3);
+  await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
+  await expect.poll(async()=>(await read()).rpm).toBeGreaterThan(0);
+  await page.getByRole('button',{name:'■ 停止主軸'}).click();
+  await expect.poll(async()=>(await read()).rpm).toBe(0);
+  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
+  await page.getByRole('button',{name:'↺ 重設機台 (Reset)',exact:true}).click();
+  await expect.poll(async()=>(await read()).offsets.y).toBe(0);
+  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
+  await page.screenshot({path:'reports/classroom-controls-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'reports/classroom-controls-mobile.png',fullPage:true});
+  expect(errors).toEqual([]);return;
+ }
  const wheel=await page.locator('#wheel-choice').inputValue();
  const axis=await page.evaluate(async wheel=>{const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');return MachineRegistry.getCurrentMachine().runtime.config.wheels.find(w=>w.id===wheel).drives},wheel);
  const before=(await read()).offsets[axis];
