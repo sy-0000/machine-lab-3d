@@ -7,11 +7,14 @@ import { LATHE_MACHINING } from '../latheMachining.config.js';
 import { cutRevolvedProfile, cutFacing, entersChuck } from '../CuttingSimulation.js';
 import { ToolRegistry } from '../../tools/ToolRegistry.js';
 import { createContactMarker } from '../fixtures.js';
+import { ChipSystem } from '../Chips.js';
 import { WorkpieceRegistry } from '../../workpieces/WorkpieceRegistry.js';
 import { createLatheCoordinates, LATHE_AXES, diameterToRadiusMm, finite } from './latheCoordinates.js';
 
 // The v1 scene uses metres. No magnitude-dependent unit inference at this boundary.
 export const mmToWorld = mm => finite(mm, 'mm') / 1000;
+// Up over the insert and a little toward the operator: coils settle on the tool post and carriage, in view.
+const LATHE_THROW = new Vector3(.15, 1, .35).normalize();
 export const worldToMm = world => finite(world, 'world') * 1000;
 // Compatibility for the existing HTML range controls; their old DOM values remain metres.
 export const legacySliderCommand = (axisId, worldValue) => ({
@@ -34,11 +37,14 @@ export class MachineV1Adapter {
   #machiningMode = 'turning';
   #datum = {X:0,Z:0};
   #events = [];
+  #chipSystem = null;
+  #dt = 0; // current frame step; 0 for one-off commands
   #unsafe = false;
   constructor(machine, { latheCoordinates = {}, tools = ToolRegistry, workpieces = WorkpieceRegistry } = {}) {
     if (!machine?.runtime || !AXES[machine.id]) throw new Error('A loaded supported machine is required');
     this.#machine = machine;
     this.head = new HeadMachiningAdapter(machine,mmToWorld,worldToMm);
+    this.head.onChips = (at, away, travelMm, ignore) => this.#emitChips(at, away, travelMm, ignore);
     this.#coordinates = createLatheCoordinates(latheCoordinates);
     this.tools = tools;
     this.workpieces = workpieces;
@@ -196,7 +202,7 @@ export class MachineV1Adapter {
       const w=new PrismaticWorkpiece(state,mmToWorld);
       if(!stillCurrent()){w.dispose();return false;}
       const previous=this.#machine.currentWorkpiece;
-      await this.#machine.mountWorkpiece(w);previous?.dispose();
+      await this.#machine.mountWorkpiece(w);previous?.dispose();this.#clearChips();
       // Milling: stock lies along the table's long (X) travel so one feed pass covers its length.
       if(this.#machine.id==='milling')w.object3D.rotation.y=Math.PI/2;
       if(this.head.sample())this.head.place(this.head.defaultSetup());else this.head.fitFixture();return true;
@@ -205,7 +211,7 @@ export class MachineV1Adapter {
     const workpiece = new RevolvedWorkpiece(state, mmToWorld);
     if (!stillCurrent()) { workpiece.dispose(); return false; }
     const previous = this.#machine.currentWorkpiece;
-    await this.#machine.mountWorkpiece(workpiece);
+    await this.#machine.mountWorkpiece(workpiece); this.#clearChips();
     this.#datum = {X:0,Z:0}; this.#machiningMode = 'turning'; this.#unsafe = false;
     if (this.#cuttingSample()) this.alignCuttingTip();
     previous?.dispose(); return true;
@@ -229,9 +235,10 @@ export class MachineV1Adapter {
     const axis = scenePoint(workpiece.object3D.localToWorld(new Vector3(1, 0, 0))).sub(origin).normalize();
     const u = new Vector3(0, 1, 0).addScaledVector(axis, -axis.y).normalize();
     const v = new Vector3().crossVectors(axis, u).normalize();
-    const point = scenePoint(insert.localToWorld(new Vector3().fromArray(insert.userData.cuttingEdge.tip))).sub(origin);
+    const world = insert.localToWorld(new Vector3().fromArray(insert.userData.cuttingEdge.tip));
+    const point = scenePoint(world.clone()).sub(origin);
     const mm = value => Math.round(worldToMm(value) * 1e9) / 1e9 || 0;
-    return { toolId: active.id, rpm: m.runtime.rpm,
+    return { toolId: active.id, rpm: m.runtime.rpm, world,
       position: { zMm: mm(point.dot(axis)), uMm: mm(point.dot(u)), vMm: mm(point.dot(v)) } };
   }
   #cut(before, after) {
@@ -245,9 +252,18 @@ export class MachineV1Adapter {
       sequence:(this.#events.at(-1)?.sequence||0)+1,toolId:after.toolId,from:{...before.position},to:{...after.position}});
     this.#events=this.#events.slice(-100); this.#unsafe=unsafe;
     if (unsafe) return;
-    workpiece.cut(state => (this.#machiningMode==='facing'?cutFacing:cutRevolvedProfile)(state, from, after.position,
+    const removed = workpiece.cut(state => (this.#machiningMode==='facing'?cutFacing:cutRevolvedProfile)(state, from, after.position,
       { rpm: before.rpm > 0 ? before.rpm : after.rpm, toolId: after.toolId, facing:LATHE_MACHINING.facing }));
+    // Lathe chips curl off the tip toward the operator.
+    if (removed) {
+      // Chips pass through the spinning stock and the tool, and land on the carriage, bed or deck.
+      const m = this.#machine, active = m.getActiveCuttingTool(), toolRoot = active?.source === 'module' ? m.currentTool?.object3D : m.runtime.lookup[active?.id];
+      this.#emitChips(after.world, LATHE_THROW, Math.hypot(after.position.zMm - from.zMm, after.position.vMm - from.vMm), [workpiece.object3D, toolRoot].filter(Boolean));
+    }
   }
+  #chips() { return this.#chipSystem ??= new ChipSystem(this.#machine.rootScene, this.#machine.id); }
+  #emitChips(at, away, travelMm, ignore) { if (at) this.#chips().emit(at, away, Math.max(10 * this.#dt, travelMm / 4), ignore); }
+  #clearChips() { this.#chipSystem?.clear(); }
   #danger(state) {
     return {...LATHE_MACHINING.chuckDanger,endZMm:state.clamping.endZMm};
   }
@@ -366,9 +382,10 @@ export class MachineV1Adapter {
   async unmountWorkpiece(stillCurrent) {
     this.#requireStopped(); if (!stillCurrent()) return false;
     this.#restoreCalibration();
-    const workpiece = await this.#machine.unmountWorkpiece(); workpiece?.dispose(); return true;
+    const workpiece = await this.#machine.unmountWorkpiece(); workpiece?.dispose(); this.#clearChips(); return true;
   }
   reset() {
+    this.#clearChips();
     const headPosition=this.head.workpiece?.object3D.position.clone();
     this.#requireMachine(); this.#restoreCalibration(); this.#machine.reset();
     if(headPosition)this.head.workpiece.object3D.position.copy(headPosition);
@@ -382,13 +399,18 @@ export class MachineV1Adapter {
     const headBefore=this.head.sample();
     const before = this.#cuttingSample();
     const active = this.#machine.step(dt, { owner: this.#clock, heldControl });
+    this.#dt = dt;
     if (dt > 0) this.#cut(before, this.#cuttingSample());
     if (dt > 0) this.head.cut(headBefore,this.head.sample());
+    this.#dt = 0;
+    this.#chipSystem?.update(dt);
     this.#updateContactMarkers();
-    return active;
+    // Keep the on-demand frame loop alive while chips are still flying.
+    return active || !!this.#chipSystem?.moving;
   }
   dispose() {
     if (this.#disposed) return;
+    this.#chipSystem?.dispose(); this.#chipSystem = null;
     this.#restoreCalibration(); this.stop(); this.#machine.releaseUpdateClock(this.#clock); this.#disposed = true;
   }
 }

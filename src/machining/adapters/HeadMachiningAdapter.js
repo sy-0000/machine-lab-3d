@@ -40,7 +40,13 @@ export class HeadMachiningAdapter{
   cut(before,after){
     if(!before||!after||before.tool.id!==after.tool.id)return;
     const from=before.running&&before.rpm>0?before.position:after.position;
-    this.workpiece.cut(s=>cutHead(s,from,after.position,after.tool,after));
+    if(!this.workpiece.cut(s=>cutHead(s,from,after.position,after.tool,after))||!this.onChips)return;
+    const m=this.machine,tip=m.currentTool.object3D.localToWorld(new Vector3(...after.tool.tip));
+    // Milling flings short chips sideways; drilling lifts spiral chips up the flutes.
+    const away=m.id==='drill'?new Vector3(0,1,0):new Vector3(Math.random()-.5,.35,Math.random()-.5).normalize();
+    // Chips may land on the stock and vise; they pass through the cutter and the contact ring.
+    this.onChips(tip,away,Math.hypot(after.position.xMm-from.xMm,after.position.yMm-from.yMm,after.position.zMm-from.zMm),
+      [m.currentTool.object3D,this.workpiece.object3D.getObjectByName('ContactMarker')].filter(Boolean));
   }
   /** Tool touches stock: any sampled surface under / beside the cutter reaches the tip height. */
   contact(sample=this.sample()){
