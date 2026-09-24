@@ -1,36 +1,75 @@
-import {Component,useLayoutEffect,useRef} from 'react';
-import {Canvas,useThree} from '@react-three/fiber';
+import {Component,useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls,PerspectiveCamera,Grid} from '@react-three/drei';
-import {Vector3,MathUtils} from 'three';
+import {PMREMGenerator} from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {CAMERA_VIEWS,cameraPose} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
 import PartTooltip from './PartTooltip';
 import LoadingScreen from './LoadingScreen';
 import MachineDebug from './MachineDebug';
+// Low graphics (no reflections or shadows, 1x resolution) on software WebGL, where each frame costs ~3x more;
+// ?lowgfx forces it, ?hifx forces full effects.
+function softwareRenderer(){
+ try{
+  const gl=document.createElement('canvas').getContext('webgl'),info=gl?.getExtension('WEBGL_debug_renderer_info');
+  const name=info?gl.getParameter(info.UNMASKED_RENDERER_WEBGL):'';gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  return /swiftshader|llvmpipe|software|basic render/i.test(name);
+ }catch{return false;}
+}
+const params=new URLSearchParams(location.search);
+const LOW_GFX=params.has('lowgfx')||(!params.has('hifx')&&softwareRenderer());
 class Boundary extends Component {
  state={error:null};static getDerivedStateFromError(error){return {error};}
  componentDidCatch(error){this.props.onError(`3D 場景錯誤：${error.message}`);}
  render(){return this.state.error?null:this.props.children;}
 }
-function CameraRig({model,resetKey,orbit}){
- const {camera,size,invalidate}=useThree();
+function CameraRig({model,resetKey,orbit,view}){
+ const {camera,size,invalidate}=useThree(),flight=useRef(null);
  useLayoutEffect(()=>{
   if(!model||!orbit.current)return;
   // Drain pending damping/pan deltas before restoring the exact initial camera pose.
   const damping=orbit.current.enableDamping;orbit.current.enableDamping=false;orbit.current.update();
-  const angle=Math.min(MathUtils.degToRad(camera.fov/2),Math.atan(Math.tan(MathUtils.degToRad(camera.fov/2))*size.width/size.height));
-  const distance=model.radius/Math.sin(angle)*1.08;
-  const direction=model.config.id==='drill'?new Vector3(1,.6,2.4):model.config.id==='milling'?new Vector3(2.4,.8,1.5):new Vector3(.6,.55,2.4);
-  camera.position.copy(direction.normalize().multiplyScalar(distance));camera.near=model.radius/1000;camera.far=distance*30;camera.updateProjectionMatrix();
-  orbit.current.target.set(0,0,0);orbit.current.minDistance=model.radius*.5;orbit.current.maxDistance=distance*4;orbit.current.update();orbit.current.enableDamping=damping;invalidate();
- },[model,resetKey,size.width,size.height,camera,invalidate,orbit]);
+  const {target,position}=cameraPose(model,'overview',camera,size.width/size.height);flight.current=null;
+  camera.position.copy(position);camera.near=model.radius/1000;camera.far=position.length()*30;camera.updateProjectionMatrix();
+  orbit.current.target.copy(target);orbit.current.minDistance=model.radius*.03;orbit.current.maxDistance=position.length()*4;orbit.current.update();orbit.current.enableDamping=damping;invalidate();
+ },[model,resetKey]); // eslint-disable-line react-hooks/exhaustive-deps -- a resize must not throw away the student's view
+ useEffect(()=>{
+  if(!model||!orbit.current||!view.n)return;
+  flight.current={from:camera.position.clone(),fromTarget:orbit.current.target.clone(),to:cameraPose(model,view.id,camera,size.width/size.height),start:performance.now()};invalidate();
+ },[view]); // eslint-disable-line react-hooks/exhaustive-deps
+ useFrame(()=>{
+  const f=flight.current;if(!f||!orbit.current)return;
+  const k=Math.min(1,(performance.now()-f.start)/650),e=1-Math.pow(1-k,3);
+  camera.position.lerpVectors(f.from,f.to.position,e);orbit.current.target.lerpVectors(f.fromTarget,f.to.target,e);orbit.current.update();
+  if(k<1)invalidate();else flight.current=null;
+ });
  return <OrbitControls ref={orbit} makeDefault enableDamping dampingFactor={.08}/>;
 }
+// Local studio reflections (no download) so metal parts read as metal instead of black.
+function StudioEnvironment(){
+ const {gl,scene}=useThree();
+ useEffect(()=>{
+  const pmrem=new PMREMGenerator(gl),room=new RoomEnvironment(),texture=pmrem.fromScene(room,.04).texture;
+  scene.environment=texture;scene.environmentIntensity=.55;
+  return()=>{scene.environment=null;texture.dispose();pmrem.dispose();room.dispose?.();};
+ },[gl,scene]);
+ return null;
+}
+function ViewBar({active,onSelect,disabled}){
+ useEffect(()=>{
+  const key=e=>{if(disabled||e.ctrlKey||e.metaKey||e.altKey||e.target.closest?.('input,select,textarea'))return;const v=CAMERA_VIEWS.find(v=>v.key===e.key);if(v){e.preventDefault();onSelect(v.id);}};
+  addEventListener('keydown',key);return()=>removeEventListener('keydown',key);
+ },[onSelect,disabled]);
+ return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
+}
 export default function MachineScene({model,controls,error,progress,onError,name}){
- const orbit=useRef(),r=model?.radius||2;
+ const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0});
+ useEffect(()=>setView({id:'overview',n:0}),[model,controls.resetKey]);
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
-  <div className="view-top"><span className="eyebrow">INTERACTIVE WORKSPACE</span><span className="view-badge">旋轉 · 縮放 · 平移</span></div>
-  <Boundary onError={onError}><Canvas frameloop="demand" shadows dpr={[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
-   <color attach="background" args={['#151e24']}/><PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit}/>
+  <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
+  <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
+   <color attach="background" args={['#151e24']}/><PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view}/>{!LOW_GFX&&<StudioEnvironment/>}
    <ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/>
    <directionalLight position={[r*2,r*3,r]} intensity={3} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
    <directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>

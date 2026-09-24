@@ -6,6 +6,7 @@ import { HeadMachiningAdapter } from './HeadMachiningAdapter.js';
 import { LATHE_MACHINING } from '../latheMachining.config.js';
 import { cutRevolvedProfile, cutFacing, entersChuck } from '../CuttingSimulation.js';
 import { ToolRegistry } from '../../tools/ToolRegistry.js';
+import { createContactMarker } from '../fixtures.js';
 import { WorkpieceRegistry } from '../../workpieces/WorkpieceRegistry.js';
 import { createLatheCoordinates, LATHE_AXES, diameterToRadiusMm, finite } from './latheCoordinates.js';
 
@@ -183,7 +184,7 @@ export class MachineV1Adapter {
       if(!stillCurrent()){w.dispose();return false;}
       const previous=this.#machine.currentWorkpiece;
       await this.#machine.mountWorkpiece(w);previous?.dispose();
-      if(this.head.sample())this.head.place();return true;
+      if(this.head.sample())this.head.place();else this.head.fitFixture();return true;
     }
     if (this.#machine.id !== 'lathe') throw new Error('Revolved workpieces require a lathe');
     const workpiece = new RevolvedWorkpiece(state, mmToWorld);
@@ -252,6 +253,21 @@ export class MachineV1Adapter {
     point.y-=mmToWorld(sample.position.uMm);
     root.position.copy(root.parent.worldToLocal(m.rootScene.localToWorld(point)));
     m.rootScene.updateWorldMatrix(true,true);
+  }
+  // Visual contact cue only: a glowing ring where the tip touches (amber) or cuts (orange).
+  #updateContactMarkers() {
+    const wp = this.#machine.currentWorkpiece;
+    if (wp instanceof PrismaticWorkpiece) { this.head.updateMarker(); return; }
+    if (!(wp instanceof RevolvedWorkpiece)) return;
+    const m = this.#machiningState();
+    let ring = wp.object3D.getObjectByName('ContactMarker');
+    if (!ring) { ring = createContactMarker(); wp.object3D.add(ring); }
+    const level = m?.contact && !m.unsafe ? (this.#machine.runtime.rpm > 0 ? 2 : 1) : 0;
+    ring.userData.setLevel(level);
+    if (level) {
+      ring.position.set(mmToWorld(m.physicalZMm), 0, 0); ring.rotation.set(0, Math.PI / 2, 0);
+      ring.scale.setScalar(mmToWorld(m.diameterAtTipMm / 2 + 0.3));
+    }
   }
   setMachiningMode(mode) {
     if (!['turning','facing'].includes(mode)) throw new Error('Unsupported cutting mode');
@@ -353,6 +369,7 @@ export class MachineV1Adapter {
     const active = this.#machine.step(dt, { owner: this.#clock, heldControl });
     if (dt > 0) this.#cut(before, this.#cuttingSample());
     if (dt > 0) this.head.cut(headBefore,this.head.sample());
+    this.#updateContactMarkers();
     return active;
   }
   dispose() {

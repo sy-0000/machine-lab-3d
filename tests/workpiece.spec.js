@@ -1,9 +1,8 @@
 import {test,expect} from '@playwright/test';
 async function openLatheDiagnostics(page){
  await page.goto('/?inspect=1#/lathe');
- await expect(page.getByRole('button',{name:'開發者測試面板',exact:true})).toBeEnabled({timeout:60000});
- await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
- await page.getByText('機台原始控制（診斷）',{exact:true}).click();
+ await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});
+ await page.getByText('進階：全部機台控制',{exact:true}).click();
 }
 
 test('demo workpiece mounts and unmounts after moving each lathe axis',async({page})=>{

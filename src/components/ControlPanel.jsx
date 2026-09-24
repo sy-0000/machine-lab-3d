@@ -46,9 +46,9 @@ export default function ControlPanel({ controls: c, model, diagnostic = false })
     {model?.config.actions?.some(a => a.type==='index') && <details className="console-details"><summary>刀座角度 · {(model.indexSteps || 0)*10}°</summary><div className="button-row"><button onClick={() => c.index(-1)}>刀座左轉 10°</button><button onClick={() => c.index(1)}>刀座右轉 10°</button></div></details>}
     {!model?.config.demoWorkpiece && <p className="console-help">直接在場景觀察刀具與工作臺的連動。</p>}
    </section>
-   <button className="reset" onClick={c.reset}>↺ 重設操作與視角</button>
+   {!diagnostic && <button className="reset" onClick={c.reset}>↺ 重設操作與視角</button>}
   </fieldset>
-  {model?.errors.length > 0 && <p role="alert" className="notice danger">部分操作無法使用：{model.errors.join('；')}</p>}
+  {!diagnostic && model?.errors.length > 0 && <p role="alert" className="notice danger">部分操作無法使用：{model.errors.join('；')}</p>}
   {diagnostic && <p role="status" className={'notice '+c.warning.level}>{c.warning.text}</p>}
  </aside>;
 }

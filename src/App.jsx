@@ -1,10 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
-import { HAMMER_LEVELS } from './levels/hammerPrototype.js';
 import { LEVEL_1 } from './levels/level1.js';
-
-const HammerPrototype = lazy(() => import('./pages/HammerPrototype'));
 
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
@@ -49,12 +46,11 @@ export default function App() {
     return () => removeEventListener('hashchange', change);
   }, []);
 
-  const [lessonMode, lessonId] = route.split('/');
-  const lessonIndex = HAMMER_LEVELS.findIndex(level => level.id === lessonId);
-  const isLessonRoute = ['experience', 'demo'].includes(lessonMode) && lessonIndex >= 0;
   const isGameRoute = ['lathe', 'milling', 'drill', 'game'].includes(route);
-  const isLevel1=route==='level/'+LEVEL_1.id||route==='campaign/handle';
-  const isHeadCampaign=route==='campaign/head';
+  // level/<id> is the older Level 1 link; it opens the handle campaign.
+  const isHandleCampaign = route === 'level/' + LEVEL_1.id || route === 'campaign/handle';
+  const isHeadCampaign = route === 'campaign/head';
+  const isLevelRoute = route === 'levels' || isHandleCampaign || isHeadCampaign;
 
   return (
     <>
@@ -79,20 +75,18 @@ export default function App() {
           <a className={`nav-link ${route === 'tools' ? 'active' : ''}`} href="#/tools">
             刀具介紹
           </a>
-          <a className={`nav-link ${(route === 'levels' || isLessonRoute || isLevel1 || isHeadCampaign) ? 'active' : ''}`} href="#/levels">
-            關卡選擇
-          </a>
           <a className={`nav-link ${isGameRoute ? 'active' : ''}`} href="#/lathe">
             加工教室
+          </a>
+          <a className={`nav-link ${isLevelRoute ? 'active' : ''}`} href="#/levels">
+            加工關卡
           </a>
         </nav>
 
         <span className="header-tag">觀察構造 · 理解連動</span>
       </header>
 
-      {route === 'hammer-prototype' || isLessonRoute ? (
-        <Suspense fallback={<main>正在載入槌柄小關卡…</main>}><HammerPrototype key={route} initialLevelIndex={Math.max(0, lessonIndex)} initialDemo={lessonMode === 'demo'} /></Suspense>
-      ) : route === 'safety' ? (
+      {route === 'safety' ? (
         <Suspense fallback={<main>正在載入工安規範…</main>}>
           <SafetyPage />
         </Suspense>
@@ -101,13 +95,13 @@ export default function App() {
           <ToolsPage />
         </Suspense>
       ) : route === 'levels' ? (
-        <Suspense fallback={<main>正在載入關卡規劃…</main>}>
+        <Suspense fallback={<main>正在載入關卡路線…</main>}>
           <LevelsPage />
         </Suspense>
       ) : isHeadCampaign ? (
-        <GameWorkspace key="head-campaign" initialMachineId="milling" headCampaign/>
-      ) : isLevel1 ? (
-        <GameWorkspace key={LEVEL_1.id} initialMachineId="lathe" levelDefinition={LEVEL_1} campaignMode/>
+        <GameWorkspace key="head-campaign" initialMachineId="milling" campaign="head" />
+      ) : isHandleCampaign ? (
+        <GameWorkspace key="handle-campaign" initialMachineId="lathe" campaign="handle" />
       ) : isGameRoute ? (
         <GameWorkspace initialMachineId={route === 'game' ? 'lathe' : route} key="shared-game-scene" />
       ) : (
@@ -123,6 +117,13 @@ export default function App() {
               旋轉視角、操作手輪，觀察每一次進給。
             </p>
           </div>
+
+          <ol className="course-route" aria-label="課程路線">
+            <li><a href="#/safety"><b>01</b>工安守則<small>進工場前必讀</small></a></li>
+            <li><a href="#/tools"><b>02</b>刀具介紹<small>認識加工刀具</small></a></li>
+            <li><a href="#/lathe"><b>03</b>加工教室<small>車床・銑床・鑽床功能</small></a></li>
+            <li><a href="#/levels"><b>04</b>加工關卡<small>槌柄 → 槌頭 → 組裝</small></a></li>
+          </ol>
 
           <section className="machine-cards" aria-label="選擇工具機">
             {MACHINES.map(machine => (

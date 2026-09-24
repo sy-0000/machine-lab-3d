@@ -45,8 +45,6 @@ test('player UI, exclusive demo input, Group reset and single clock use one sess
     const tool=await s.command({type:'tool.select',toolId:'threading_tool'});
     return {mounted,tool};
   })).toEqual({mounted:{ok:true},tool:{ok:true}});
-  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
-  await page.getByText('機台原始控制（診斷）',{exact:true}).click();
   await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();
   const reset=await page.evaluate(async()=>{
     const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');
@@ -60,7 +58,7 @@ test('player UI, exclusive demo input, Group reset and single clock use one sess
   await expect.poll(()=>page.evaluate(()=>window.__MACHINE_DEBUG__?.id)).toBe('drill');
   await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
   await expect.poll(()=>page.evaluate(()=>window.__SESSION_TEST__.getState().id)).toBe('drill');
-  await page.getByRole('link',{name:'← 返回機器選單'}).click();
+  await page.getByRole('link',{name:'← 返回首頁'}).click();
   expect(await page.evaluate(()=>window.__SESSION_TEST__.getState().disposed)).toBe(true);
   expect(errors).toEqual([]);
 });

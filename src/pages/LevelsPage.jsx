@@ -1,33 +1,59 @@
-import { HAMMER_LEVELS, STOCK } from '../levels/hammerPrototype.js';
-import { LEVEL_1 } from '../levels/level1.js';
-import { HANDLE_LEVELS } from '../levels/handleCampaign.js';
-import { CampaignStore } from '../levels/CampaignStore.js';
-import {HeadCampaignStore} from '../levels/HeadCampaignStore.js';
-import {HEAD_LEVELS} from '../levels/headCampaign.js';
+import { useState } from 'react';
+import { CampaignStore, CAMPAIGN_KEY } from '../levels/CampaignStore.js';
+import { HeadCampaignStore, HEAD_CAMPAIGN_KEY } from '../levels/HeadCampaignStore.js';
+
+const HANDLE = [
+  { title: '基礎車削', machine: '車床', note: '對刀、端面、總長 240' },
+  { title: '錐度車削', machine: '車床', note: 'Ø16.3 → Ø9.3，長 100' },
+  { title: '端部成形', machine: '車床', note: '端段 20、倒角 1×45°' },
+  { title: '壓花／螺紋', machine: '車床', note: '規格待確認', draft: true },
+];
+const HEAD = [
+  { title: '基本尺寸', machine: '銑床', note: '20×20×90 → 18.5×18.5×86' },
+  { title: '外形斜面', machine: '銑床', note: '倒角 1.5×45°、3×45°' },
+  { title: 'Ø8.5 鑽孔', machine: '鑽床', note: '攻牙底孔' },
+  { title: 'M10 攻牙', machine: '鑽床', note: '沿用自己的底孔' },
+];
+// Handle level 4 has no confirmed spec yet, so finishing levels 1–3 opens the head track.
+const HEAD_UNLOCK = 3;
+
+function load(Store) { try { return { data: new Store().load() }; } catch (e) { return { error: e.message }; } }
+
+function Track({ name, levels, progress, href, locked, lockText, onReset }) {
+  const current = progress?.currentLevel ?? 0, done = progress?.completedLevels.length ?? 0;
+  return <section className={'route-track' + (locked ? ' locked' : '')} aria-label={name + '路線'}>
+    <div className="route-head"><h2>{name}</h2><span>{locked ? '🔒 ' + lockText : `完成 ${done} / ${levels.length}`}</span></div>
+    <ol className="route-nodes">{levels.map((l, i) => {
+      const state = locked ? 'locked' : i < done ? 'done' : i === current ? 'current' : 'locked';
+      return <li key={l.title} className={'route-node ' + state}>
+        <span className="node-dot">{state === 'done' ? '✓' : i + 1}</span>
+        <div><strong>{l.title}</strong><small>{l.machine} · {l.note}</small></div>
+        {state === 'current' && <a className="level-action" href={href}>{done || progress?.working?.operationHistory?.length ? '繼續' : '開始'} →</a>}
+        {l.draft && state !== 'locked' && <em>待確認</em>}
+      </li>;
+    })}</ol>
+    {!locked && done + (progress?.working?.operationHistory?.length ? 1 : 0) > 0 && <button className="route-reset" onClick={onReset}>重新開始{name}</button>}
+  </section>;
+}
+
 export default function LevelsPage() {
- let progress,error='';try{progress=new CampaignStore().load();}catch(e){error=e.message;}
- let headProgress,headError='';try{headProgress=new HeadCampaignStore().load();}catch(e){headError=e.message;}
- return <main className="info-page levels-page">
-  <div className="info-header"><a className="back-link" href="#/">← 返回首頁</a><span className="eyebrow green">製作一把槌子</span><h1>加工關卡</h1><p className="subtitle">正式 Level 1 使用完整車床與真實加工工件。</p></div>
-  <article className="level-card" aria-label="正式 Level 1"><span className="level-badge">正式 Level 1 · 車床</span><h2>{LEVEL_1.title}</h2><p>從 Ø{LEVEL_1.initialWorkpiece.stock.radiusMm*2} × {LEVEL_1.initialWorkpiece.stock.lengthMm} mm 毛胚開始，練習裝夾、X/Z 對刀、端面與基礎外徑減料。</p><p>圖面總長：{LEVEL_1.targets.finalLengthMm??'待確認'} mm；正式公差待確認，尚不能宣稱圖面驗收合格。</p><a className="level-action" href={'#/level/'+LEVEL_1.id}>開始 Level 1 →</a></article>
-  <section className="panel" aria-label="槌柄 Campaign 進度"><h2>槌柄製作流程</h2>
-    <ol>{HANDLE_LEVELS.map((d,i)=><li key={d.id}>{d.title} — {i<(progress?.currentLevel??0)?'操作已記錄／尺寸尚未全部驗收':i===(progress?.currentLevel??0)?'目前關卡':'尚未進入'}</li>)}</ol>
-    <p>Level 1 不要求整段 Ø16.3；Ø16.3／Ø9.3 用於 Level 2 錐段。未知公差與後續製程不算通過。</p>
-    <a href="#/campaign/handle">開始／繼續槌柄 Campaign →</a>{error&&<p role="alert">{error}；未覆寫存檔。</p>}
-  </section>
-  <section className="panel" aria-label="槌頭 Campaign 進度"><h2>槌頭製作流程</h2>
-    <ol>{HEAD_LEVELS.map((d,i)=><li key={d.id}>{d.title} — {i<(headProgress?.currentLevel??0)?'操作已記錄／圖面待完整驗收':i===(headProgress?.currentLevel??0)?'目前關卡':'尚未進入'}</li>)}</ol>
-    <p>毛胚 20×20×90 → 基本尺寸 18.5×18.5×86；銑床 → 鑽床 → M10。工件與槌柄分開保存。</p>
-    <a href="#/campaign/head">開始／繼續槌頭 Campaign →</a>{headError&&<p role="alert">{headError}；未覆寫存檔。</p>}
-  </section>
-  <h2>舊版局部加工原型</h2><p>以下為既有流程展示，尺寸不是正式 Level 1 圖面。</p>
-  <div className="lesson-summary"><strong>01 握柄 → 02 前端</strong><p>從 Ø{STOCK.radius * 2} × {STOCK.length} mm 圓棒開始，逐關完成槌柄。第二關優先沿用第一關成果；尚未完成時，使用標準握柄工件練習。</p></div>
-  <div className="levels-grid">{HAMMER_LEVELS.map((level,index)=><article className="level-card lesson-card" key={level.id}>
-   <span className="level-badge">車床 · {String(index+1).padStart(2,'0')}</span><h2>{level.title}</h2><p className="level-desc">{level.description}</p>
-   <h3>本關目標</h3><ul className="lesson-objectives"><li>設定進給零點，觀察主軸與刀具移動。</li><li>將 {level.end}–{level.start} mm 區段加工至 Ø{level.radius*2} mm。</li><li>完成 {level.start-level.end} mm 進給，在目標位置停止。</li><li>{index===0?'保留加工後工件，供前端加工使用。':'保留握柄輪廓，完成前端較細的接合區。'}</li></ul>
-   <p className="lesson-stock">起始工件：{index===0?'固定尺寸圓棒':'上一關成果／標準握柄工件'}</p>
-   <div className="lesson-actions"><a className="level-action" href={'#/experience/'+level.id}>開始體驗 →</a><a href={'#/demo/'+level.id}>觀看示範</a></div>
-  </article>)}</div>
-  <p className="lesson-roadmap">後續課程：階梯與錐度 → 壓花 → 螺紋 → 槌頭加工 → 組裝。完成後將逐步開放。</p>
- </main>;
+  const [, setVersion] = useState(0);
+  const handle = load(CampaignStore), head = load(HeadCampaignStore);
+  const handleDone = handle.data?.completedLevels.length ?? 0, headDone = head.data?.completedLevels.length ?? 0;
+  const reset = (key, name) => { if (confirm(`確定要清除${name}的進度，從毛胚重新開始嗎？`)) { try { localStorage.removeItem(key); } catch { /* storage blocked */ } setVersion(v => v + 1); } };
+  return <main className="info-page levels-page">
+    <div className="info-header"><a className="back-link" href="#/">← 返回首頁</a><span className="eyebrow green">製作一把槌子</span><h1>加工關卡</h1>
+      <p className="subtitle">先車槌柄，再銑、鑽槌頭，最後把兩個自己做的零件組起來。每一關的工件都接著上一關的實際成果。</p></div>
+    <div className="route-map">
+      <Track name="槌柄" levels={HANDLE} progress={handle.data} href="#/campaign/handle" onReset={() => reset(CAMPAIGN_KEY, '槌柄')} />
+      <Track name="槌頭" levels={HEAD} progress={head.data} href="#/campaign/head" locked={handleDone < HEAD_UNLOCK} lockText="完成槌柄第 1–3 關後開放" onReset={() => reset(HEAD_CAMPAIGN_KEY, '槌頭')} />
+      <section className="route-track assembly locked" aria-label="組裝">
+        <div className="route-head"><h2>組裝</h2><span>🔒 即將推出</span></div>
+        <p>槌柄＋槌頭 → 完整槌子。{handleDone >= HEAD_UNLOCK && headDone >= HEAD.length - 1 ? '兩個零件都已完成，等組裝關卡開放。' : '完成兩條路線後開放。'}</p>
+      </section>
+    </div>
+    {(handle.error || head.error) && <div role="alert" className="notice caution">存檔讀取失敗：{handle.error || head.error}。
+      {handle.error && <button onClick={() => reset(CAMPAIGN_KEY, '槌柄')}>清除槌柄存檔</button>}{head.error && <button onClick={() => reset(HEAD_CAMPAIGN_KEY, '槌頭')}>清除槌頭存檔</button>}</div>}
+    <div className="level-howto"><h2>每一關怎麼玩</h2><ol><li><b>任務</b>看圖面與目標尺寸</li><li><b>示範</b>看一次正式機台的示範（可跳過）</li><li><b>實作</b>5 分鐘，照清單自己操作</li><li><b>結果</b>對照實際尺寸，進下一關或重來</li></ol></div>
+  </main>;
 }

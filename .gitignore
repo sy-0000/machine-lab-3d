@@ -36,3 +36,6 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Test screenshots and audit output (regenerated)
+reports/

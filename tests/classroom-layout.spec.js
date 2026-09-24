@@ -1,70 +1,69 @@
 import {test,expect} from '@playwright/test';
-test('each lesson opens its own experience and demonstration',async({page})=>{
+test('levels roadmap: handle first, head locked, assembly pending; opens the level brief',async({page})=>{
  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/#/levels');
- const second=page.locator('.lesson-card').nth(1);
- await expect(second).toContainText('Ø16 mm');
- await second.getByRole('link',{name:'開始體驗 →'}).click();
- await expect(page.getByRole('heading',{name:'第二關：槌柄前端'})).toBeVisible();
- await expect(page.getByTestId('tool-position')).toHaveText('135.00 mm');
- await page.getByRole('link',{name:'← 返回關卡選擇'}).click();
- await page.locator('.lesson-card').first().getByRole('link',{name:'觀看示範'}).click();
- await expect(page.getByRole('heading',{name:'第一關：槌柄握柄'})).toBeVisible();
- await expect.poll(async()=>parseFloat(await page.getByTestId('tool-position').textContent())).toBeLessThan(109);
- await page.getByRole('button',{name:'返回練習'}).click();
- await expect(page.getByTestId('tool-position')).toHaveText('110.00 mm');
- await page.goto('/#/levels');
- await page.screenshot({path:'reports/levels-objectives-desktop.png',fullPage:true});
+ const handle=page.getByRole('region',{name:'槌柄路線'}),head=page.getByRole('region',{name:'槌頭路線'});
+ await expect(handle.locator('.route-node.current')).toContainText('基礎車削');
+ await expect(head).toHaveClass(/locked/);
+ await expect(head.getByRole('link')).toHaveCount(0);
+ await expect(page.getByRole('region',{name:'組裝'})).toContainText('即將推出');
+ await page.screenshot({path:'reports/levels-roadmap-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:'reports/levels-objectives-mobile.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:900});
+ await handle.getByRole('link',{name:'開始 →'}).click();
+ await expect(page.getByRole('list',{name:'關卡流程'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'開始實作',exact:true})).toBeEnabled({timeout:60000});
+ await expect(page.getByRole('button',{name:'觀看示範',exact:true})).toBeVisible();
  expect(errors).toEqual([]);
 });
-for(const id of ['lathe','milling','drill'])test(id+' simplified controls support jog, spindle and reset',async({page})=>{
+const AXIS={lathe:{testid:'cut-x-diameter',minus:'X− 微調',zero:'X 歸零',node:'y'},milling:{testid:'dro-X',minus:'X− 微調',zero:'X 歸零',node:'X_Axis_Table'},drill:{testid:'dro-quill',minus:'進給− 微調',zero:'進給 歸零',node:'quill'}};
+for(const id of ['lathe','milling','drill'])test(id+' classroom: camera presets, stock + fixture, jog step, zero, spindle and reset',async({page})=>{
  test.setTimeout(600000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:1440,height:1000});
  await page.goto('/?inspect=1#/'+id);
  await expect(page.getByRole('button',{name:'▶ 啟動主軸'})).toBeEnabled({timeout:60000});
- await expect(page.getByText('節點核對與模型限制')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'開發者測試面板'})).toHaveCount(0);
  const read=()=>page.evaluate(()=>window.__MACHINE_DEBUG__);
  await expect.poll(async()=>!!(await read())).toBe(true);
+ // Camera presets: button and keyboard shortcut.
+ const views=page.getByRole('toolbar',{name:'視角'});
+ await views.getByRole('button',{name:/刀具/}).click();
+ await expect(views.getByRole('button',{name:/刀具/})).toHaveAttribute('aria-pressed','true');
+ await page.keyboard.press('1');
+ await expect(views.getByRole('button',{name:/全景/})).toHaveAttribute('aria-pressed','true');
+ // Stock (and vise on milling / drill).
+ await page.getByRole('button',{name:/放上工件/}).click();
+ await expect(page.getByRole('button',{name:'換新毛胚'})).toBeVisible({timeout:30000});
+ if(id!=='lathe')expect(await page.evaluate(async()=>{const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');return !!MachineRegistry.getCurrentMachine().currentWorkpiece.object3D.getObjectByName('Fixture_Vise');})).toBe(true);
+ // One click moves exactly one selected step; zero resets the readout only.
+ const {testid,minus,zero}=AXIS[id],value=async()=>Number(await page.getByTestId(testid).textContent());
+ const before=await value();
+ await page.getByRole('radiogroup',{name:'每次進給量'}).getByRole('radio',{name:'1',exact:true}).click();
+ await page.getByRole('button',{name:minus}).click();
+ await expect.poll(value).toBeCloseTo(before-1,3);
+ await page.getByRole('button',{name:zero,exact:true}).click();
+ await expect.poll(value).toBeCloseTo(0,3);
  if(id==='lathe'){
-  await page.getByRole('button',{name:'建立毛胚 Ø20 × 300 mm'}).click();
-  const before=Number(await page.getByTestId('cut-x-diameter').textContent());
-  await page.getByRole('combobox',{name:'微調讀值'}).selectOption('1');
-  await page.getByRole('button',{name:'X− 微調',exact:true}).click();
-  await expect.poll(async()=>Number(await page.getByTestId('cut-x-diameter').textContent())).toBeCloseTo(before-1,3);
-  await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
-  await expect.poll(async()=>(await read()).rpm).toBeGreaterThan(0);
-  await page.getByRole('button',{name:'■ 停止主軸'}).click();
-  await expect.poll(async()=>(await read()).rpm).toBe(0);
-  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
-  await page.getByRole('button',{name:'↺ 重設機台 (Reset)',exact:true}).click();
-  await expect.poll(async()=>(await read()).offsets.y).toBe(0);
-  await page.getByRole('button',{name:'開發者測試面板',exact:true}).click();
-  await page.screenshot({path:'reports/classroom-controls-desktop.png',fullPage:true});
-  await page.setViewportSize({width:390,height:844});
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.screenshot({path:'reports/classroom-controls-mobile.png',fullPage:true});
-  expect(errors).toEqual([]);return;
+  // Contact cue when the tip reaches the Ø20 surface.
+  await page.getByText('移動到工件座標',{exact:true}).click();
+  await page.getByRole('button',{name:'X 歸零',exact:true}).click();
+  await page.getByRole('button',{name:'清除工件座標',exact:true}).click();
+  await page.getByRole('spinbutton',{name:'X 工件座標目標 (mm)'}).fill('20');
+  await page.getByRole('button',{name:'移動 X',exact:true}).click();
+  await expect(page.getByTestId('contact-state')).toContainText('接觸');
  }
- const wheel=await page.locator('#wheel-choice').inputValue();
- const axis=await page.evaluate(async wheel=>{const {MachineRegistry}=await import('/src/machines/core/MachineRegistry.js');return MachineRegistry.getCurrentMachine().runtime.config.wheels.find(w=>w.id===wheel).drives},wheel);
- const before=(await read()).offsets[axis];
- await page.locator('#jog-step').selectOption('1');
- await page.getByRole('button',{name:'− 微調',exact:true}).click();
- if(id!=='drill') await expect.poll(async()=>(await read()).offsets[axis]).toBeCloseTo(before-.001,5);
  await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
  await expect.poll(async()=>(await read()).rpm).toBeGreaterThan(0);
  await page.getByRole('button',{name:'■ 停止主軸'}).click();
  await expect.poll(async()=>(await read()).rpm).toBe(0);
  await page.getByRole('button',{name:'↺ 重設操作與視角'}).click();
- await expect.poll(async()=>(await read()).offsets[axis]).toBe(0);
+ await expect.poll(async()=>(await read()).offsets[AXIS[id].node]).toBe(0);
  if(id==='lathe'){
   await page.screenshot({path:'reports/classroom-controls-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.screenshot({path:'reports/classroom-controls-mobile.png',fullPage:true});
  }
  expect(errors).toEqual([]);
 });
