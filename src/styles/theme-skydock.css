@@ -1,0 +1,153 @@
+/* 「天空船塢」主題（1c）：低多邊形、亮色插畫感、細墨線框、無圓角。
+   只覆蓋外觀（顏色、字體、形狀、材質），版面與功能沿用 app.css / workspace.css。 */
+:root{
+  --ivory:#f4efe3;--card:#fffaf0;--sand:#e4dccb;--sand-2:#efe6d2;
+  --ink:#1f3a44;--teal:#2f7f96;--gold:#e0a33c;
+  --text:#1f2a2e;--text-2:#4b5a5c;--text-3:#5b6a6c;--muted:#6a7a7c;--off:#8a9496;
+  --nav-text:#cfe0e2;--nav-text-2:#a9c4c9;
+  --line:1.5px solid var(--ink);
+  --hex:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  --arrow:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);
+  --para:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  --cut:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  --sans:'Noto Sans TC',sans-serif;--serif:'Noto Serif TC',serif;--display:'Space Grotesk','Noto Sans TC',sans-serif;--mono:'IBM Plex Mono',monospace;
+  color-scheme:light;color:var(--text);background:var(--ivory);font-family:var(--sans);
+}
+body{background:var(--ivory)}
+*,*::before,*::after{border-radius:0!important}
+h1,h2{font-family:var(--serif);letter-spacing:.05em;color:var(--ink)}
+h1{font-weight:900}h2{font-weight:700}
+h3{color:var(--ink);font-weight:700}
+main{padding-left:32px;padding-right:32px}
+a{color:var(--teal)}
+.eyebrow,.eyebrow.green,.green{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)!important;text-transform:uppercase}
+.intro p,.info-header .subtitle,.home-intro p{color:var(--text-2)}
+.back-link{color:var(--teal)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* 導覽列 */
+header{background:var(--ink) linear-gradient(115deg,transparent 0 30%,rgba(255,255,255,.05) 30% 48%,transparent 48% 70%,rgba(255,255,255,.08) 70% 82%,transparent 82%);border-bottom:0}
+.brand{color:#fff;font-family:var(--display)}
+.brand-light{color:var(--gold)}
+.brand small{color:var(--nav-text-2);font-family:var(--mono)}
+.brand-mark{background:var(--gold);color:var(--ink);clip-path:var(--hex);width:42px;height:46px}
+.brand-mark span{display:none}
+.nav-link{color:var(--nav-text);background:transparent}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-link.active{background:var(--ivory);color:var(--ink);font-weight:700;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
+.header-tag{color:var(--nav-text-2)}
+
+/* 按鈕 */
+button{background:var(--card);color:var(--ink);border:var(--line);font-family:var(--sans);font-weight:500}
+button:hover:not(:disabled){background:var(--sand-2)}
+button:disabled{background:var(--sand-2);color:var(--off);border-color:#c9bfa9;opacity:1}
+.primary,button.primary,.primary-link{background:var(--gold)!important;color:var(--ink)!important;border-color:var(--gold)!important;font-weight:700;clip-path:var(--cut)}
+.primary:hover:not(:disabled),.primary-link:hover{background:#eab458!important}
+button.primary:disabled{background:var(--sand-2)!important;border-color:var(--sand-2)!important;color:var(--off)!important}
+.reset{background:transparent}
+.level-action{background:var(--ink);color:var(--card);border:var(--line)}
+.level-action:hover{background:#2a4d59;border-color:var(--ink)}
+input,select{border-radius:0}
+select,.op-field select,.op-target input,.op-field input[type=number],.console-step select,.control-console select{background:var(--card)!important;color:var(--ink)!important;border:var(--line)!important}
+input[type=checkbox]{accent-color:var(--teal)}
+
+/* 卡片與面板 */
+.panel,.operate-panel,.level-panel,.control-console,.challenge-card,.tool-card,.safety-card,.machine-card,.course-route a,.level-howto{background:var(--card);border:var(--line);box-shadow:none}
+.op-details.advanced .control-console{background:var(--ivory)}
+.op-section{border-top:1.5px solid rgba(31,58,68,.2)}
+.op-heading h3,.console-section h3{color:var(--ink);font-size:14px}
+.operate-panel{counter-reset:section;padding:22px}
+.operate-panel .op-section .op-heading h3{display:flex;align-items:center;gap:8px}
+.operate-panel .op-section .op-heading h3::before{counter-increment:section;content:counter(section,decimal-leading-zero);display:grid;place-items:center;width:24px;height:26px;background:var(--teal);color:#fff;clip-path:var(--hex);font:600 10px var(--mono)}
+.op-heading small,.op-state,.op-help,.console-help,.level-foot{color:var(--muted)}
+.op-state.is-running{color:var(--teal);font-weight:700}
+.op-field,.op-check,.op-target label{color:var(--text-2)}
+.op-details summary{color:var(--teal);font-weight:500}
+.notice{background:#eef4f0;border:var(--line);color:var(--ink)}
+.notice.caution{background:#fbecc9;color:#6b4a10;border-color:#b78424}
+.notice.danger{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
+
+/* 分段選單與進給 */
+.segmented{background:var(--sand);border:0;padding:3px}
+.segmented button{background:transparent;color:var(--text-2);border:0}
+.segmented button[aria-checked=true]{background:var(--teal);color:#fff;box-shadow:none;clip-path:var(--arrow)}
+.segmented .unit{color:var(--muted);font-family:var(--mono)}
+.jog{background:var(--card);border:var(--line)}
+.jog:active:not(:disabled){background:var(--sand)}
+.jog strong{color:var(--ink);font-family:var(--display)}
+.jog small{color:var(--muted)}
+.contact-pill{background:var(--sand-2);border:0;color:var(--text-3);clip-path:var(--para);padding:4px 12px}
+.contact-pill.touch{background:var(--gold);color:var(--ink)}
+.contact-pill.cutting{background:#c9612f;color:#fff}
+.dro>div{background:var(--ivory);border:var(--line)}
+.dro>div.active{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+.dro span{color:var(--text-3)}
+.dro strong{color:var(--ink);font-family:var(--display)}
+.dro strong small{color:var(--muted)}
+.op-measure dt{color:var(--text-3)}
+output{font-family:var(--display)}
+.console-rpm strong{font:700 52px/1 var(--display);color:var(--ink)}
+
+/* 機台切換（箭頭分段） */
+.machine-switcher{background:var(--sand);border:0;padding:3px}
+.switcher-tab{background:transparent;color:var(--text-2);border:0}
+.switcher-tab:hover{background:rgba(31,58,68,.08);color:var(--ink)}
+.switcher-tab.active{background:var(--teal);color:#fff;clip-path:var(--arrow);padding-left:18px;padding-right:18px}
+
+/* 3D 視窗：天空、地平線、遠方浮島 */
+.viewport{border:var(--line);background:linear-gradient(#5fb0cf,#a8d6e3 55%,#a8d6e3)}
+.viewport::before{content:'';position:absolute;inset:6% 4% auto auto;width:220px;height:70px;background:#f2ead8;opacity:.75;clip-path:polygon(0 70%,12% 40%,30% 45%,42% 10%,58% 30%,74% 5%,88% 38%,100% 60%,82% 100%,20% 100%);pointer-events:none}
+.viewport::after{content:'';position:absolute;inset:14% auto auto 8%;width:140px;height:46px;background:#e9dcc0;opacity:.7;clip-path:polygon(0 60%,20% 20%,45% 35%,62% 0,82% 30%,100% 55%,70% 100%,15% 100%);pointer-events:none}
+.viewport canvas{position:relative;z-index:1}
+.view-top,.view-bottom{z-index:2}
+.view-bar{background:transparent;border:0;padding:0;gap:0}
+.view-bar button{background:var(--ink);color:var(--nav-text);border:0;font-family:var(--mono);letter-spacing:.08em;padding:7px 12px}
+.view-bar button:hover:not(:disabled){background:#2a4d59;color:#fff}
+.view-bar button[aria-pressed=true]{background:var(--teal);color:#fff;font-weight:600}
+.view-bar kbd{border-color:currentColor;opacity:.8}
+.view-bottom{color:var(--ink);font-family:var(--mono)}
+.view-bottom>span{background:var(--card);border:var(--line);padding:4px 8px}
+.part-tooltip{background:var(--card);border:var(--line);color:var(--ink)}
+.scene-overlay{background:var(--ivory);color:var(--ink)}
+.spinner{border-color:var(--sand);border-top-color:var(--teal)}
+
+/* 關卡 */
+.level-tag,.challenge-card-body small{font-family:var(--mono);letter-spacing:.12em;color:var(--teal)}
+.level-stepper li{color:var(--muted);border-bottom:3px solid var(--sand)}
+.level-stepper span{clip-path:var(--hex);border:0;background:var(--sand);color:var(--text-2);width:22px;height:24px}
+.level-stepper li.done{color:var(--text-2);border-color:var(--teal)}
+.level-stepper li.current{color:var(--ink);border-color:var(--gold)}
+.level-stepper li.current span{background:var(--gold);color:var(--ink)}
+.level-body>p,.challenge-card-body p,.step-hints{color:var(--text-2)}
+.target-list div{background:var(--ivory);border:var(--line)}
+.target-list dt{color:var(--text-3)}.target-list dd{color:var(--ink)}
+.practice-timer{background:var(--ink);border:0;clip-path:var(--cut)}
+.practice-timer strong{color:var(--gold);font-family:var(--display)}
+.practice-timer span{color:var(--nav-text)}
+.practice-timer.warn strong{color:#ffd27a}.practice-timer.over strong{color:#ff9d6b}
+.stars span{color:var(--sand)}
+.stars span.on{color:var(--gold);text-shadow:none}
+.result-banner{border:var(--line)}
+.result-banner.pass{background:#dcefe9;color:var(--ink)}
+.result-banner.draft{background:#fbecc9;color:#6b4a10;border-color:#b78424}
+.result-banner.fail{background:#f6dcd4;color:#7a2a1c;border-color:#a8452f}
+.level-measurement-scroll th,.level-measurement-scroll td{border-bottom:1.5px solid rgba(31,58,68,.2);color:var(--text)}
+.level-measurement-scroll thead th{color:var(--muted);font-family:var(--mono)}
+.node-dot{clip-path:var(--hex);border:0;width:30px;height:32px;background:var(--teal)!important;color:#fff!important;font-family:var(--mono)}
+.level-howto{border-style:dashed}
+.level-howto ol{color:var(--text-2)}.level-howto b{color:var(--ink)}
+
+/* 首頁與資訊頁 */
+.machine-card:hover,.course-route a:hover{background:#fff}
+.card-number,.tool-badge{font-family:var(--mono);letter-spacing:.2em;color:var(--teal)}
+.machine-card p,.machine-card small,.tool-desc,.safety-card ul,.home-notes,.course-route small{color:var(--text-2)}
+.card-visual{background:linear-gradient(#5fb0cf,#a8d6e3)}
+.card-visual svg g{stroke:var(--ink)}
+.course-route b{color:var(--gold);font-family:var(--mono)}
+.course-route a{color:var(--ink)}
+.home-notes b{color:var(--teal)}
+footer{color:var(--muted);border-top:1.5px solid rgba(31,58,68,.2);font-family:var(--mono)}
+output{color:inherit}
+.view-bottom>span:first-child,.view-bottom>span:last-child{background:var(--card);border:var(--line);color:var(--ink);padding:4px 8px}
+.card-action{color:var(--teal)!important;font-weight:700}
+.machine-card h2 span{color:var(--gold)}

@@ -3,4 +3,5 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/app.css';
 import './styles/workspace.css';
+import './styles/theme-skydock.css';
 createRoot(document.getElementById('root')).render(<App />);

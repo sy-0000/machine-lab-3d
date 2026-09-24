@@ -1,7 +1,7 @@
-import {Component,useEffect,useLayoutEffect,useRef,useState} from 'react';
+import {Component,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
-import {OrbitControls,PerspectiveCamera,Grid} from '@react-three/drei';
-import {PMREMGenerator} from 'three';
+import {OrbitControls,PerspectiveCamera} from '@react-three/drei';
+import {PMREMGenerator,PlaneGeometry,Color,Float32BufferAttribute} from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {CAMERA_VIEWS,cameraPose} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
@@ -56,6 +56,19 @@ function StudioEnvironment(){
  },[gl,scene]);
  return null;
 }
+// Faceted ground: flat-shaded triangles in four sand tones (sky shows through the transparent canvas).
+const SAND=['#e2d9c3','#d6ccb3','#ece5d3','#d9cfb8'];
+function LowPolyGround({y,size}){
+ const geometry=useMemo(()=>{
+  const g=new PlaneGeometry(size,size,14,14).toNonIndexed(),colors=[],c=new Color();
+  for(let i=0;i<g.attributes.position.count;i+=3){c.set(SAND[(i*7919>>>3)%SAND.length]);for(let k=0;k<3;k++)colors.push(c.r,c.g,c.b);}
+  g.setAttribute('color',new Float32BufferAttribute(colors,3));return g;
+ },[size]);
+ useEffect(()=>()=>geometry.dispose(),[geometry]);
+ // Unlit facets keep the exact palette under the bright lights; a transparent layer above receives shadows.
+ return <group rotation={[-Math.PI/2,0,0]} position={[0,y,0]}><mesh geometry={geometry}><meshBasicMaterial vertexColors/></mesh>
+  <mesh position={[0,0,size*1e-4]} receiveShadow><planeGeometry args={[size,size]}/><shadowMaterial opacity={.16}/></mesh></group>;
+}
 function ViewBar({active,onSelect,disabled}){
  useEffect(()=>{
   const key=e=>{if(disabled||e.ctrlKey||e.metaKey||e.altKey||e.target.closest?.('input,select,textarea'))return;const v=CAMERA_VIEWS.find(v=>v.key===e.key);if(v){e.preventDefault();onSelect(v.id);}};
@@ -69,14 +82,13 @@ export default function MachineScene({model,controls,error,progress,onError,name
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
-   <color attach="background" args={['#151e24']}/><PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view}/>{!LOW_GFX&&<StudioEnvironment/>}
+   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view}/>{!LOW_GFX&&<StudioEnvironment/>}
    <ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/>
    <directionalLight position={[r*2,r*3,r]} intensity={3} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
    <directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>
    {model&&<><MachineModel model={model} controls={controls} orbit={orbit}/>
     {import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')&&<MachineDebug model={model} controls={controls} orbit={orbit}/>}
-    <mesh rotation={[-Math.PI/2,0,0]} position={[0,model.floor-r*.005,0]} receiveShadow><planeGeometry args={[r*20,r*20]}/><meshStandardMaterial color="#182329"/></mesh>
-    <Grid position={[0,model.floor,0]} args={[r*10,r*10]} cellSize={r/5} sectionSize={r} cellColor="#293a40" sectionColor="#3c565b" fadeDistance={r*8}/>
+    <LowPolyGround y={model.floor-r*.005} size={r*20}/>
    </>}
   </Canvas></Boundary>
   {!model&&!error&&<LoadingScreen progress={progress}/>}
