@@ -72,7 +72,9 @@ export class MachineV1Adapter {
       rpm: state.rpm, requestedRpm: state.targetRpm, targetRpm: state.effectiveTargetRpm,
       spindleAvailable: state.spindleAvailable, spindleAngle: state.spindleAngle,
       leverAngle: state.leverAngle, teaching: m.teaching,
-      axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets }, feedLocked: !!m.runtime.returnLocked,
+      axesMm, machineAxesMm, lathe, workOffsetsMm: { ...this.#offsets },
+      // Depth stop in the same readout (work-offset) coordinates the student sees on the DRO.
+      feedStopMm: m.runtime.feedStop ? worldToMm(m.runtime.feedStop.value) - (this.#offsets[m.runtime.feedStop.readout] || 0) : null,
       activeCuttingTool: state.activeCuttingTool,
       cuttingTipMm: this.#cuttingSample()?.position || null,
       machining: this.#machiningState(), headMachining:this.head.state(),
@@ -147,7 +149,16 @@ export class MachineV1Adapter {
       }
       case 'tool.index': if (![1, -1].includes(command.direction)) throw new Error('Invalid index direction'); m.indexToolPost(command.direction); break;
       // Quill lock: a spring-return feed lever keeps its position (real drill presses have a quill lock).
-      case 'feed.lock': m.runtime.returnLocked = !!command.locked; break;
+      // Drill press depth stop: the spring-return lever cannot feed below it. depthMm is a DRO reading.
+      case 'feed.stop': {
+        if (command.depthMm === null) { m.runtime.feedStop = null; break; }
+        const axis = Object.entries(AXES[m.id]).find(([, id]) => id === command.axisId)?.[0];
+        if (!axis || !Number.isFinite(command.depthMm)) throw new Error('Invalid depth stop');
+        m.runtime.feedStop = { axis: command.axisId, readout: axis, value: mmToWorld(command.depthMm + (this.#offsets[axis] || 0)) };
+        break;
+      }
+      // Continuous handwheel speed while held, scaled by the selected feed step.
+      case 'hold.speed': m.runtime.holdSpeedScale = Math.max(0.005, Math.min(3, Number(command.scale) || 1)); break;
       case 'spindle.brake': m.emergencyBrake(); break;
       case 'spindle.releaseBrake': m.releaseEmergencyBrake(); break;
       case 'workpiece.toggleDemo': if (!m.toggleDemoWorkpiece()) throw new Error('Demo workpiece cannot be toggled while running or a modular workpiece is mounted'); break;

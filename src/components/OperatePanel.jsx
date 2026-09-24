@@ -17,7 +17,7 @@ const AXES = {
     { id: 'Z', label: 'Z 升降', minus: '下降', plus: '上升', wheel: 'zLift', holdSign: 1 },
   ],
   drill: [
-    { id: 'quill', short: '進給', label: '主軸進給', minus: '下降（鑽入）', plus: '上升', wheel: 'feed', holdSign: 1 },
+    { id: 'quill', short: '進給', label: '主軸進給', minus: '按住下降（鑽入）', plus: '按住上升', wheel: 'feed', holdSign: 1, lever: true },
     { id: 'table', short: '工作臺', label: '工作臺高度', minus: '下降', plus: '上升', wheel: null },
   ],
 };
@@ -30,6 +30,7 @@ export default function OperatePanel({ session, controls, model, machineId, leve
   const [axisId, setAxisId] = useState(axes[0]?.id);
   const [step, setStep] = useState(0.1);
   const [angle, setAngle] = useState(3);
+  const [stopDepth, setStopDepth] = useState('-10');
   const [message, setMessage] = useState('');
   const [target, setTarget] = useState({ X: '', Z: '' });
   // Remember the expanded section across stock changes (the lathe section remounts with each new stock).
@@ -42,8 +43,6 @@ export default function OperatePanel({ session, controls, model, machineId, leve
   const stopped = !!state && !state.running && state.rpm === 0 && state.leverAngle === 0;
   const running = state?.rpm > 0;
   useEffect(() => { setAxisId(axes[0]?.id); }, [machineId]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Drill press: quill lock on by default so a single feed click stays down instead of springing back.
-  useEffect(() => { if (machineId === 'drill' && session?.canCommand() && state && !state.feedLocked) session.command({ type: 'feed.lock', locked: true }); }, [session, machineId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const send = command => {
     const result = session?.command(command);
@@ -66,14 +65,21 @@ export default function OperatePanel({ session, controls, model, machineId, leve
     ? { type: 'machining.datum', axis: a.id, valueMm: 0, ...(a.diameter ? { representation: 'diameter' } : {}) }
     : { type: 'workOffset.zero', axis: a.id, ...(a.diameter ? { representation: 'diameter' } : {}) });
 
-  const endHold = () => { clearTimeout(holdTimer.current); clearInterval(repeatTimer.current); holdTimer.current = repeatTimer.current = null; controls.stopInput(); };
+  // While held, the handwheel turns at a speed tied to the selected step: about 8 × step mm/s.
+  const holdSpeed = wheel => {
+    const ratio = wheel?.ratio, mmPerSecond = Math.min(40, Math.max(0.08, step * 8));
+    session?.command({ type: 'hold.speed', scale: ratio ? mmPerSecond / (wheel.speed * ratio * 1000) : 1 });
+  };
+  const endHold = () => { clearTimeout(holdTimer.current); clearInterval(repeatTimer.current); holdTimer.current = repeatTimer.current = null; controls.stopInput(); session?.command({ type: 'hold.speed', scale: 1 }); };
   const beginHold = (event, direction) => {
     event.preventDefault(); event.currentTarget.setPointerCapture?.(event.pointerId);
+    const wheel = model?.config.wheels.find(w => w.id === axis.wheel);
+    // Drill feed lever: feeds only while held and springs back up on release, like the real lever.
+    if (axis.lever && wheel) { holdSpeed(wheel); controls.hold(wheel.id, direction * axis.holdSign); return; }
     jog(axis, direction * step);
     // Holding turns the real handwheel continuously (or repeats the step when there is no wheel).
     holdTimer.current = setTimeout(() => {
-      const wheel = model?.config.wheels.find(w => w.id === axis.wheel);
-      if (wheel) controls.hold(wheel.id, direction * axis.holdSign);
+      if (wheel) { holdSpeed(wheel); controls.hold(wheel.id, direction * axis.holdSign); }
       else repeatTimer.current = setInterval(() => jog(axis, direction * step), 90);
     }, 380);
   };
@@ -117,12 +123,15 @@ export default function OperatePanel({ session, controls, model, machineId, leve
         </div>
         {axis && <div className="jog-row">
           {[-1, 1].map(d => <button key={d} className="jog" aria-label={`${label(axis)}${d < 0 ? '−' : '＋'} 微調`} aria-describedby={'jog-hint-' + d} onPointerDown={e => beginHold(e, d)} onPointerUp={endHold} onPointerCancel={endHold} onLostPointerCapture={endHold}
-            onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); jog(axis, d * step); } }} onContextMenu={e => e.preventDefault()}>
+            onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); if (axis.lever) beginHold(e, d); else jog(axis, d * step); } }} onKeyUp={() => axis.lever && endHold()} onContextMenu={e => e.preventDefault()}>
             <strong>{label(axis)}{d < 0 ? '−' : '＋'} 微調</strong><small id={'jog-hint-' + d}>{d < 0 ? axis.minus : axis.plus}</small>
           </button>)}
         </div>}
-        <p className="op-help">{axis?.compound ? `沿小刀架斜向移動 ${step} mm：Z 與 X 同時動，車出錐度。錐度半角 = atan((大徑 − 小徑) ÷ (2 × 長度))。` : `點一下移動 ${step} mm；按住不放會連續轉動手輪。`}</p>
-        {machineId === 'drill' && <label className="op-check"><input type="checkbox" checked={!!state?.feedLocked} onChange={e => send({ type: 'feed.lock', locked: e.target.checked })} /> 套筒鎖定（進給停在原位，不回彈）</label>}
+        <p className="op-help">{axis?.lever ? `按住下降鑽孔，放開自動回到最上面；速度跟著進給量（約 ${Math.min(40, Math.max(0.08, step * 8)).toFixed(1)} mm/s）。` : axis?.compound ? `沿小刀架斜向移動 ${step} mm：Z 與 X 同時動，車出錐度。錐度半角 = atan((大徑 − 小徑) ÷ (2 × 長度))。` : `點一下移動 ${step} mm；按住不放會連續轉動手輪。`}</p>
+        {machineId === 'drill' && <div className="op-field depth-stop">
+          <label className="op-check"><input type="checkbox" checked={state?.feedStopMm != null} onChange={e => send({ type: 'feed.stop', axisId: 'quill', depthMm: e.target.checked ? Number(stopDepth) : null })} /> 深度擋塊</label>
+          <input aria-label="深度擋塊（讀值 mm）" type="number" step="0.5" value={stopDepth} onChange={e => { setStopDepth(e.target.value); if (state?.feedStopMm != null && e.target.value !== '' && Number.isFinite(Number(e.target.value))) send({ type: 'feed.stop', axisId: 'quill', depthMm: Number(e.target.value) }); }} /> <small>mm（讀值）</small>
+        </div>}
       </section>
 
       <section className="op-section">

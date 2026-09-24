@@ -16,7 +16,7 @@ test('levels page: three machine challenges, each opens its task step',async({pa
  await expect(page.getByRole('button',{name:'觀看示範'})).toHaveCount(0);
  expect(errors).toEqual([]);
 });
-const AXIS={lathe:{testid:'cut-x-diameter',minus:'X− 微調',zero:'X 歸零',node:'y'},milling:{testid:'dro-X',minus:'X− 微調',zero:'X 歸零',node:'X_Axis_Table'},drill:{testid:'dro-quill',minus:'進給− 微調',zero:'進給 歸零',node:'quill'}};
+const AXIS={lathe:{testid:'cut-x-diameter',minus:'X− 微調',zero:'X 歸零',node:'y'},milling:{testid:'dro-X',minus:'X− 微調',zero:'X 歸零',node:'X_Axis_Table'},drill:{testid:'dro-table',minus:'工作臺− 微調',zero:'工作臺 歸零',node:'table'}};
 for(const id of ['lathe','milling','drill'])test(id+' classroom: camera presets, stock + fixture, jog step, zero, spindle and reset',async({page})=>{
  test.setTimeout(600000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -39,6 +39,7 @@ for(const id of ['lathe','milling','drill'])test(id+' classroom: camera presets,
  // One click moves exactly one selected step; zero resets the readout only.
  const {testid,minus,zero}=AXIS[id],value=async()=>Number(await page.getByTestId(testid).textContent());
  const before=await value();
+ if(id==='drill')await page.getByRole('radiogroup',{name:'移動軸'}).getByRole('radio',{name:'工作臺高度'}).click();
  await page.getByRole('radiogroup',{name:'每次進給量'}).getByRole('radio',{name:'1',exact:true}).click();
  await page.getByRole('button',{name:minus}).click();
  await expect.poll(value).toBeCloseTo(before-1,3);

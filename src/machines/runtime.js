@@ -117,8 +117,10 @@ export function turnControl(m,key,direction,delta,teaching=false){
  const a=m.config.axes.find(a=>a.id===w.drives);if(!a?.enabled||!m.lookup[a.node])return;
  // Explicit opt-in demonstration ratios are not claimed as real lead-screw pitches.
  const ratio=w.ratio??(w.angleRange?Math.abs(a.range[0]/w.angleRange[0]):(a.range[1]-a.range[0])/(m.config.lesson.teachingTurnsForFullTravel*2*Math.PI));
- let next=m.angles[key]+direction*w.speed*delta;
+ // holdSpeedScale: UI-selected feed rate; feedStop: depth stop (lowest axis value) for a spring-return lever.
+ let next=m.angles[key]+direction*w.speed*delta*(m.holdSpeedScale??1);
  if(w.angleRange)next=clamp(next,w.angleRange);
+ if(w.angleRange&&m.feedStop?.axis===a.id&&next*ratio<m.feedStop.value)next=m.feedStop.value/ratio;
  if(w.angleRange){setAxis(m,a.id,next*ratio);}else{
   const desired=m.offsets[a.id]+(next-m.angles[key])*ratio;
   const actual=clamp(desired,a.range);next=m.angles[key]+(actual-m.offsets[a.id])/ratio;setAxis(m,a.id,actual);
@@ -149,7 +151,6 @@ export function stepMachine(m,running,rpm,dt,direction=1){
 }
 export function stepReturn(m,heldKey,dt){
  let returning=false;
- if(m.returnLocked)return false; // quill lock holds a spring-return feed where it is
  for(const w of m.config.wheels){if(!w.springReturn||w.id===heldKey||m.angles[w.id]===0)continue;const current=m.angles[w.id],next=current-Math.sign(current)*Math.min(Math.abs(current),w.springReturn.speed*dt);m.angles[w.id]=next;setAxis(m,w.drives,next*w.ratio);rotate(m,w.node,w.axis,next);returning=returning||next!==0;}
  return returning;
 }

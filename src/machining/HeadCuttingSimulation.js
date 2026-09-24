@@ -53,7 +53,9 @@ export function cutHead(state,from,to,tool,{running,rpm,direction=1}={}){
     next.operationHistory.push({type:'tapping',toolId:tool.id,holeId:hole.id,from:{...from},to:{...to}});return next;
   }
   if(tool.type!=='drilling'||direction!==1)return state;
-  if(!existing&&from.zMm<entry-eps)return state; // no teleporting into solid stock
+  // No teleporting into solid stock; a continuous feed (e.g. a lever already pushed in while the spindle
+  // was still spinning up) keeps drilling from where the tip is.
+  if(!existing&&from.zMm<entry-eps&&from.zMm-to.zMm>1)return state;
   if(existing&&existing.diameterMm!==tool.diameterMm)return state;
   if(depth<=(existing?.depthMm||0)+eps)return state;
   const next=cloneHeadState(state),hole=existing?next.features.find(h=>h.id===existing.id):{

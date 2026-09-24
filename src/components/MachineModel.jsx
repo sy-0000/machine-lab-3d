@@ -41,7 +41,8 @@ export default function MachineModel({model,controls,orbit}) {
   return()=>{release();setHighlight(model,null);Object.entries(events).forEach(([type,fn])=>canvas.removeEventListener(type,fn,true));window.removeEventListener('blur',blur);latest.current.release.current=()=>{};latest.current.invalidate.current=()=>{};};
  },[model,session,gl,camera,orbit,invalidate]);
  useFrame((_,delta)=>{
-  const c=latest.current,held=c.held.current,dt=previousActive.current?delta:0;
+  // A held handwheel keeps the (on-demand) frame loop running; cap dt so a stalled frame never jumps.
+  const c=latest.current,held=c.held.current,dt=previousActive.current||held?Math.min(delta,.1):0;
   if(held){if(orbit.current)orbit.current.enabled=false;model.active=held.key;}
   if(!session||!clock.current)return;
   const {active}=session.update(dt,{clock:clock.current,frameId:frame.current++});
@@ -49,7 +50,7 @@ export default function MachineModel({model,controls,orbit}) {
   // The final RPM can round to the same value as the preceding frame.
   // Publish the stop transition so controls unlock even when the signature is unchanged.
   if((previousActive.current&&!active)||(signature!==published.current&&(elapsed.current>.08||!active))){elapsed.current=0;published.current=signature;c.refresh();}
-  previousActive.current=active;if(active)invalidate();
+  previousActive.current=active||!!held;if(active||held)invalidate();
  });
  return <group position={model.center.clone().negate().toArray()}><primitive object={model.scene} dispose={null}/></group>;
 }

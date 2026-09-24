@@ -45,16 +45,23 @@ test('milling challenge: face mill the top to 18.5 and earn three stars',async({
   expect(errors).toEqual([]);
 });
 
-test('drill challenge: quill lock holds the feed; a 10 mm blind hole earns three stars',async({page})=>{
+test('drill challenge: hold to feed, spring return, depth stop; a 10 mm blind hole earns three stars',async({page})=>{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await start(page,'drill');
-  await expect(page.getByRole('checkbox',{name:/套筒鎖定/})).toBeChecked();
-  await step(page,1);await jog(page,'進給− 微調',5);
-  await expect(page.getByTestId('contact-state')).toContainText('接觸');
-  await page.getByRole('button',{name:'進給 歸零',exact:true}).click();
+  const feed=page.getByRole('button',{name:'進給− 微調',exact:true}),dro=async()=>Number(await page.getByTestId('dro-quill').textContent());
+  const hold=async until=>{await feed.scrollIntoViewIfNeeded();const b=await feed.boundingBox();await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();
+    await expect.poll(until,{timeout:60000,intervals:[30]}).toBe(true);const at=await dro();await page.mouse.up();return at;};
+  // Touch off slowly (0.1 → 0.8 mm/s), note the reading, release: the lever springs back to the top.
+  await step(page,0.1);
+  const touch=await hold(async()=>(await page.getByTestId('contact-state').textContent()).includes('接觸（'));expect(touch).toBeLessThan(-4);
+  await expect.poll(dro).toBe(0);
+  // Depth stop 10 mm below the touch reading; holding the feed stops there.
+  await page.getByRole('spinbutton',{name:'深度擋塊（讀值 mm）'}).fill(String(Math.round((touch-10)*10)/10));
+  await page.getByRole('checkbox',{name:/深度擋塊/}).check();
   await page.getByRole('button',{name:'▶ 啟動主軸'}).click();
-  await jog(page,'進給− 微調',10);await expect(page.getByTestId('dro-quill')).toHaveText('-10.000');
-  await step(page,5);await jog(page,'進給＋ 微調',4);
+  await step(page,1);
+  await hold(async()=>Math.abs(await dro()-(Math.round((touch-10)*10)/10))<.01);
+  await expect.poll(dro).toBe(0);
   await expect(await submit(page)).toHaveAttribute('aria-label','3 顆星');
   expect(errors).toEqual([]);
 });
