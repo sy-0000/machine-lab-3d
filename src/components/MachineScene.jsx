@@ -29,7 +29,7 @@ class Boundary extends Component {
  componentDidCatch(error){this.props.onError(`3D 場景錯誤：${error.message}`);}
  render(){return this.state.error?null:this.props.children;}
 }
-function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI,maxDistanceR=Infinity}){
+function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI,maxDistanceR=Infinity,lookUp=false}){
  const {camera,size,invalidate}=useThree(),flight=useRef(null);
  useLayoutEffect(()=>{
   if(!model||!orbit.current)return;
@@ -45,12 +45,17 @@ function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI,maxDistanceR
   flight.current={from:camera.position.clone(),fromTarget:orbit.current.target.clone(),to:cameraPose(model,view.id,camera,size.width/size.height),start:performance.now()};invalidate();
  },[view]); // eslint-disable-line react-hooks/exhaustive-deps
  useFrame(()=>{
+  // Look-up: the camera may drop below the target and tilt up (to see the dome and sky), but never below the floor.
+  if(lookUp&&orbit.current&&model){
+   const o=orbit.current,d=camera.position.distanceTo(o.target),h=o.target.y-(model.floor+model.radius*.08);
+   o.maxPolarAngle=Math.min(Math.PI*.8,Math.max(Math.PI*.495,Math.PI/2+Math.asin(Math.max(-1,Math.min(1,h/Math.max(d,1e-6))))));
+  }
   const f=flight.current;if(!f||!orbit.current)return;
   const k=Math.min(1,(performance.now()-f.start)/650),e=1-Math.pow(1-k,3);
   camera.position.lerpVectors(f.from,f.to.position,e);orbit.current.target.lerpVectors(f.fromTarget,f.to.target,e);orbit.current.update();
   if(k<1)invalidate();else flight.current=null;
  });
- return <OrbitControls ref={orbit} makeDefault enableDamping dampingFactor={.08} maxPolarAngle={maxPolarAngle}/>;
+ return <OrbitControls ref={orbit} makeDefault enableDamping dampingFactor={.08} {...(lookUp?{}:{maxPolarAngle})}/>;
 }
 // Local studio reflections (no download) so metal parts read as metal instead of black.
 function StudioEnvironment({intensity=.55}){
@@ -78,7 +83,7 @@ export default function MachineScene({model,controls,error,progress,onError,name
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
    {/* Dark: the clear studio (e721766). Light: the domed steampunk workshop (or ?scene=meadow, the dusk meadow). */}
    {dark&&<color attach="background" args={['#151e24']}/>}
-   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495} maxDistanceR={indoor?5.2:Infinity}/>{!LOW_GFX&&<StudioEnvironment intensity={dark?.55:.35}/>}
+   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495} maxDistanceR={indoor?5.2:Infinity} lookUp={!dark}/>{!LOW_GFX&&<StudioEnvironment intensity={dark?.55:.35}/>}
    {dark?<><ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/></>
     :indoor?<><ambientLight intensity={.3} color="#ffd8b0"/><hemisphereLight args={['#ffe4c4','#4a3a30',.8]}/></>
     :<><ambientLight intensity={.35} color="#ffd2a8"/><hemisphereLight args={['#ffb98c','#3c4a2a',.9]}/></>}

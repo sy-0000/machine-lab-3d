@@ -1,6 +1,6 @@
-import {Group,Mesh,BufferGeometry,Float32BufferAttribute,MeshStandardMaterial} from 'three';
+import {Group,Mesh,BufferGeometry,Float32BufferAttribute,MeshStandardMaterial,MeshBasicMaterial} from 'three';
 import {WorkpieceBase} from '../../workpieces/WorkpieceBase.js';
-import {cloneHeadState} from '../HeadWorkpieceState.js';
+import {cloneHeadState,surfaceAt} from '../HeadWorkpieceState.js';
 
 // Display the same sampled solid used for milling; holes subtract their recorded depth.
 export function headGeometry(s,mmToWorld){
@@ -23,14 +23,28 @@ export function headGeometry(s,mmToWorld){
   }
   const g=new BufferGeometry();g.setAttribute('position',new Float32BufferAttribute(positions,3));g.computeVertexNormals();g.computeBoundingSphere();return g;
 }
+// Scribed centre lines (a line across the width plus a short cross), lying on the top face and broken over holes.
+export function scribeGeometry(s,mmToWorld){
+  const positions=[],half=0.18,step=0.5;
+  const open=(x,y)=>!s.features.some(h=>h.type==='hole'&&Math.hypot(x-h.xMm,y-h.yMm)<=h.diameterMm/2+0.2);
+  const quad=(x0,y0,x1,y1)=>{const cx=(x0+x1)/2,cy=(y0+y1)/2,z=surfaceAt(s,cx,cy);if(z<=0||!open(cx,cy))return;
+    const p=(x,y)=>[mmToWorld(x-s.stock.lengthMm/2),mmToWorld(z+0.03),mmToWorld(y-s.stock.widthMm/2)];
+    positions.push(...p(x0,y0),...p(x0,y1),...p(x1,y1),...p(x0,y0),...p(x1,y1),...p(x1,y0));};
+  for(const m of s.surfaceMarks)if(m.type==='scribe'){
+    for(let y=0;y<s.stock.widthMm-1e-9;y+=step)quad(m.xMm-half,y,m.xMm+half,Math.min(y+step,s.stock.widthMm));
+    for(let x=m.xMm-4;x<m.xMm+4-1e-9;x+=step)quad(x,m.yMm-half,x+step,m.yMm+half);
+  }
+  const g=new BufferGeometry();g.setAttribute('position',new Float32BufferAttribute(positions,3));g.computeBoundingSphere();return g;
+}
 export class PrismaticWorkpiece extends WorkpieceBase{
   constructor(state,mmToWorld){
     const s=cloneHeadState(state),group=new Group();
     super({id:s.id,name:'槌頭工件（可切削）',type:'block',dimensions:{lengthMeters:mmToWorld(s.stock.lengthMm),widthMeters:mmToWorld(s.stock.widthMm),heightMeters:mmToWorld(s.stock.heightMm)},object3D:group});
     this.state=s;this.mmToWorld=mmToWorld;
     this.mesh=new Mesh(headGeometry(s,mmToWorld),new MeshStandardMaterial({color:'#a3b4c2',metalness:0.8,roughness:0.4}));group.add(this.mesh);
+    this.marks=new Mesh(scribeGeometry(s,mmToWorld),new MeshBasicMaterial({color:'#1d2a31'}));this.marks.name='ScribeMarks';group.add(this.marks);
   }
   exportState(){return cloneHeadState(this.state);}
   inspect(fn){return fn(this.state);}
-  cut(fn){const next=fn(this.state);if(next===this.state)return false;this.mesh.geometry.dispose();this.mesh.geometry=headGeometry(next,this.mmToWorld);this.state=next;return true;}
+  cut(fn){const next=fn(this.state);if(next===this.state)return false;this.mesh.geometry.dispose();this.mesh.geometry=headGeometry(next,this.mmToWorld);this.marks.geometry.dispose();this.marks.geometry=scribeGeometry(next,this.mmToWorld);this.state=next;return true;}
 }

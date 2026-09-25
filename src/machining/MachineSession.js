@@ -64,6 +64,7 @@ export class MachineSession {
       switch (command.type) {
         case 'head.move': this.#adapter.head.move(command); break;
         case 'head.setup': this.#adapter.head.place(command); break;
+        case 'head.slide': this.#adapter.head.slide(command.deltaMm); break;
         case 'spindle.start': this.#adapter.start(command.direction ?? 1); break;
         case 'spindle.stop': this.#adapter.stop(); break;
         case 'spindle.speed': this.#adapter.setSpeed(command.rpm); break;

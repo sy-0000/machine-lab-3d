@@ -125,7 +125,7 @@ export default function App() {
             <li><a href="#/safety"><b>01</b>工安守則<small>進工場前必讀</small></a></li>
             <li><a href="#/tools"><b>02</b>刀具介紹<small>認識加工刀具</small></a></li>
             <li><a href="#/lathe"><b>03</b>加工教室<small>車床・銑床・鑽床功能</small></a></li>
-            <li><a href="#/levels"><b>04</b>加工關卡<small>車床・銑床・鑽床 各 5 分鐘</small></a></li>
+            <li><a href="#/levels"><b>04</b>加工關卡<small>車床・銑床・鑽床 限時挑戰</small></a></li>
           </ol>
 
           <section className="machine-cards" aria-label="選擇工具機">

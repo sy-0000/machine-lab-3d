@@ -6,6 +6,7 @@ export const TOOL_DEFINITIONS = {
   head_face_mill: {id:'head_face_mill',name:'面銑刀 Ø58（教學刀具）',type:'milling',compatibleMachines:['milling'],dimensions:{radius:0.029,shankLength:0.035,cuttingLength:0.032}},
   head_end_mill: {id:'head_end_mill',name:'槌頭立銑刀 Ø8（教學刀具）',type:'milling',compatibleMachines:['milling'],dimensions:{radius:0.004,shankLength:0.035,cuttingLength:0.035}},
   head_drill_85: {id:'head_drill_85',name:'Ø8.5 底孔鑽頭',type:'drilling',compatibleMachines:['drill'],dimensions:{radius:0.00425,shankLength:0.025,cuttingLength:0.049}},
+  head_drill_10: {id:'head_drill_10',name:'Ø10 鑽頭',type:'drilling',compatibleMachines:['drill'],dimensions:{radius:0.005,shankLength:0.025,cuttingLength:0.049}},
   head_tap_m10: {id:'head_tap_m10',name:'M10 絲攻（牙深待確認）',type:'tapping',compatibleMachines:['drill'],dimensions:{radius:0.005,shankLength:0.025,cuttingLength:0.049},designation:'M10',pilotDiameterMm:8.5},
   turning_tool: {
     id: 'turning_tool',

@@ -4,6 +4,7 @@ import { Billboard } from '@react-three/drei';
 import { AdditiveBlending, BackSide, CanvasTexture, CatmullRomCurve3, DoubleSide, ExtrudeGeometry, Fog, MeshStandardMaterial, Path, RepeatWrapping, Shape, SpriteMaterial, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 
 // 「穹頂工作室」世界（淺色模式）：磚牆圓廳、水泥地、鑄鐵肋骨撐起的玻璃大穹頂。
+// 穹頂是透明玻璃，看得到外面的藍天白雲。
 // 牆邊有蒸氣鍋爐、落地擺鐘、工作臺與轉動的牆面齒輪；鍋爐與地面通風口冒蒸氣，空中飄著被天光照亮的灰塵。
 // 幾何與材質貼圖都以程式產生；只有地球儀、望遠鏡與兩幅掛畫用 public/scenery/ 的圖片。
 // 尺寸都以機台半徑 r 為單位：房間半徑 6r、牆高 2.6r，穹頂坐在牆頂上。
@@ -50,17 +51,40 @@ function drawConcrete(g, w, h) {
   g.fillStyle = 'rgba(50,44,38,.6)'; g.fillRect(0, 0, w, 3); g.fillRect(0, 0, 3, h);
 }
 
-/** Dome glass: two columns by eight rows of warm, slightly uneven panes in dark iron glazing bars. */
+/** Dome glass: clear panes (mostly transparent, a faint sky tint) in dark iron glazing bars, two columns by eight rows. */
 function drawGlass(g, w, h) {
-  const rand = rng(21), cols = 2, rows = 8, bar = 7;
-  g.fillStyle = '#2a2420'; g.fillRect(0, 0, w, h);
+  const rand = rng(21), cols = 2, rows = 8, bar = 6;
+  g.clearRect(0, 0, w, h);
+  g.fillStyle = 'rgba(35,32,30,1)';
+  for (let c = 0; c <= cols; c++) g.fillRect(c * w / cols - bar, 0, bar * 2, h);
+  for (let rI = 0; rI <= rows; rI++) g.fillRect(0, rI * h / rows - bar, w, bar * 2);
   for (let c = 0; c < cols; c++) for (let rI = 0; rI < rows; rI++) {
-    const x = c * w / cols, y = rI * h / rows, k = rI / rows, v = rand() * .1;
-    const gr = g.createLinearGradient(x, y, x + w / cols, y + h / rows);
-    gr.addColorStop(0, `rgb(${Math.round(250 - k * 40 - v * 200)},${Math.round(226 - k * 20 - v * 200)},${Math.round(180 + k * 30 - v * 150)})`);
-    gr.addColorStop(1, `rgb(${Math.round(222 - k * 40)},${Math.round(206 - k * 20)},${Math.round(176 + k * 30)})`);
-    g.fillStyle = gr; g.fillRect(x + bar, y + bar, w / cols - bar * 2, h / rows - bar * 2);
-    if (rand() < .25) { g.fillStyle = 'rgba(60,50,40,.25)'; g.fillRect(x + bar, y + bar, w / cols - bar * 2, h / rows - bar * 2); }
+    const x = c * w / cols + bar, y = rI * h / rows + bar, pw = w / cols - bar * 2, ph = h / rows - bar * 2;
+    // A soft diagonal glint so the glass still reads as glass.
+    const gr = g.createLinearGradient(x, y, x + pw, y + ph);
+    gr.addColorStop(0, `rgba(215,235,255,${.06 + rand() * .04})`); gr.addColorStop(.45, 'rgba(255,255,255,.16)'); gr.addColorStop(.55, 'rgba(210,230,250,.04)'); gr.addColorStop(1, 'rgba(200,225,250,.02)');
+    g.fillStyle = gr; g.fillRect(x, y, pw, ph);
+  }
+}
+
+/** Sky seen through the dome: deep blue at the zenith (top) to pale near the horizon, with soft white clouds. */
+function drawSky(g, w, h) {
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0, '#1a56a8'); gr.addColorStop(.5, '#3580cf'); gr.addColorStop(.85, '#6fb0e6'); gr.addColorStop(1, '#a9d3f2');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  const rand = rng(7);
+  for (let i = 0; i < 18; i++) {
+    // Clouds sit mostly away from the zenith (where the sphere pinches), flattened, and wrap around horizontally.
+    const cx = rand() * w, cy = h * (.35 + rand() * .5), sx = w * (.02 + rand() * .025);
+    for (let k = 0; k < 8; k++) {
+      const px = cx + (rand() - .5) * sx * 2, py = cy + (rand() - .5) * sx * .25, pr = sx * (.25 + rand() * .3);
+      for (const off of [-w, 0, w]) {
+        g.save(); g.translate(px + off, py); g.scale(1.8, 1);
+        const cg = g.createRadialGradient(0, 0, 0, 0, 0, pr);
+        cg.addColorStop(0, 'rgba(255,255,255,.9)'); cg.addColorStop(.55, 'rgba(250,252,255,.55)'); cg.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = cg; g.beginPath(); g.arc(0, 0, pr, 0, Math.PI * 2); g.fill(); g.restore();
+      }
+    }
   }
 }
 
@@ -330,6 +354,7 @@ export default function WorkshopWorld({ r, floor, shadows = true, animate = true
       brick: canvasTexture(1024, 512, drawBrick, { repeat: [Math.round(2 * Math.PI * R / (r * 2.2)), H / (r * 1.1)] }),
       concrete: canvasTexture(1024, 1024, drawConcrete, { repeat: [5, 5] }),
       glass: canvasTexture(256, 512, drawGlass, { repeat: [16, 1] }),
+      sky: canvasTexture(2048, 512, drawSky, { repeat: [1, 1] }),
       window: canvasTexture(256, 512, drawWindow),
       clock: canvasTexture(512, 512, (g, w, h) => drawDial(g, w, h)),
       gauge: canvasTexture(256, 256, (g, w, h) => drawDial(g, w, h, true)),
@@ -359,8 +384,10 @@ export default function WorkshopWorld({ r, floor, shadows = true, animate = true
     {[.78, .86].map(k => <mesh key={k} position={[0, f(H * k), 0]} rotation={[Math.PI / 2, 0, 0]} material={mats.copper}><torusGeometry args={[R * .965, r * .05, 8, 96]} /></mesh>)}
     {/* Arched windows between the pilasters */}
     {[45, 105, 165, 285].map(deg => { const p = onWall(r, deg, .02, f(H * .55)); return <mesh key={deg} {...p}><planeGeometry args={[r * .9, r * 1.8]} /><meshBasicMaterial map={maps.window} transparent alphaTest={.1} fog={false} /></mesh>; })}
-    {/* Glass dome on cast-iron ribs, oculus at the top */}
-    <mesh position={[0, f(H), 0]}><sphereGeometry args={[R, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial map={maps.glass} emissiveMap={maps.glass} emissive="#ffe2b8" emissiveIntensity={.85} roughness={.35} metalness={.2} side={BackSide} /></mesh>
+    {/* Blue sky with clouds outside the dome (unaffected by the indoor haze) */}
+    <mesh position={[0, f(H * .6), 0]} renderOrder={-1}><sphereGeometry args={[R * 3, 64, 16, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshBasicMaterial map={maps.sky} side={BackSide} fog={false} depthWrite={false} toneMapped={false} /></mesh>
+    {/* Clear glass dome on cast-iron ribs */}
+    <mesh position={[0, f(H), 0]}><sphereGeometry args={[R, 64, 24, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial map={maps.glass} transparent depthWrite={false} roughness={.2} metalness={.1} envMapIntensity={.3} side={BackSide} fog={false} /></mesh>
     {Array.from({ length: 8 }, (_, i) => <mesh key={i} position={[0, f(H), 0]} rotation={[0, i * Math.PI / 8, 0]} material={mats.darkIron}><torusGeometry args={[R * .99, r * .06, 6, 64, Math.PI]} /></mesh>)}
     {[.35, .65, .88].map(k => { const a = k * Math.PI / 2; return <mesh key={k} position={[0, f(H + Math.sin(a) * R * .99), 0]} rotation={[Math.PI / 2, 0, 0]} material={mats.darkIron}><torusGeometry args={[Math.cos(a) * R * .99, r * .05, 6, 64]} /></mesh>; })}
     {/* Light shafts from the dome */}

@@ -61,14 +61,16 @@ export class HeadMachiningAdapter{
       [m.currentTool.object3D,w.object3D.getObjectByName('ContactMarker')].filter(Boolean));
   }
   /** Tool touches stock: any sampled surface under / beside the cutter reaches the tip height. */
-  contact(sample=this.sample()){
-    const w=this.workpiece;if(!w||!sample)return false;
+  contact(sample=this.sample()){const top=this.surfaceUnder(sample);return top>0&&sample.position.zMm<=top+0.05;}
+  /** Highest stock surface under / beside the cutter (0 when the cutter is off the stock). */
+  surfaceUnder(sample=this.sample()){
+    const w=this.workpiece;if(!w||!sample)return 0;
     const s=w.state,{nx,ny,resolutionMm:res,topMm}=s.surface,t=sample.position,reach=sample.tool.diameterMm/2+0.05;
     let top=0;
     for(let iy=Math.max(0,Math.floor((t.yMm-reach)/res));iy<=Math.min(ny-1,Math.floor((t.yMm+reach)/res));iy++)
       for(let ix=Math.max(0,Math.floor((t.xMm-reach)/res));ix<=Math.min(nx-1,Math.floor((t.xMm+reach)/res));ix++)
         if(Math.hypot((ix+.5)*res-t.xMm,(iy+.5)*res-t.yMm)<=reach+res*.71)top=Math.max(top,topMm[iy*nx+ix]);
-    return top>0&&t.zMm<=top+0.05;
+    return top;
   }
   /** Contact ring around the cutter at its tip; level 0 none, 1 touching, 2 cutting. */
   updateMarker(){
@@ -100,8 +102,9 @@ export class HeadMachiningAdapter{
     w.object3D.add(createVise(w.state.stock,gapMm,{swivel:m.id==='milling'}));
     m.rootScene.updateWorldMatrix(true,true);
   }
-  state(){const p=this.sample();return this.workpiece?{kind:'prismatic',tipMm:p?.position??null,bounds:headBounds(this.workpiece.state),
-    features:this.workpiece.exportState().features,contact:this.contact(p),operations:this.workpiece.state.operationHistory.length,
+  state(){const p=this.sample(),top=this.surfaceUnder(p),contact=this.contact(p);return this.workpiece?{kind:'prismatic',tipMm:p?.position??null,bounds:headBounds(this.workpiece.state),
+    // How far the tip sits below the surface it touches: a stopped tool this deep has overshot the touch-off.
+    features:this.workpiece.exportState().features,contact,embedMm:contact?Math.max(0,top-p.position.zMm):0,operations:this.workpiece.state.operationHistory.length,
     coordinateNote:'X 圖面左端→右端；Y 毛胚前側→後側；Z 毛胚底面向上。單位 mm。'}:null;}
   /** Mount position: the drill press has no table X/Y feed, so its stock is set centred under the spindle;
    *  on the mill the cutter starts just outside the left end, centred across the width. */
@@ -121,6 +124,16 @@ export class HeadMachiningAdapter{
     const a=w.object3D.localToWorld(new Vector3()),b=w.object3D.localToWorld(delta);
     const local=w.object3D.parent.worldToLocal(b).sub(w.object3D.parent.worldToLocal(a));
     w.object3D.position.copy(origin.add(local));this.machine.rootScene.updateWorldMatrix(true,true);this.fitFixture();
+  }
+  /** Drill press: slide the vise along the stock's X so the drill lines up with a scribed centre line. */
+  slide(deltaMm){
+    const m=this.machine,p=this.sample()?.position;
+    if(m.id!=='drill')throw new Error('只有鑽床可以滑動虎鉗定位');
+    if(!p)throw new Error('先裝上工件及刀具');
+    if(!Number.isFinite(deltaMm))throw new Error('Invalid slide');
+    if(p.zMm<=headBounds(this.workpiece.state).heightMm+0.5)throw new Error('鑽頭還在工件裡：放開進給、讓鑽頭回到上方再移動工件');
+    const s=this.workpiece.state.stock,xMm=Math.round(Math.max(-10,Math.min(s.lengthMm+10,p.xMm+deltaMm))*1000)/1000;
+    this.place({xMm,yMm:p.yMm,tipZMm:p.zMm});
   }
   move({xMm,yMm,zMm}){
     const m=this.machine,before=this.sample();if(!before)throw new Error('先裝上槌頭工件及刀具');

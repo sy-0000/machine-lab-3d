@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CHALLENGES, grade } from '../../levels/challenges.js';
 import { Stepper, PracticeTimer, TargetList, Stars } from './LevelParts.jsx';
 
 const mm = n => n == null ? '—' : Number(n.toFixed(3)).toString();
 const PRAISE = ['還沒達到目標尺寸，再試一次！', '完成了，尺寸再準一點會更好。', '不錯！很接近目標尺寸。', '完美！尺寸都在目標內。'];
 
-/** One 5-minute challenge: task → practice → submit → stars. Every start uses fresh stock. */
+/** One timed challenge: task → practice → submit → stars. Every start uses fresh stock. */
 export default function ChallengeLevel({ challenge, session, controls, operate }) {
   const [phase, setPhase] = useState('brief'), [result, setResult] = useState(null), [error, setError] = useState(''), [attempt, setAttempt] = useState(0);
   useEffect(() => { setPhase('brief'); setResult(null); setError(''); }, [challenge.id, session]);
@@ -19,23 +19,30 @@ export default function ChallengeLevel({ challenge, session, controls, operate }
     await send(challenge.machine === 'lathe' ? { type: 'workpiece.createHandle' } : { type: 'workpiece.mountState', state: challenge.createStock() });
     setResult(null); setPhase('practice'); setAttempt(a => a + 1);
   });
+  // Live readout of the mounted stock, like measuring it with calipers between passes. Recomputed only when
+  // material is removed (cutCount) or fresh stock is mounted.
+  const live = useMemo(() => {
+    if (phase !== 'practice' || !session || s?.busy || !s?.workpiece?.machinable) return null;
+    try { return challenge.live(session.exportWorkpieceState()); } catch { return null; }
+  }, [phase, session, s?.busy, s?.workpiece?.machinable, s?.cutCount, attempt, challenge]); // eslint-disable-line react-hooks/exhaustive-deps
   const submit = () => run(async () => { setResult(grade(challenge, session.exportWorkpieceState())); setPhase('result'); });
 
   return <>
     <section className="panel level-panel" aria-label="關卡">
-      <div className="level-head"><span className="level-tag">第 {index + 1} 關 / {CHALLENGES.length} · 5 分鐘</span><h2>{challenge.title}</h2></div>
+      <div className="level-head"><span className="level-tag">第 {index + 1} 關 / {CHALLENGES.length} · {challenge.minutes} 分鐘</span><h2>{challenge.title}</h2></div>
       <Stepper phase={phase} />
 
       {phase === 'brief' && <div className="level-body">
         <p>{challenge.goal}</p>
         <TargetList items={[['毛胚', challenge.stock], ...challenge.targets]} />
         <ol className="step-hints">{challenge.steps.map(step => <li key={step}>{step}</li>)}</ol>
-        <button className="primary" disabled={!session || s?.busy} onClick={start}>開始（5 分鐘）</button>
+        <button className="primary" disabled={!session || s?.busy} onClick={start}>開始（{challenge.minutes} 分鐘）</button>
       </div>}
 
       {phase === 'practice' && <div className="level-body">
-        <PracticeTimer running resetKey={`${challenge.id}-${attempt}`} />
+        <PracticeTimer seconds={challenge.minutes * 60} running resetKey={`${challenge.id}-${attempt}`} />
         <TargetList items={challenge.targets} />
+        {live && <div className="live-measure" aria-label="目前工件尺寸"><h3>目前工件尺寸</h3><TargetList items={live} /></div>}
         <details className="op-details"><summary>操作步驟提示</summary><ol className="step-hints">{challenge.steps.map(step => <li key={step}>{step}</li>)}</ol></details>
         <div className="op-row">
           <button onClick={start} disabled={s?.busy || running}>換新毛胚重來</button>

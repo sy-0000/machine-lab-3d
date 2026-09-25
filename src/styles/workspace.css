@@ -37,6 +37,7 @@
 .jog:active:not(:disabled){background:#35505a}
 .contact-pill{font-size:11px;padding:4px 9px;border-radius:20px;border:1px solid #34434b;color:#8da1ab;white-space:nowrap}
 .contact-pill.touch{color:#ffcf7d;border-color:#8a6424;background:#3a2c1255}
+.contact-pill.overshoot{color:#ffb2ad;border-color:#7d403d;background:#49252355}
 .contact-pill.cutting{color:#ffb08a;border-color:#a2512b;background:#4a241455;animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.6}}
 .dro{display:grid;gap:6px}
@@ -115,3 +116,16 @@
 .op-check{display:flex;align-items:center;gap:8px;font-size:12px;color:#aabcc3;margin-top:10px}
 .op-field input[type=number]{width:80px;background:#0f171b;color:#e6ecee;border:1px solid #34434b;border-radius:6px;padding:6px 8px;font:inherit;font-size:12px}
 @media(max-width:1000px){.challenge-cards{grid-template-columns:1fr}}.taper-attachment{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.taper-attachment .op-check{margin-top:0}
+
+/* Live stock measurement during a challenge */
+.live-measure{display:grid;gap:6px}
+.live-measure h3{font-size:12px;color:#8da1ab;font-weight:500}
+.live-measure .target-list dd{font-variant-numeric:tabular-nums}
+
+/* Fullscreen workspace: fill the screen, taller 3D view, panels scroll */
+.game-workspace:fullscreen{max-width:none;width:100%;height:100%;overflow-y:auto;padding:14px 20px;background:#0d1418}
+.game-workspace:fullscreen .intro{margin-bottom:12px}
+.game-workspace:fullscreen .intro h1{font-size:22px;margin:4px 0}
+.game-workspace:fullscreen .viewport{height:calc(100vh - 120px)}
+:where(:root[data-theme=light]) .game-workspace:fullscreen{background:var(--ivory)}
+@media(max-width:760px){.game-workspace:fullscreen .viewport{height:60vh}}

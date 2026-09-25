@@ -18,6 +18,13 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
   const sessionRef = useRef(null), abortControllerRef = useRef(null);
   const controls = useMachineControls(session);
   const [muted, setMuted] = useMachineSounds(session, currentId);
+  // Fullscreen the whole workspace (3D view + panels), not just the canvas, so the controls stay usable.
+  const rootRef = useRef(null), [fullscreen, setFullscreen] = useState(false);
+  useEffect(() => {
+    const sync = () => setFullscreen(document.fullscreenElement === rootRef.current);
+    document.addEventListener('fullscreenchange', sync); return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
+  const toggleFullscreen = () => (document.fullscreenElement ? document.exitFullscreen() : rootRef.current?.requestFullscreen())?.catch(() => {});
 
   const loadMachine = useCallback(async (targetId) => {
     if (sessionRef.current && !sessionRef.current.canCommand()) throw new Error('機台輸入已鎖定');
@@ -53,10 +60,10 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
   }, [initialMachineId, loadMachine, challenge]);
 
   const currentDef = MACHINES.find(m => m.id === currentId) || { name: '工具機', subtitle: '', number: '01' };
-  const operate = <OperatePanel key={currentId} session={session} controls={controls} model={model} machineId={currentId} levelMode={!!challenge} />;
+  const operate = <OperatePanel key={currentId} session={session} controls={controls} model={model} machineId={currentId} levelMode={!!challenge} toolChoice={!challenge || !!challenge.toolChoice} />;
 
   return (
-    <main className="game-workspace">
+    <main className="game-workspace" ref={rootRef}>
       <div className="intro">
         <div>
           <a className="back-link" href={challenge ? '#/levels' : '#/'}>{challenge ? '← 返回關卡列表' : '← 返回首頁'}</a>
@@ -64,6 +71,7 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
           <p>{currentDef.subtitle}</p>
         </div>
         <div className="intro-actions">
+          {document.fullscreenEnabled && <button className="sound-toggle" aria-pressed={fullscreen} onClick={toggleFullscreen} title="全螢幕（Esc 離開）">{fullscreen ? '🗗 離開全螢幕' : '⛶ 全螢幕'}</button>}
           <button className="sound-toggle" aria-pressed={!muted} onClick={() => setMuted(!muted)} title="加工音效：主軸馬達、切削、手輪">{muted ? '🔇 音效關' : '🔊 音效開'}</button>
           {!challenge && <div className="machine-switcher" role="tablist" aria-label="切換工具機">
             {MACHINES.map(m => <button key={m.id} role="tab" aria-selected={currentId === m.id} className={`switcher-tab ${currentId === m.id ? 'active' : ''}`} onClick={() => loadMachine(m.id)}>{m.name}</button>)}

@@ -38,7 +38,8 @@ export function cutHead(state,from,to,tool,{running,rpm,direction=1}={}){
   }
   // Drilling/tapping require an axial downward feed; sideways dragging never creates a hole.
   if(to.zMm>=from.zMm-eps||Math.hypot(to.xMm-from.xMm,to.yMm-from.yMm)>eps)return state;
-  const existing=state.features.find(h=>h.type==='hole'&&Math.hypot(h.xMm-to.xMm,h.yMm-to.yMm)<eps);
+  // Re-entering a hole after moving the stock away and back must still find it (sub-micron float drift).
+  const existing=state.features.find(h=>h.type==='hole'&&Math.hypot(h.xMm-to.xMm,h.yMm-to.yMm)<0.01);
   const entry=existing?.entryZMm??surfaceAt(state,to.xMm,to.yMm),depth=Math.min(entry,entry-to.zMm,tool.cuttingLengthMm);
   if(entry<=0||depth<=eps)return state;
   if(state.features.some(h=>h!==existing&&Math.hypot(h.xMm-to.xMm,h.yMm-to.yMm)<(h.diameterMm+tool.diameterMm)/2))return state;

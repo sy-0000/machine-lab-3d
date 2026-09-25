@@ -79,6 +79,7 @@
 :where(:root[data-theme=light]) .contact-pill{background:var(--sand-2);border:0;color:var(--text-3);clip-path:var(--para);padding:4px 12px}
 :where(:root[data-theme=light]) .contact-pill.touch{background:var(--gold);color:var(--ink)}
 :where(:root[data-theme=light]) .contact-pill.cutting{background:#c9612f;color:#fff}
+:where(:root[data-theme=light]) .contact-pill.overshoot{background:#b8453a;color:#fff}
 :where(:root[data-theme=light]) .dro>div{background:var(--ivory);border:var(--line)}
 :where(:root[data-theme=light]) .dro>div.active{border-color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
 :where(:root[data-theme=light]) .dro span{color:var(--text-3)}
