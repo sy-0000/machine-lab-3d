@@ -5,11 +5,9 @@ import {PMREMGenerator} from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {CAMERA_VIEWS,cameraPose} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
-import SkyDockWorld from './SkyDockWorld';
 import PartTooltip from './PartTooltip';
 import LoadingScreen from './LoadingScreen';
 import MachineDebug from './MachineDebug';
-import {useTheme} from '../theme.js';
 // Low graphics (no reflections or shadows, 1x resolution) on software WebGL, where each frame costs ~3x more;
 // ?lowgfx forces it, ?hifx forces full effects.
 function softwareRenderer(){
@@ -67,24 +65,21 @@ function ViewBar({active,onSelect,disabled}){
  return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
 }
 export default function MachineScene({model,controls,error,progress,onError,name}){
- const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark';
+ const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0});
  useEffect(()=>setView({id:'overview',n:0}),[model,controls.resetKey]);
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
-   {/* Dark: the original clear studio (e721766). Light: sky dock in a warm amber haze, softer and less blue. */}
-   {dark&&<color attach="background" args={['#151e24']}/>}
-   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view}/>{!LOW_GFX&&<StudioEnvironment intensity={dark?.55:.4}/>}
-   {dark?<><ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/></>
-    :<><ambientLight intensity={.45} color="#ffe2b8"/><hemisphereLight args={['#ffe6c2','#5a4632',.7]}/></>}
-   <directionalLight position={[r*2,r*3,r]} intensity={dark?3:2.2} color={dark?'#ffffff':'#ffdcae'} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
-   <directionalLight position={[-r,r,-r*2]} intensity={dark?1.4:.6} color={dark?'#98c8ff':'#e8b27a'}/>
+   {/* The clear dark studio (e721766) in both themes. */}
+   <color attach="background" args={['#151e24']}/>
+   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view}/>{!LOW_GFX&&<StudioEnvironment/>}
+   <ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/>
+   <directionalLight position={[r*2,r*3,r]} intensity={3} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
+   <directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>
    {model&&<><MachineModel model={model} controls={controls} orbit={orbit}/>
     {import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')&&<MachineDebug model={model} controls={controls} orbit={orbit}/>}
-    {dark?<>
-     <mesh rotation={[-Math.PI/2,0,0]} position={[0,model.floor-r*.005,0]} receiveShadow><planeGeometry args={[r*20,r*20]}/><meshStandardMaterial color="#182329"/></mesh>
-     <Grid position={[0,model.floor,0]} args={[r*10,r*10]} cellSize={r/5} sectionSize={r} cellColor="#293a40" sectionColor="#3c565b" fadeDistance={r*8}/>
-    </>:<SkyDockWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX}/>}
+    <mesh rotation={[-Math.PI/2,0,0]} position={[0,model.floor-r*.005,0]} receiveShadow><planeGeometry args={[r*20,r*20]}/><meshStandardMaterial color="#182329"/></mesh>
+    <Grid position={[0,model.floor,0]} args={[r*10,r*10]} cellSize={r/5} sectionSize={r} cellColor="#293a40" sectionColor="#3c565b" fadeDistance={r*8}/>
    </>}
   </Canvas></Boundary>
   {!model&&!error&&<LoadingScreen progress={progress}/>}
