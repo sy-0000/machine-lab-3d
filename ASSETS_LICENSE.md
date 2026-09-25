@@ -38,8 +38,10 @@ Steampunk images supplied by the project owner as a prototype. Several carry "pn
 they appear to be watermarked previews, not licensed files. Replace them with licensed or self-made
 art before any public release.
 
-Sources: `assets-src/scenery/` (clock, airships, clock tower, kiosk, manor; goggles, heart and the
-isometric set are kept but unused). Cut out by `scripts/cutout-scenery.mjs`.
+Sources: `assets-src/scenery/` (clock, airships, clock tower, kiosk, manor, globe, telescope,
+gear panel, wall clock; goggles, heart and the isometric set are kept but unused). Cut out by
+`scripts/cutout-scenery.mjs`.
 
 Used for:
-- `public/scenery/*.webp` (billboards and sky clock in `src/components/DuskMeadowWorld.jsx`)
+- `public/scenery/*.webp` (billboards and sky clock in `src/components/DuskMeadowWorld.jsx`;
+  globe, telescope and the two framed wall pictures in `src/components/WorkshopWorld.jsx`)

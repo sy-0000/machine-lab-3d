@@ -14,6 +14,11 @@ const ITEMS = [
   { src: 'clock-tower.png', out: 'clock-tower.webp', tolerance: 8 },
   { src: 'kiosk.webp', out: 'kiosk.webp', tolerance: 8 },
   { src: 'manor.webp', out: 'manor.webp' },
+  // Workshop props and framed wall pictures (no cutout; the panel's crop drops its stock-ID caption).
+  { src: 'globe.webp', out: 'globe.webp', tolerance: 10 },
+  { src: 'telescope.webp', out: 'telescope.webp', tolerance: 8, flatten: true }, // semi-transparent watermark → white, then islands
+  { src: 'gear-panel.png', out: 'gear-panel.webp', trim: false, crop: { left: 0, top: 0, width: 474, height: 328 } },
+  { src: 'wall-clock.png', out: 'wall-clock.webp', trim: false },
 ];
 
 /** The few most common border colours: the baked-in background (white, or white + grey checkerboard). */
@@ -41,8 +46,11 @@ function regions(w, h, inside) {
   return out;
 }
 
-async function cutout({ src, out, tolerance }) {
-  const { data, info } = await sharp(`${SRC}/${src}`).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+async function cutout({ src, out, tolerance, trim = true, crop, flatten }) {
+  let input = sharp(`${SRC}/${src}`);
+  if (flatten) input = sharp(await input.flatten({ background: '#ffffff' }).toBuffer());
+  if (crop) input = sharp(await input.extract(crop).toBuffer());
+  const { data, info } = await input.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info, ch = 4, n = w * h;
   if (tolerance) {
     const bg = borderColours(data, w, h, ch);
@@ -71,7 +79,7 @@ async function cutout({ src, out, tolerance }) {
     for (let p = 0; p < n; p++) data[p * ch + 3] = soft[p];
   }
   const img = await sharp(data, { raw: { width: w, height: h, channels: ch } }).png().toBuffer();
-  const res = await sharp(img).trim({ threshold: 1 }).resize({ width: 1024, height: 1024, fit: 'inside', withoutEnlargement: true })
+  const res = await (trim ? sharp(img).trim({ threshold: 1 }) : sharp(img)).resize({ width: 1024, height: 1024, fit: 'inside', withoutEnlargement: true })
     .webp({ quality: 86, alphaQuality: 90 }).toFile(`${OUT}/${out}`);
   console.log(`${out}  ${res.width}x${res.height}  ${(res.size / 1024).toFixed(0)} KB`);
 }

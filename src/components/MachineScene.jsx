@@ -6,6 +6,7 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {CAMERA_VIEWS,cameraPose} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
 import DuskMeadowWorld,{SUN_DIR} from './DuskMeadowWorld';
+import WorkshopWorld from './WorkshopWorld';
 import PartTooltip from './PartTooltip';
 import LoadingScreen from './LoadingScreen';
 import MachineDebug from './MachineDebug';
@@ -21,12 +22,14 @@ function softwareRenderer(){
 }
 const params=new URLSearchParams(location.search);
 const LOW_GFX=params.has('lowgfx')||(!params.has('hifx')&&softwareRenderer());
+// Light theme world: the domed steampunk workshop by default; ?scene=meadow shows the dusk meadow instead.
+const MEADOW=params.get('scene')==='meadow';
 class Boundary extends Component {
  state={error:null};static getDerivedStateFromError(error){return {error};}
  componentDidCatch(error){this.props.onError(`3D 場景錯誤：${error.message}`);}
  render(){return this.state.error?null:this.props.children;}
 }
-function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI}){
+function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI,maxDistanceR=Infinity}){
  const {camera,size,invalidate}=useThree(),flight=useRef(null);
  useLayoutEffect(()=>{
   if(!model||!orbit.current)return;
@@ -34,8 +37,9 @@ function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI}){
   const damping=orbit.current.enableDamping;orbit.current.enableDamping=false;orbit.current.update();
   const {target,position}=cameraPose(model,'overview',camera,size.width/size.height);flight.current=null;
   camera.position.copy(position);camera.near=model.radius/1000;camera.far=position.length()*30;camera.updateProjectionMatrix();
-  orbit.current.target.copy(target);orbit.current.minDistance=model.radius*.03;orbit.current.maxDistance=position.length()*4;orbit.current.update();orbit.current.enableDamping=damping;invalidate();
- },[model,resetKey]); // eslint-disable-line react-hooks/exhaustive-deps -- a resize must not throw away the student's view
+  orbit.current.target.copy(target);orbit.current.minDistance=model.radius*.03;orbit.current.maxDistance=Math.min(position.length()*4,model.radius*maxDistanceR);orbit.current.update();orbit.current.enableDamping=damping;invalidate();
+ // camera: <PerspectiveCamera makeDefault> swaps the default camera after the first render; pose the new one.
+ },[model,resetKey,maxDistanceR,camera]); // eslint-disable-line react-hooks/exhaustive-deps -- a resize must not throw away the student's view
  useEffect(()=>{
   if(!model||!orbit.current||!view.n)return;
   flight.current={from:camera.position.clone(),fromTarget:orbit.current.target.clone(),to:cameraPose(model,view.id,camera,size.width/size.height),start:performance.now()};invalidate();
@@ -67,25 +71,28 @@ function ViewBar({active,onSelect,disabled}){
  return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
 }
 export default function MachineScene({model,controls,error,progress,onError,name}){
- const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark';
+ const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark',indoor=!dark&&!MEADOW;
  useEffect(()=>setView({id:'overview',n:0}),[model,controls.resetKey]);
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
-   {/* Dark: the clear studio (e721766). Light: a steampunk meadow at dusk, lit warm and low. */}
+   {/* Dark: the clear studio (e721766). Light: the domed steampunk workshop (or ?scene=meadow, the dusk meadow). */}
    {dark&&<color attach="background" args={['#151e24']}/>}
-   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495}/>{!LOW_GFX&&<StudioEnvironment intensity={dark?.55:.35}/>}
+   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495} maxDistanceR={indoor?5.2:Infinity}/>{!LOW_GFX&&<StudioEnvironment intensity={dark?.55:.35}/>}
    {dark?<><ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/></>
+    :indoor?<><ambientLight intensity={.3} color="#ffd8b0"/><hemisphereLight args={['#ffe4c4','#4a3a30',.8]}/></>
     :<><ambientLight intensity={.35} color="#ffd2a8"/><hemisphereLight args={['#ffb98c','#3c4a2a',.9]}/></>}
-   <directionalLight position={[r*2,r*3,r]} intensity={dark?3:2.3} color={dark?'#ffffff':'#ffc48a'} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
+   <directionalLight position={[r*2,r*3,r]} intensity={dark?3:indoor?2:2.3} color={dark?'#ffffff':indoor?'#ffe2bc':'#ffc48a'} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
    {dark?<directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>
+    :indoor?<directionalLight position={[-r*2,r*1.2,-r*3]} intensity={.8} color="#ff9a5a"/>
     :<directionalLight position={[SUN_DIR.x*r*4,r*.8,SUN_DIR.z*r*4]} intensity={1.6} color="#ff9a5a"/>}
    {model&&<><MachineModel model={model} controls={controls} orbit={orbit}/>
     {import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')&&<MachineDebug model={model} controls={controls} orbit={orbit}/>}
     {dark?<>
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,model.floor-r*.005,0]} receiveShadow><planeGeometry args={[r*20,r*20]}/><meshStandardMaterial color="#182329"/></mesh>
     <Grid position={[0,model.floor,0]} args={[r*10,r*10]} cellSize={r/5} sectionSize={r} cellColor="#293a40" sectionColor="#3c565b" fadeDistance={r*8}/>
-    </>:<Suspense fallback={null}><DuskMeadowWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} blades={!LOW_GFX}/></Suspense>}
+    </>:<Suspense fallback={null}>{indoor?<WorkshopWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} animate={!LOW_GFX}/>
+     :<DuskMeadowWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} blades={!LOW_GFX}/>}</Suspense>}
    </>}
   </Canvas></Boundary>
   {!model&&!error&&<LoadingScreen progress={progress}/>}
