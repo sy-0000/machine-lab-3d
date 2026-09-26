@@ -10,8 +10,9 @@ import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import { readFileSync, statSync } from 'node:fs';
 
+// textureSize：顏色／金屬粗糙度貼圖的最大邊長；法線貼圖（表面凹凸細節）一律保留 1024。
 const MODELS = {
-  milling: { config: 'public/models/milling_split_controls.json', simplifyError: 0.0004 },
+  milling: { config: 'public/models/milling_split_controls.json', simplifyError: 0.001, textureSize: 768 },
   // exact：測試以幾何中心量角度的零件，不簡化
   lathe: { config: 'public/models/lathe_parts.json', simplifyError: 0.0002, exact: ['Object_30'] },
 };
@@ -44,7 +45,8 @@ for (const mesh of root.listMeshes()) {
   }
 }
 await doc.transform(
-  textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [1024, 1024], quality: 82 }),
+  textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^normalTexture$/, resize: [1024, 1024], quality: 82 }),
+  textureCompress({ encoder: sharp, targetFormat: 'webp', slots: /^(?!normalTexture$)/, resize: [spec.textureSize || 1024, spec.textureSize || 1024], quality: 82 }),
   prune({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.TEXTURE, PropertyType.BUFFER_VIEW] }),
 );
 doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
