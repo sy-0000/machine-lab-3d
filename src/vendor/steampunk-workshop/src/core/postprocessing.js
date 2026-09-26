@@ -59,7 +59,7 @@ export function createPostPipeline(renderer, scene, camera, quality) {
 
   let bloom = null;
   if (quality.bloom) {
-    bloom = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.42, 0.55, 1.05);
+    bloom = new UnrealBloomPass(new THREE.Vector2(size.x, size.y), 0.32, 0.55, 1.05);
     composer.addPass(bloom);
   }
 
