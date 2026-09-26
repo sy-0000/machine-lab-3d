@@ -1,6 +1,9 @@
 # Steampunk Workshop — Three.js 遊戲背景場景
 
 蒸汽龐克穹頂工作室場景，打包成可以直接放進 three.js 小遊戲的模組。
+
+> **本專案只保留 `src/components/SteampunkWorkshopWorld.jsx` 用到的模組。** 單獨預覽頁（index.html、main.js、workshop.js）、
+> examples/、機台位、相機／渲染器、blockout、glTF 匯出等獨立版檔案已移除，下方說明保留作為原始套件的參考。
 房間正中央保留了一個「機台位」（Machine Slot），一次放一台工具機（車床、鑽床、銑床…）。
 
 ## 資料夾內容
