@@ -39,7 +39,7 @@ they appear to be watermarked previews, not licensed files. Replace them with li
 art before any public release.
 
 Sources: `assets-src/scenery/` (clock, airships, clock tower, kiosk, manor, globe, telescope,
-gear panel, wall clock; goggles, heart and the isometric set are kept but unused). Cut out by
+gear panel, wall clock). Cut out by
 `scripts/cutout-scenery.mjs`.
 
 Used for:

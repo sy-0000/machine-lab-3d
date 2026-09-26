@@ -129,3 +129,53 @@
 .game-workspace:fullscreen .viewport{height:calc(100vh - 120px)}
 :where(:root[data-theme=light]) .game-workspace:fullscreen{background:var(--ivory)}
 @media(max-width:760px){.game-workspace:fullscreen .viewport{height:60vh}}
+
+/* Loading: the machine's line drawing is traced as the model downloads (--p = 0…1) */
+.loading-screen{gap:14px}
+.loading-art{position:relative;width:min(300px,72%);color:#91dec2}
+.loading-art svg{display:block;width:100%;height:auto}
+.loading-art svg:first-child{opacity:.16}
+.loading-art svg+svg{position:absolute;inset:0}
+.loading-art svg+svg g{stroke:currentColor}
+.loading-art svg+svg :is(path,circle){stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--p));transition:stroke-dashoffset 1.4s ease-out}
+.loading-screen{transition:opacity .7s ease .5s}
+.loading-screen.done{opacity:0;pointer-events:none}
+.loading-screen progress{width:min(260px,70%)}
+.loading-tip{max-width:420px;margin:0;font-size:12px!important;animation:fade-up .7s ease both}
+.loading-tip b{display:inline-block;margin-right:8px;padding:1px 7px;border:1px solid #37564d;border-radius:4px;font-size:10px;font-weight:500;color:#9ce4ca;letter-spacing:1px}
+@keyframes fade-up{from{opacity:0;transform:translateY(6px)}}
+
+/* Result: stars pop in one by one, each earned star bursts; 3★ glows */
+.stars span{position:relative;display:inline-block}
+.stars.reveal span{animation:star-dim .6s ease calc(var(--i) * var(--step)) both}
+.stars.reveal span.on{animation:star-in .8s cubic-bezier(.3,1.7,.5,1) calc(var(--i) * var(--step)) both}
+.stars.perfect span.on{animation:star-in .8s cubic-bezier(.3,1.7,.5,1) calc(var(--i) * var(--step)) both,star-glow 1.1s ease-in-out calc(2 * var(--step) + .9s) 2}
+.star-burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.star-burst i{position:absolute;width:6px;height:6px;margin:-3px;border-radius:50%;background:#ffcf5a;opacity:0;animation:star-burst .9s ease-out calc(var(--i) * var(--step) + .3s) both}
+.star-burst i:nth-child(even){width:4px;height:4px;margin:-2px;background:#fff3c4}
+@keyframes star-in{from{opacity:0;transform:scale(0) rotate(-120deg)}}
+@keyframes star-dim{from{opacity:0;transform:scale(.6)}}
+@keyframes star-burst{from{opacity:1;transform:rotate(calc(var(--k) * 45deg)) translateY(-8px)}to{opacity:0;transform:rotate(calc(var(--k) * 45deg)) translateY(-46px) scale(.4)}}
+@keyframes star-glow{50%{transform:scale(1.15);text-shadow:0 0 22px #ffcf5a,0 0 6px #fff8dc}}
+.result-reveal>:not(.stars){animation:fade-up .6s ease var(--after) both}
+.result-reveal tbody tr{animation:fade-up .5s ease both;animation-delay:calc(var(--after) + .2s)}
+.result-reveal tbody tr:nth-child(2){animation-delay:calc(var(--after) + .35s)}
+.result-reveal tbody tr:nth-child(3){animation-delay:calc(var(--after) + .5s)}
+.result-reveal tbody tr:nth-child(n+4){animation-delay:calc(var(--after) + .65s)}
+.new-best{justify-self:center;margin:0;padding:3px 12px;border-radius:20px;background:#ffcf5a;color:#3a2a08;font-size:12px;font-weight:700;letter-spacing:2px}
+.result-reveal>.new-best{animation:new-best .7s cubic-bezier(.3,1.7,.5,1) var(--after) both}
+@keyframes new-best{from{opacity:0;transform:scale(.3)}}
+
+/* Levels page: best stars per card and the running total */
+.challenge-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px}
+.stars.small{font-size:22px;letter-spacing:2px}
+.stars.small span.on{text-shadow:0 0 8px #ffb54755}
+.not-played{font-size:11px;color:#708995}
+.star-total{display:inline-flex;align-items:center;gap:6px;margin:12px 0 0;padding:5px 12px;border:1px solid #5c4d24;border-radius:20px;background:#3a311855;color:#ffdf8a;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.star-total span{color:#ffcf5a}
+
+@media(prefers-reduced-motion:reduce){
+  .loading-tip,.stars span,.stars.reveal span,.stars.reveal span.on,.stars.perfect span.on,.result-reveal>*,.result-reveal tbody tr{animation:none!important}
+  .loading-art svg+svg :is(path,circle),.loading-screen{transition:none}
+  .star-burst{display:none}
+}

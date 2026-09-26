@@ -11,6 +11,8 @@ export const CAMERA_VIEWS=[
 // Operator-side viewing directions per machine (same as the original default pose).
 const FRONT={drill:[1,.6,2.4],milling:[2.4,.8,1.5],lathe:[.6,.55,2.4]};
 const LIFT={overview:0,work:.45,wheels:.15,tool:.35};
+/** Yaw (radians about +Y) of the operator side, i.e. where the overview camera stands. */
+export const frontYaw=id=>{const [x,,z]=FRONT[id]||[1,.6,2];return Math.atan2(x,z);};
 
 const nodeOf=(model,name)=>model.lookup[name]||model.pivots?.[name]||null;
 function meshBox(objects){
