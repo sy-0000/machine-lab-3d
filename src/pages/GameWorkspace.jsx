@@ -17,7 +17,7 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
   const [session, setSession] = useState(null);
   const sessionRef = useRef(null), abortControllerRef = useRef(null);
   const controls = useMachineControls(session);
-  const [muted, setMuted] = useMachineSounds(session, currentId);
+  const [muted, setMuted, chime] = useMachineSounds(session, currentId);
   // Fullscreen the whole workspace (3D view + panels), not just the canvas, so the controls stay usable.
   const rootRef = useRef(null), [fullscreen, setFullscreen] = useState(false);
   useEffect(() => {
@@ -80,9 +80,9 @@ export default function GameWorkspace({ initialMachineId = 'lathe', challenge = 
       </div>
 
       <div className="workspace">
-        <MachineScene name={currentDef.name} model={model} controls={controls} error={error} progress={progress} onError={setError} />
+        <MachineScene name={currentDef.name} machineId={currentId} model={model} controls={controls} error={error} progress={progress} onError={setError} />
         <div className="machining-sidebar">
-          {challenge ? <ChallengeLevel challenge={challenge} session={session} controls={controls} operate={operate} /> : operate}
+          {challenge ? <ChallengeLevel challenge={challenge} session={session} controls={controls} operate={operate} chime={chime} /> : operate}
         </div>
       </div>
     </main>

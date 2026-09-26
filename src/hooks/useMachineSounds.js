@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MachineSounds } from '../audio/MachineSounds.js';
 
 const KEY = 'machine-lab:muted';
@@ -23,5 +23,6 @@ export default function useMachineSounds(session, machineId) {
     return () => { unobserve(); s.update({ rpm: 0, cutCount: 0, machineAxesMm: {} }); };
   }, [session, machineId]);
   const setMuted = value => { setMutedState(value); try { localStorage.setItem(KEY, value ? '1' : '0'); } catch { /* per-viewer convenience only */ } };
-  return [muted, setMuted];
+  const chime = useCallback((stars, timing) => sounds.current?.chime(stars, timing), []);
+  return [muted, setMuted, chime];
 }

@@ -150,3 +150,13 @@
 :where(:root[data-theme=light]) .view-bottom>span:first-child,:where(:root[data-theme=light]) .view-bottom>span:last-child{background:var(--card);border:var(--line);color:var(--ink);padding:4px 8px}
 :where(:root[data-theme=light]) .card-action{color:var(--teal)!important;font-weight:700}
 :where(:root[data-theme=light]) .machine-card h2 span{color:var(--gold)}
+:where(:root[data-theme=light]) .loading-art{color:var(--teal)}
+:where(:root[data-theme=light]) .loading-art svg g{stroke:var(--ink)}
+:where(:root[data-theme=light]) .loading-art svg+svg g{stroke:var(--teal)}
+:where(:root[data-theme=light]) .loading-tip b{border-color:var(--sand);color:var(--teal)}
+:where(:root[data-theme=light]) .star-burst i{background:var(--gold)}
+:where(:root[data-theme=light]) .star-burst i:nth-child(even){background:#f3c870}
+:where(:root[data-theme=light]) .stars.small span.on{text-shadow:none}
+:where(:root[data-theme=light]) .not-played{color:var(--muted)}
+:where(:root[data-theme=light]) .star-total{background:var(--card);border:var(--line);color:var(--ink)}
+:where(:root[data-theme=light]) .star-total span{color:var(--gold)}

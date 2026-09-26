@@ -96,5 +96,23 @@ export class MachineSounds {
     src.connect(filter).connect(gain).connect(this.master);
     src.start(now, Math.random() * 1.5, .04);
   }
+  /** Challenge result: one rising bell "ding" per earned star, `step` s apart (in time with the star
+   *  animation), a sparkle run for 3★, and two soft falling tones for 0★. */
+  chime(stars, { step = .55, offset = .3 } = {}) {
+    const ctx = this.ctx; if (!ctx || this.muted) return;
+    const t0 = ctx.currentTime + offset;
+    // Bell: a sine fundamental plus two inharmonic partials that die away faster.
+    const bell = (freq, at, length = 1.4, level = .22) => {
+      for (const [ratio, amp] of [[1, 1], [2.76, .22], [5.4, .07]]) {
+        const osc = ctx.createOscillator(), gain = ctx.createGain(), end = at + length / Math.sqrt(ratio);
+        osc.frequency.value = freq * ratio;
+        gain.gain.setValueAtTime(0, at); gain.gain.linearRampToValueAtTime(level * amp, at + .006); gain.gain.exponentialRampToValueAtTime(.0001, end);
+        osc.connect(gain).connect(this.master); osc.start(at); osc.stop(end + .05);
+      }
+    };
+    if (!stars) { bell(392, t0, 1, .14); bell(311, t0 + .3, 1.2, .14); return; }
+    [1319, 1568, 2093].slice(0, stars).forEach((f, i) => bell(f, t0 + i * step));
+    if (stars === 3) [2093, 2637, 3136, 4186].forEach((f, i) => bell(f, t0 + 2 * step + .9 + i * .08, .9, .09));
+  }
   dispose() { this.ctx?.close(); this.ctx = null; }
 }

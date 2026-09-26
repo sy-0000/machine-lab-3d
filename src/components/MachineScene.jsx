@@ -85,6 +85,22 @@ function StudioEnvironment({intensity=.55}){
  useEffect(()=>{scene.environmentIntensity=intensity;invalidate();},[scene,intensity,invalidate]);
  return null;
 }
+// Reports once the scene behind the loading screen has really been drawn: shaders are compiled first
+// (off the main thread where supported), then one frame renders and reaches the screen.
+function SceneShown({gate,onShown}){
+ const {gl,scene,camera,invalidate}=useThree(),pending=useRef(false),shown=useRef(onShown);shown.current=onShown;
+ useEffect(()=>{
+  if(!gate)return;let live=true;
+  (async()=>{try{await gl.compileAsync?.(scene,camera);}catch{/* the first render compiles instead */}if(live){pending.current=true;invalidate();}})();
+  return()=>{live=false;pending.current=false;};
+ },[gate,gl,scene,camera,invalidate]);
+ useFrame(()=>{
+  if(!pending.current)return;pending.current=false;
+  // This frame renders right after the callback; two animation frames later it is on screen.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>shown.current()));
+ });
+ return null;
+}
 function ViewBar({active,onSelect,disabled}){
  useEffect(()=>{
   const key=e=>{if(disabled||e.ctrlKey||e.metaKey||e.altKey||e.target.closest?.('input,select,textarea'))return;const v=CAMERA_VIEWS.find(v=>v.key===e.key);if(v){e.preventDefault();onSelect(v.id);}};
@@ -92,10 +108,15 @@ function ViewBar({active,onSelect,disabled}){
  },[onSelect,disabled]);
  return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
 }
-export default function MachineScene({model,controls,error,progress,onError,name}){
+export default function MachineScene({model,controls,error,progress,onError,name,machineId}){
  const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark',indoor=!dark&&!MEADOW,steam=indoor&&!CLASSIC,[roomReady,setRoomReady]=useState(false);
  const pedestal=steam&&model?PEDESTAL[model.config.id]||0:0;
  useEffect(()=>{if(!steam)setRoomReady(false);},[steam]);
+ // The loading screen stays until the machine (and the steampunk room) has been drawn, then fades out.
+ const gate=!!model&&(!steam||roomReady),[shown,setShown]=useState(false),[overlayGone,setOverlayGone]=useState(false);
+ useEffect(()=>{if(!gate){setShown(false);setOverlayGone(false);return;}const id=setTimeout(()=>setShown(true),15000);return()=>clearTimeout(id);},[gate]); // never stuck (e.g. no WebGL)
+ useEffect(()=>{if(!shown)return;const id=setTimeout(()=>setOverlayGone(true),1300);return()=>clearTimeout(id);},[shown]);
+ const stage=!model?(progress?`下載模型 ${progress}%`:'Loading · 讀取模型與材質'):!gate?'正在搭建蒸汽工作室 · 貼圖在瀏覽器即時產生，約需數秒':'正在繪製 3D 畫面…';
  useEffect(()=>setView({id:'overview',n:0}),[model,controls.resetKey]);
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
@@ -111,6 +132,7 @@ export default function MachineScene({model,controls,error,progress,onError,name
    {steam?null:dark?<directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>
     :indoor?<directionalLight position={[-r*2,r*1.2,-r*3]} intensity={.8} color="#ff9a5a"/>
     :<directionalLight position={[SUN_DIR.x*r*4,r*.8,SUN_DIR.z*r*4]} intensity={1.6} color="#ff9a5a"/>}
+   <SceneShown gate={gate} onShown={()=>setShown(true)}/>
    {model&&<><MachineModel model={model} controls={controls} orbit={orbit}/>
     {import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')&&<MachineDebug model={model} controls={controls} orbit={orbit}/>}
     {dark?<>
@@ -123,8 +145,7 @@ export default function MachineScene({model,controls,error,progress,onError,name
      :<DuskMeadowWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} blades={!LOW_GFX}/>}</Suspense>}
    </>}
   </Canvas></Boundary>
-  {!model&&!error&&<LoadingScreen progress={progress}/>}
-  {model&&steam&&!roomReady&&!error&&<div className="scene-overlay" role="status"><span className="spinner"/><strong>正在搭建蒸汽工作室</strong><span>貼圖在瀏覽器即時產生，約需數秒</span></div>}
+  {!overlayGone&&!error&&<LoadingScreen progress={!model?progress*.8:!gate?88:shown?100:95} stage={stage} machineId={machineId} done={shown}/>}
   {error&&<div className="scene-overlay error" role="alert"><strong>無法載入{name}</strong><p>{error}</p><button onClick={()=>location.reload()}>重新載入</button></div>}
   <PartTooltip part={model?.controls[controls.interaction.active||controls.interaction.hover]} interaction={controls.interaction}/>
   <div className="view-bottom"><span>{model?.rpm>0?'● 主軸運轉中':'● 主軸已停止'}</span><span>拖曳旋轉 · 滾輪縮放 · 右鍵平移<br/>觸控：單指旋轉 · 雙指縮放與平移</span></div>

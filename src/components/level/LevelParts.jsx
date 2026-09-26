@@ -29,9 +29,16 @@ export function PracticeTimer({ seconds = 300, running, resetKey }) {
   </div>;
 }
 
-export function Stars({ count }) {
-  return <p className="stars" role="img" aria-label={`${count} 顆星`} data-testid="stars">
-    {[1, 2, 3].map(i => <span key={i} className={i <= count ? 'on' : ''}>★</span>)}
+// Result reveal timing (s): stars pop STAR_STEP apart; each lands STAR_OFFSET after it starts (the chime plays then).
+export const STAR_STEP = .55, STAR_OFFSET = .3;
+
+/** `animate` reveals the stars one by one with a burst on each earned star (result screen). */
+export function Stars({ count, animate = false, small = false }) {
+  return <p className={'stars' + (animate ? ' reveal' : '') + (small ? ' small' : '') + (animate && count === 3 ? ' perfect' : '')}
+    role="img" aria-label={`${count} 顆星`} data-testid="stars" style={{ '--step': STAR_STEP + 's' }}>
+    {[1, 2, 3].map(i => <span key={i} className={i <= count ? 'on' : ''} style={{ '--i': i - 1 }}>★
+      {animate && i <= count && <i className="star-burst" aria-hidden="true">{[0, 1, 2, 3, 4, 5, 6, 7].map(k => <i key={k} style={{ '--k': k }} />)}</i>}
+    </span>)}
   </p>;
 }
 
