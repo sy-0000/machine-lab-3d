@@ -2,8 +2,8 @@
    只在淺色模式（<html data-theme="light">）生效，選擇器以 :where() 限定所以權重不變；只覆蓋外觀（顏色、字體、形狀、材質），版面與功能沿用 app.css / workspace.css。 */
 :root[data-theme=light]{
   --ivory:#f4efe3;--card:#fffaf0;--sand:#e4dccb;--sand-2:#efe6d2;
-  --ink:#1f3a44;--teal:#2f7f96;--gold:#e0a33c;
-  --text:#1f2a2e;--text-2:#4b5a5c;--text-3:#5b6a6c;--muted:#6a7a7c;--off:#8a9496;
+  --ink:#1f3a44;--teal:#1f6579;--gold:#e0a33c;--gold-text:#8f5d0c;
+  --text:#1f2a2e;--text-2:#3f4d50;--text-3:#4b5a5c;--muted:#4e5d60;--off:#6f7a7c;
   --nav-text:#cfe0e2;--nav-text-2:#a9c4c9;
   --line:1.5px solid var(--ink);
   --hex:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
@@ -160,3 +160,32 @@
 :where(:root[data-theme=light]) .not-played{color:var(--muted)}
 :where(:root[data-theme=light]) .star-total{background:var(--card);border:var(--line);color:var(--ink)}
 :where(:root[data-theme=light]) .star-total span{color:var(--gold)}
+:where(:root[data-theme=light]) .model-credits{background:var(--card);border:var(--line);color:var(--text-2)}
+:where(:root[data-theme=light]) .model-credits h2{color:var(--ink)}
+:where(:root[data-theme=light]) .model-credits a{color:var(--teal)}
+:where(:root[data-theme=light]) .credit-machine{border-color:var(--sand);color:var(--teal)}
+:where(:root[data-theme=light]) .toolbox-placeholder{border:1.5px dashed rgba(31,58,68,.35)}
+:where(:root[data-theme=light]) .toolbox-sections article{background:var(--card);border:var(--line)}
+:where(:root[data-theme=light]) .toolbox-note,:where(:root[data-theme=light]) .toolbox-sections p{color:var(--text-2)}
+
+/* Readability: text colours that had too little contrast on the light background (WCAG AA 4.5:1) */
+:where(:root[data-theme=light]) .safety-card h2{color:var(--ink);border-bottom-color:var(--sand)}
+:where(:root[data-theme=light]) .tool-card h2{color:var(--ink)}
+:where(:root[data-theme=light]) .tool-badge{background:var(--sand-2);color:var(--ink)}
+:where(:root[data-theme=light]) .tool-specs{background:var(--sand-2);border-color:var(--sand)}
+:where(:root[data-theme=light]) .tool-specs h3{color:var(--teal)}
+:where(:root[data-theme=light]) .tool-specs li{color:var(--text-2)}
+:where(:root[data-theme=light]) .tool-specs li strong,:where(:root[data-theme=light]) .tool-footer strong{color:var(--ink)}
+:where(:root[data-theme=light]) .tool-footer{color:var(--text-2);border-top-color:var(--sand)}
+:where(:root[data-theme=light]) .course-route b,:where(:root[data-theme=light]) .machine-card h2 span{color:var(--gold-text)}
+:where(:root[data-theme=light]) footer,:where(:root[data-theme=light]) .eyebrow,:where(:root[data-theme=light]) .card-number{font-size:11px}
+:where(:root[data-theme=light]) .console-state{color:var(--text-2);border-color:var(--sand)}
+:where(:root[data-theme=light]) .console-state.is-running{color:var(--teal);border-color:var(--teal)}
+:where(:root[data-theme=light]) .console-section{border-bottom-color:var(--sand)}
+:where(:root[data-theme=light]) .console-section h3>span{color:var(--teal);border-color:var(--teal)}
+:where(:root[data-theme=light]) .console-rpm small,:where(:root[data-theme=light]) .console-rpm>span,:where(:root[data-theme=light]) .console-field,:where(:root[data-theme=light]) .console-details summary,:where(:root[data-theme=light]) .range-ends,:where(:root[data-theme=light]) .hint{color:var(--text-2)}
+:where(:root[data-theme=light]) .console-position{background:var(--sand-2)}
+:where(:root[data-theme=light]) .console-position span,:where(:root[data-theme=light]) .console-position small{color:var(--text-2)}
+:where(:root[data-theme=light]) .console-position strong{color:var(--ink)}
+:where(:root[data-theme=light]) .console-hold button{background:var(--card);color:var(--ink)}
+:where(:root[data-theme=light]) button:disabled{color:var(--muted)}

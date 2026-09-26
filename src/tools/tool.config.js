@@ -1,5 +1,5 @@
 /**
- * Tool Catalog & Configurations for Machine System v1.0
+ * Tool Catalog & Configurations
  */
 export const TOOL_DEFINITIONS = {
   // Face mill Ø58 (5 inserts); cutting length covers the stock height so a single pass can face it.

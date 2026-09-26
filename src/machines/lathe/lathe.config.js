@@ -1,5 +1,5 @@
 /**
- * Lathe Machine Configuration (v1.0)
+ * Lathe Machine Configuration
  * 16K20 Engine Lathe Contract Definition
  */
 export const LATHE_CONFIG = {

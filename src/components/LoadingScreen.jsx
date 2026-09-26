@@ -16,7 +16,8 @@ const TIPS = [
 export default function LoadingScreen({ progress, stage, machineId = 'lathe', done = false }) {
   const [tip, setTip] = useState(() => Math.floor(Math.random() * TIPS.length));
   useEffect(() => {
-    const id = setInterval(() => setTip(t => (t + 1) % TIPS.length), 5000);
+    // A random next tip, never the same one twice in a row.
+    const id = setInterval(() => setTip(t => (t + 1 + Math.floor(Math.random() * (TIPS.length - 1))) % TIPS.length), 5000);
     return () => clearInterval(id);
   }, []);
   return <div className={'scene-overlay loading-screen' + (done ? ' done' : '')} role="status">

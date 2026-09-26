@@ -1,12 +1,12 @@
 /**
- * Drill Press Configuration (v1.0)
- * TB 145 Precision Drill Press Contract Definition
+ * Drill Press Configuration
+ * Bench Drill Press Contract Definition
  */
 export const DRILL_CONFIG = {
   id: 'drill',
   name: '桌上鑽床',
-  modelName: 'TB 145',
-  subtitle: 'TB 145 · 套筒進給',
+  modelName: 'Bench Drill Press',
+  subtitle: 'DRILL PRESS · 套筒進給',
   number: '03',
   description: '觀察進給手柄、套筒 (Quill)、夾頭與鑽頭的聯動關係。',
 
