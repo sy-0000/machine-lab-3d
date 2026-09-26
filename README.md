@@ -37,7 +37,7 @@ npm run dev
 2. 推送前跑 `npm test` 和 `npm run build`。
 3. 推送分支後在 GitHub 建立 Pull Request，檢查後合併。
 
-合併到 `main` 後，`.github/workflows/main.yml` 會自動建置並部署到 GitHub Pages。修改共用檔案（`src/App.jsx`、樣式或模型）前先跟組員協調。不要把密碼或 token 寫進檔案。
+合併到 `main` 後，`.github/workflows/main.yml` 會自動建置並部署到 GitHub Pages。
 
 ## 授權
 
