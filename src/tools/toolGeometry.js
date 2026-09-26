@@ -111,6 +111,21 @@ export function buildTap(group,{radius,shankLength,cuttingLength},name='Tap',pit
 }
 
 /**
+ * Stack of thin tool-post shims (車刀墊片) filling the slot floor (y −0.0201) up to the shank bottom (y −0.009),
+ * running under the whole shank and head so no part of the tool overhangs the slot. Tool-local metres, tip toward −X.
+ * Returns the plates bottom to top.
+ */
+export function buildShimStack(group,name='Tool'){
+  const steels=[materials.carbide(),materials.hss()];
+  const layers=[[.003,.022,-.186,.022],[.0025,.021,-.184,.020],[.002,.022,-.182,.018],[.002,.021,-.180,.016],[.0016,.020,-.178,.014]];
+  let y=-.0201;
+  return layers.map(([thick,width,front,back],i)=>{
+    const shim=mesh(new BoxGeometry(back-front,thick,width),steels[i%2],name+(i===0?'_Shim_Bottom':i===layers.length-1?'_Shim_Top':`_Shim_${i+1}`));
+    shim.position.set((front+back)/2,y+thick/2,0);y+=thick;group.add(shim);return shim;
+  });
+}
+
+/**
  * 80° rhombic (CNMG-style) insert. Same corner as the original triangular insert:
  * local tip (0, height/2, radius); the insert body extends back along −Z.
  */

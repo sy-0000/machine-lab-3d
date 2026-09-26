@@ -81,6 +81,8 @@ export function prepareMachine(scene,config) {
   for(const w of config.wheels)register(w,'wheel');
  for(const action of config.actions||[])register(action,action.type);
  register(config.spindle,'spindle');if(config.lever)register(config.lever,'lever');if(config.toggle)register(config.toggle,'toggle');
+ // restOffset relocates an axis's home (offset 0) along its travel; child pivots and tools move with it.
+ for(const a of config.axes){const node=lookup[a.node];if(!node||!a.restOffset)continue;node.position.addScaledVector(v(a.axis).normalize(),a.restOffset);initial[a.node].position.copy(node.position);}
  addInteractionTargets(scene,controls,lookup);
  scene.traverse(n=>{if(n.isMesh){n.castShadow=!n.userData.hitbox;n.receiveShadow=!n.userData.hitbox;}});
  scene.updateWorldMatrix(true,true);

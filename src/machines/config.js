@@ -7,7 +7,7 @@ export function normalizeConfig(id, raw) {
  if(id==='lathe') {
   const p=raw.parts;
   return {...common,notes:raw.manualReview||[],references:[...Object.values(raw.mechanisms).flatMap(a=>a.objects),...Object.values(p).flatMap(a=>[...(a.objectNames||[]),...(a.wheelObjects||[]),...(a.handleObjects||[])])],
-   axes:Object.entries(raw.axes).map(([key,a])=>({id:key,node:a.name,axis:vector(a.axis),range:a.range,label:a.label,enabled:true})),
+   axes:Object.entries(raw.axes).map(([key,a])=>({id:key,node:a.name,axis:vector(a.axis),range:a.range,restOffset:a.restOffset,label:a.label,enabled:true})),
    wheels:Object.entries(p).filter(([,a])=>a.wheelObjects).map(([key,a])=>({id:key,node:a.pivotName,pivot:a.pivot,axis:vector(a.axis),label:a.label,drives:a.key,ratio:a.ratio,speed:a.rotationSpeed})).concat(raw.extraWheels||[]),
    spindle:{node:'SpindlePivot',axis:vector(p.spindle.axis),pivot:p.spindle.pivot},
    lever:{node:p.startLever.pivotName,axis:vector(p.startLever.axis),pivot:p.startLever.pivot,runAngle:p.startLever.runAngle,duration:p.startLever.duration,label:p.startLever.label,bidirectional:p.startLever.bidirectional},

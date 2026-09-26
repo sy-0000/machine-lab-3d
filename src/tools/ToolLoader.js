@@ -5,17 +5,14 @@ import {
   CylinderGeometry,
   MeshStandardMaterial,
 } from 'three';
-import { buildEndMill, buildFaceMill, buildTwistDrill, buildTap, createTurningInsert } from './toolGeometry.js';
+import { buildEndMill, buildFaceMill, buildTwistDrill, buildTap, buildShimStack, createTurningInsert } from './toolGeometry.js';
 import { ToolBase } from './ToolBase.js';
 
 function buildTurningToolProcedural(group, def) {
   const silverSteel = new MeshStandardMaterial({ color: '#dce3ea', metalness: 0.88, roughness: 0.22 });
-  const shimSteel = new MeshStandardMaterial({ color: '#b0b8c0', metalness: 0.85, roughness: 0.32 });
 
-  // Shim
-  const shim = new Mesh(new BoxGeometry(0.145, 0.008, 0.022), shimSteel);
-  shim.position.set(-0.015, -0.015, 0);
-  group.add(shim);
+  // Thin shims up to the shank bottom, under the whole shank and head.
+  buildShimStack(group, def.id);
 
   // Shank
   const shank = new Mesh(new BoxGeometry(0.165, 0.018, 0.018), silverSteel);
