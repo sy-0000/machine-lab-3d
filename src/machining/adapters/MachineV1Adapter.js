@@ -346,7 +346,7 @@ export class MachineV1Adapter {
       const radius=atStock?state.profile.radiusMm[index]:null;
       const protectedZone=!!p && p.zMm<=state.clamping.endZMm;
       const unsafe=!!p && entersChuck(p,p,this.#danger(state));
-      const x=p?-p.vMm:null;
+      const x=p?p.vMm:null; // the tip works on the operator (+v) side of the axis
       return {mode:this.#machiningMode, taperAttachment:{...this.#taper}, lengthMm:state.lengthMm, clamping:{...state.clamping},
         facingMaxDepthMm:LATHE_MACHINING.facing.maxDepthMm,
         centerAligned:!!p && Math.abs(p.uMm)<=LATHE_MACHINING.facing.centerToleranceMm,
@@ -362,7 +362,7 @@ export class MachineV1Adapter {
     if (!p || !['X','Z'].includes(axis)) throw new Error('A mounted profile and turning edge are required');
     if (axis==='X' && !['diameter','radial'].includes(representation)) throw new Error('X requires diameter or radial representation');
     const value=axis==='X' && representation==='diameter'?diameterToRadiusMm(valueMm):valueMm;
-    const actual=axis==='X'?-p.vMm:p.zMm;
+    const actual=axis==='X'?p.vMm:p.zMm;
     const delta=mode==='relative'?value:value+this.#datum[axis]-actual;
     const id=axis==='X'?'y':'x', sign=axis==='X'?-1:1;
     const target=this.#machineMm()[id]+sign*delta;
@@ -376,7 +376,7 @@ export class MachineV1Adapter {
     const before=this.#cuttingSample();
     if(!before)throw new Error('A mounted profile and turning edge are required');
     const axes=this.#machineMm();
-    const targets={y:axes.y-(xDiameterMm/2+this.#datum.X+before.position.vMm),
+    const targets={y:axes.y-(xDiameterMm/2+this.#datum.X-before.position.vMm),
       x:axes.x+zMm+this.#datum.Z-before.position.zMm};
     for(const [id,value] of Object.entries(targets)) {
       const limits=this.#machine.config.axes.find(a=>a.id===id).range.map(worldToMm);
@@ -389,7 +389,7 @@ export class MachineV1Adapter {
     finite(valueMm); const p=this.#cuttingSample()?.position;
     if (!p || !['X','Z'].includes(axis)) throw new Error('No machining coordinate frame');
     if (axis==='X' && !['diameter','radial'].includes(representation)) throw new Error('X requires diameter or radial representation');
-    this.#datum[axis]=(axis==='X'?-p.vMm:p.zMm)-(axis==='X' && representation==='diameter'?valueMm/2:valueMm);
+    this.#datum[axis]=(axis==='X'?p.vMm:p.zMm)-(axis==='X' && representation==='diameter'?valueMm/2:valueMm);
   }
   clearMachiningDatum() {
     this.#requireMachine();

@@ -31,7 +31,8 @@ export const LATHE_CONFIG = {
     tool: {
       parent: 'ToolIndexPivot',
       // Left slot: keep the shank above the slot floor and point its -X tip toward -Z.
-      position: [-0.087, 0.062, 0.03],
+      // The tip sits on the operator side of the spindle axis, like a real front tool post.
+      position: [-0.087, 0.062, 0.06152],
       rotation: [0, -Math.PI / 2, 0],
       // Shorten along the tool's local shank axis; preserve width and height.
       scale: [0.6, 1, 1],
