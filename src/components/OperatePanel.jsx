@@ -12,8 +12,9 @@ const AXES = {
     { id: 'C', short: '小刀架', label: '小刀架', minus: '斜向往夾頭', plus: '斜向退回', wheel: null, compound: true },
   ],
   milling: [
-    { id: 'X', label: 'X 工作臺', minus: '左移', plus: '右移', wheel: 'X_Handwheel_Right_Group', holdSign: 1 },
-    { id: 'Y', label: 'Y 鞍座', minus: '前移', plus: '後移', wheel: 'Y_Handwheel_Group', holdSign: 1 },
+    // Standard mill convention: X− moves the tool − relative to the work, i.e. the table travels right (seen from the front).
+    { id: 'X', label: 'X 工作臺', minus: '右移', plus: '左移', wheel: 'X_Handwheel_Right_Group', holdSign: 1 },
+    { id: 'Y', label: 'Y 鞍座', minus: '後移', plus: '前移', wheel: 'Y_Handwheel_Group', holdSign: 1 },
     { id: 'Z', label: 'Z 升降', minus: '下降', plus: '上升', wheel: 'zLift', holdSign: 1 },
   ],
   drill: [

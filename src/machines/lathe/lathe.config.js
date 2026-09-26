@@ -31,10 +31,12 @@ export const LATHE_CONFIG = {
     tool: {
       parent: 'ToolIndexPivot',
       // Left slot: keep the shank above the slot floor and point its -X tip toward -Z.
-      position: [-0.087, 0.062, 0.03],
+      // The insert sticks about 12 mm out of the post's front face; the cross slide's home is on the
+      // operator side, so the tip starts well clear of the stock.
+      position: [-0.087, 0.062, 0.05552],
       rotation: [0, -Math.PI / 2, 0],
-      // Shorten along the tool's local shank axis; preserve width and height.
-      scale: [0.6, 1, 1],
+      // Shorten along the tool's local shank axis; preserve width and height. The shank end stays inside the post.
+      scale: [0.7, 1, 1],
       description: '四方刀座左側刀槽 ToolMount，隨刀架旋轉、升降與溜板十字進給自然連動。',
     },
     workpiece: {
@@ -50,7 +52,7 @@ export const LATHE_CONFIG = {
   limits: {
     spindleRpm: [0, 2000],
     carriageTravel: [-0.14, 0.14],
-    crossSlideTravel: [0, 0.05],
+    crossSlideTravel: [0, 0.13],
     tailstockTravel: [-0.278, 0],
     quillTravel: [-0.11, 0],
     toolPostIndexingStepDegrees: 10,

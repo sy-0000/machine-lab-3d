@@ -3,7 +3,7 @@ import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls,PerspectiveCamera,Grid} from '@react-three/drei';
 import {Box3,PMREMGenerator} from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
-import {CAMERA_VIEWS,cameraPose,frontYaw} from '../machines/cameraViews.js';
+import {CAMERA_VIEWS,DEFAULT_VIEW,cameraPose,frontYaw} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
 import SteampunkWorkshopWorld from './SteampunkWorkshopWorld';
 import PartTooltip from './PartTooltip';
@@ -48,7 +48,7 @@ function CameraRig({model,resetKey,orbit,view,maxPolarAngle=Math.PI,maxDistanceR
   if(!model||!orbit.current)return;
   // Drain pending damping/pan deltas before restoring the exact initial camera pose.
   const damping=orbit.current.enableDamping;orbit.current.enableDamping=false;orbit.current.update();
-  const {target,position}=cameraPose(model,'overview',camera,size.width/size.height);flight.current=null;
+  const {target,position}=cameraPose(model,DEFAULT_VIEW,camera,size.width/size.height);flight.current=null;
   camera.position.copy(position);camera.near=model.radius/1000;camera.far=position.length()*30;camera.updateProjectionMatrix();
   orbit.current.target.copy(target);orbit.current.minDistance=model.radius*.03;orbit.current.maxDistance=Math.min(position.length()*4,model.radius*maxDistanceR);orbit.current.update();orbit.current.enableDamping=damping;invalidate();
  // camera: <PerspectiveCamera makeDefault> swaps the default camera after the first render; pose the new one.
@@ -105,7 +105,7 @@ function ViewBar({active,onSelect,disabled}){
  return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
 }
 export default function MachineScene({model,controls,error,progress,onError,name,machineId}){
- const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark',steam=!dark,[roomReady,setRoomReady]=useState(false);
+ const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:DEFAULT_VIEW,n:0}),[theme]=useTheme(),dark=theme==='dark',steam=!dark,[roomReady,setRoomReady]=useState(false);
  const pedestal=steam&&model?PEDESTAL[model.config.id]||0:0;
  useEffect(()=>{if(!steam)setRoomReady(false);},[steam]);
  // The loading screen stays until the machine (and the steampunk room) has been drawn, then fades out.
@@ -113,7 +113,7 @@ export default function MachineScene({model,controls,error,progress,onError,name
  useEffect(()=>{if(!gate){setShown(false);setOverlayGone(false);return;}const id=setTimeout(()=>setShown(true),15000);return()=>clearTimeout(id);},[gate]); // never stuck (e.g. no WebGL)
  useEffect(()=>{if(!shown)return;const id=setTimeout(()=>setOverlayGone(true),1300);return()=>clearTimeout(id);},[shown]);
  const stage=!model?(progress?`下載模型 ${progress}%`:'Loading · 讀取模型與材質'):!gate?'正在搭建蒸汽工作室 · 貼圖在瀏覽器即時產生，約需數秒':'正在繪製 3D 畫面…';
- useEffect(()=>setView({id:'overview',n:0}),[model,controls.resetKey]);
+ useEffect(()=>setView({id:DEFAULT_VIEW,n:0}),[model,controls.resetKey]);
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>

@@ -37,7 +37,7 @@ test('whole tool post and lower block rotate by ±10°, lift with tool, and rema
   const q=lower.getWorldQuaternion(new Quaternion());indexTool(m,-1);assert.equal(m.indexSteps,-1);near(lower.getWorldQuaternion(new Quaternion()).angleTo(q),Math.PI/18);indexTool(m,1);near(lower.getWorldQuaternion(new Quaternion()).angleTo(q),0);
   const relative=m.lookup.ToolIndexPivot.worldToLocal(tool.getWorldPosition(new Vector3()));
   for(const height of [.02,.06]){setAxis(m,'z',height);indexTool(m,1);assert.deepEqual(base.matrixWorld.elements,fixed.elements);const support=bounds(m.lookup.ToolPostColumn);assert.ok(support.min.y<bounds(base).max.y);assert.ok(support.max.y>initialLower.min.y+height);near(m.lookup.ToolIndexPivot.worldToLocal(tool.getWorldPosition(new Vector3())).distanceTo(relative),0);}
-  const prior=bounds(m.lookup.ToolPostColumn).getCenter(new Vector3());setAxis(m,'x',.1);setAxis(m,'y',.04);const next=bounds(m.lookup.ToolPostColumn).getCenter(new Vector3());near(next.x-prior.x,.1);near(next.z-prior.z,.04);
+  const prior=bounds(m.lookup.ToolPostColumn).getCenter(new Vector3());setAxis(m,'x',.1);setAxis(m,'y',.04);const next=bounds(m.lookup.ToolPostColumn).getCenter(new Vector3());near(next.x-prior.x,.1);near(next.z-prior.z,-.04); // cross slide feeds away from the operator
   resetMachine(m);tool.matrixWorld.elements.forEach((v,i)=>near(v,initialTool.elements[i]));near(bounds(lower).min.y,initialLower.min.y);
   for(const name of ['DetailItem_Air_Blower','Object_162','Object_40','Object_42'])assert.equal(m.lookup[name].visible,false);
   const ray=new Raycaster(new Vector3(.989,1,1),new Vector3(0,0,-1));assert.notEqual(visibleHit(ray,m.scene)?.object.name,'Object_162');

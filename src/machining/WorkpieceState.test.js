@@ -98,9 +98,9 @@ async function fixture(store) {
 async function positionTip(f,zMm,radiusMm) {
   let p=f.session.getState().cuttingTipMm;
   assert.ok(radiusMm>=Math.abs(p.uMm),'requested radius must clear the actual tool height');
-  // The existing lathe feeds runtime X along scene +X, and runtime Y along scene +Z.
-  const v=-Math.sqrt(radiusMm**2-p.uMm**2);
-  await f.send({type:'axis.move',axis:'X',representation:'radial',mode:'relative',valueMm:v-p.vMm});
+  // The lathe feeds runtime X along scene +X, and runtime Y along scene −Z; the tip works on the operator (+v) side.
+  const v=Math.sqrt(radiusMm**2-p.uMm**2);
+  await f.send({type:'axis.move',axis:'X',representation:'radial',mode:'relative',valueMm:p.vMm-v});
   p=f.session.getState().cuttingTipMm;
   await f.send({type:'axis.move',axis:'Z',mode:'relative',valueMm:zMm-p.zMm});
   p=f.session.getState().cuttingTipMm;near(p.zMm,zMm);near(Math.hypot(p.uMm,p.vMm),radiusMm);

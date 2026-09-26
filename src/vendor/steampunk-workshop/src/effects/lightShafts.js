@@ -66,7 +66,7 @@ export function createLightShafts(panels, { count = 7, focus = new THREE.Vector3
     fragmentShader,
     uniforms: {
       uColor: { value: new THREE.Color(1.0, 0.9, 0.74) },
-      uIntensity: { value: 0.1 },
+      uIntensity: { value: 0.075 },
       uTime: { value: 0 },
     },
     transparent: true,

@@ -32,8 +32,8 @@ const holeAt = (s, xMm) => s.features.filter(f => f.type === 'hole' && Math.abs(
 
 // Drill task: two scribed centre lines; one M10 threaded hole, one plain Ø10 hole.
 export const DRILL_HOLES = [
-  { key: 'A', xMm: 25, diameterMm: 8.5, depthMm: 15, tapMm: 10, label: '孔 A（M10 螺紋孔）' },
-  { key: 'B', xMm: 65, diameterMm: 10, depthMm: 8, label: '孔 B（Ø10 孔）' },
+  { key: 'A', xMm: 25, diameterMm: 8.5, tapMm: 10, label: '孔 A（M10 螺紋孔）' },
+  { key: 'B', xMm: 65, diameterMm: 10, label: '孔 B（Ø10 孔）' },
 ];
 export const createDrillStock = () => ({ ...createBlockStock(), surfaceMarks: DRILL_HOLES.map(h => ({ type: 'scribe', xMm: h.xMm, yMm: BLOCK_STOCK.widthMm / 2 })) });
 
@@ -86,10 +86,10 @@ export const CHALLENGES = [
   },
   {
     id: 'drill', machine: 'drill', minutes: 8, title: '鑽床：定位鑽孔與攻牙', stock: '20 × 20 × 90 mm 方料（已劃線）', tool: 'head_drill_10', toolChoice: true,
-    goal: '工件上有兩條劃線。在 X=25 做一個 M10 螺紋孔（先鑽底孔再攻牙），在 X=65 鑽一個 Ø10 孔。都是盲孔，不要鑽穿。要自己選對鑽頭、移動工件對準劃線。',
-    targets: [['孔 A　X=25', 'M10 螺紋：底孔深 15、攻牙深 ≥ 10'], ['孔 B　X=65', 'Ø10 × 深 8'], ['提示', 'M10×1.5 底孔徑 = 10 − 1.5']],
-    steps: ['軸選「工件定位 X」，把鑽頭中心移到 X=25.000（主軸停止、鑽頭在上方才能移）', '目前裝的是 Ø10 鑽頭。孔 A 要攻 M10，刀具先換成底孔鑽頭（Ø8.5）', '進給：按住下降讓鑽頭碰到表面（光圈亮）→ 記下讀值，放開', '深度擋塊 = 碰面讀值 − 15，勾選 → 啟動主軸 → 按住進給鑽到擋塊', '停主軸，換 M10 絲攻，擋塊改成 碰面讀值 − 10 → 啟動主軸攻牙', '停主軸，工件移到 X=65.000，換 Ø10 鑽頭，擋塊 = 碰面讀值 − 8，鑽孔', '停主軸 → 繳交'],
-    limits: { position: [0.2, 0.5, 1], depth: [0.3, 0.8, 2], tap: [0.3, 1, 3] },
+    goal: '工件上有兩條劃線。在 X=25 做一個 M10 螺紋孔（先鑽底孔再攻牙），在 X=65 鑽一個 Ø10 孔。要自己選對鑽頭、移動工件對準劃線。',
+    targets: [['孔 A　X=25', 'M10 螺紋孔：攻牙深 ≥ 10'], ['孔 B　X=65', 'Ø10 孔'], ['提示', 'M10×1.5 底孔徑 = 10 − 1.5']],
+    steps: ['軸選「工件定位 X」，把鑽頭中心移到 X=25.000（主軸停止、鑽頭在上方才能移）', '目前裝的是 Ø10 鑽頭。孔 A 要攻 M10，刀具先換成底孔鑽頭（Ø8.5）', '啟動主軸 → 按住進給往下鑽底孔（要比攻牙深，超過 10 mm）→ 退刀、停主軸', '換 M10 絲攻：按住下降碰到表面（光圈亮）記下讀值，深度擋塊 = 碰面讀值 − 10，勾選 → 啟動主軸攻牙', '停主軸，工件移到 X=65.000，換 Ø10 鑽頭 → 啟動主軸鑽孔', '停主軸 → 繳交'],
+    limits: { position: [0.2, 0.5, 1], tap: [0.3, 1, 3] },
     createStock: createDrillStock,
     live(s) {
       const rows = [['原始毛胚', '20 × 20 × 90 mm']];
@@ -105,7 +105,6 @@ export const CHALLENGES = [
         const rows = [
           { label: t.label + ' 位置 X', target: t.xMm, ...(h ? { actual: round(h.xMm), error: round(h.xMm - t.xMm), stars: starsFor(Math.abs(h.xMm - t.xMm), L.position) } : missing) },
           { label: t.label + ' 孔徑', target: t.diameterMm, ...(h ? { actual: h.diameterMm, error: round(h.diameterMm - t.diameterMm), stars: Math.abs(h.diameterMm - t.diameterMm) < 0.01 ? 3 : 0 } : missing) },
-          { label: t.label + (h?.through ? ' 深度（已鑽穿）' : ' 深度'), target: t.depthMm, ...(h ? { actual: round(h.depthMm), error: round(h.depthMm - t.depthMm), stars: h.through ? 0 : starsFor(Math.abs(h.depthMm - t.depthMm), L.depth) } : missing) },
         ];
         if (t.tapMm) {
           // Deeper threads are fine; only a short thread loses stars.

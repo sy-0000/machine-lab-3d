@@ -1,25 +1,15 @@
-import { createTurningInsert,buildEndMill,buildTwistDrill } from '../tools/toolGeometry.js';
+import { createTurningInsert,buildEndMill,buildTwistDrill,buildShimStack } from '../tools/toolGeometry.js';
 import {Group,Mesh,BoxGeometry,CylinderGeometry,MeshStandardMaterial} from 'three';
 
 // Small teaching tool attachments. The supplied machine meshes stay intact.
 function buildTurningTool(group, def, lookup){
  const silverSteel=new MeshStandardMaterial({color:'#dce3ea',metalness:.88,roughness:.22});
  const darkSteel=new MeshStandardMaterial({color:'#323940',metalness:.8,roughness:.35});
- const shimSteel1=new MeshStandardMaterial({color:'#b0b8c0',metalness:.85,roughness:.32});
- const shimSteel2=new MeshStandardMaterial({color:'#d0d8df',metalness:.88,roughness:.25});
  const carbideSeatMat=new MeshStandardMaterial({color:'#282e33',metalness:.75,roughness:.4});
  const laserLabelMat=new MeshStandardMaterial({color:'#47525d',roughness:.6});
 
- // 1. Shims (車刀墊片) filling the gap between slot floor (-0.0201) and shank bottom (-0.0090)
- const shimBottom=new Mesh(new BoxGeometry(.145,.0065,.022),shimSteel1);
- shimBottom.name=def.name+'_Shim_Bottom';
- shimBottom.position.set(-.015,-.0201+.0065/2,0);
- group.add(shimBottom);lookup[shimBottom.name]=shimBottom;
-
- const shimTop=new Mesh(new BoxGeometry(.132,.0046,.020),shimSteel2);
- shimTop.name=def.name+'_Shim_Top';
- shimTop.position.set(-.020,-.0201+.0065+.0046/2,0);
- group.add(shimTop);lookup[shimTop.name]=shimTop;
+ // 1. Thin shims (車刀墊片) filling the gap between slot floor (-0.0201) and shank bottom (-0.0090)
+ for(const shim of buildShimStack(group,def.name))lookup[shim.name]=shim;
 
  // 2. Main Silver Tool Shank (銀色車刀桿主體與倒角刀頭)
  const shank=new Mesh(new BoxGeometry(.165,.018,.018),silverSteel);

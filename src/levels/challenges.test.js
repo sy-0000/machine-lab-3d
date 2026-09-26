@@ -51,11 +51,11 @@ test('drill: two positioned holes, the right drills, and an M10 thread decide th
   assert.equal(grade(d, part()).stars, 3);
   assert.equal(grade(d, part({ tapDepth: 14 })).stars, 3); // a deeper thread is fine
   assert.equal(grade(d, part({ ax: 25.4 })).stars, 2);
-  assert.equal(grade(d, part({ bDepth: 9 })).stars, 1);
+  assert.equal(grade(d, part({ bDepth: 9 })).stars, 3); // hole depth is not graded
   assert.equal(grade(d, part({ tapDepth: 0 })).stars, 0);
   assert.equal(grade(d, part({ bTool: drill })).stars, 0); // wrong drill for hole B
   assert.equal(grade(d, part({ aTool: drill10 })).stars, 0); // Ø10 pilot cannot be tapped M10
-  assert.equal(grade(d, part({ bDepth: 20 })).stars, 0); // through hole
+  assert.equal(grade(d, part({ bDepth: 20 })).stars, 3); // a through hole is fine too
   // Sideways motion never drills.
   const block = createBlockStock();
   assert.equal(cutHead(block, { xMm: 40, yMm: 10, zMm: 25 }, { xMm: 45, yMm: 10, zMm: 10 }, drill, running), block);

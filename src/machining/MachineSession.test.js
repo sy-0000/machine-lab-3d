@@ -61,18 +61,20 @@ test('player Session commands drive the real lathe and report actual detent spee
 test('teaching X/Z, work datum and radial moves preserve legacy X/Z semantics', async () => {
   const f = await fixture(); try {
     const s=f.session,m=f.machine;
+    // The cross slide's home is its operator-side limit; feed in 10 mm so X can also back off.
+    m.setAxisPosition('y',0.01);
     send(s,{type:'workOffset.set',axis:'X',representation:'diameter',valueMm:20});
-    near(m.runtime.offsets.y,0); near(s.getState().lathe.xDiameterMm,20);
+    near(m.runtime.offsets.y,0.01); near(s.getState().lathe.xDiameterMm,20);
     send(s,{type:'axis.move',axis:'X',representation:'diameter',valueMm:16.3});
-    near(m.runtime.offsets.y,-0.00185);near(s.getState().lathe.xRadialMm,8.15);near(m.runtime.offsets.z,0);
+    near(m.runtime.offsets.y,0.00815);near(s.getState().lathe.xRadialMm,8.15);near(m.runtime.offsets.z,0);
     send(s,{type:'axis.move',axis:'Z',valueMm:30});near(m.runtime.offsets.x,0.03);
     send(s,{type:'workOffset.zero',axis:'Z'});near(m.runtime.offsets.x,0.03);near(s.getState().lathe.zMm,0);
     send(s,{type:'axis.move',axis:'Z',valueMm:-10,mode:'relative'});near(m.runtime.offsets.x,0.02);
-    send(s,{type:'axis.move',axis:'X',representation:'radial',valueMm:1,mode:'relative'});near(m.runtime.offsets.y,-0.00085);near(s.getState().lathe.xDiameterMm,18.3);
+    send(s,{type:'axis.move',axis:'X',representation:'radial',valueMm:1,mode:'relative'});near(m.runtime.offsets.y,0.00915);near(s.getState().lathe.xDiameterMm,18.3);
     assert.equal(s.command({type:'axis.move',axis:'X',valueMm:1}).ok,false);
     send(s,{type:'axis.move',axis:'Z',valueMm:9999});near(s.getState().machineAxesMm.x,380);
     // Old external callers still move longitudinal X and tool-height Z in metres.
-    m.setX(0.01);m.setZ(0.02);near(m.runtime.offsets.x,0.01);near(m.runtime.offsets.z,0.02);near(m.runtime.offsets.y,-0.00085);
+    m.setX(0.01);m.setZ(0.02);near(m.runtime.offsets.x,0.01);near(m.runtime.offsets.z,0.02);near(m.runtime.offsets.y,0.00915);
   } finally { await f.close(); }
 });
 

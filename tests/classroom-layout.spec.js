@@ -28,10 +28,11 @@ for(const id of ['lathe','milling','drill'])test(id+' classroom: camera presets,
  await expect.poll(async()=>!!(await read())).toBe(true);
  // Camera presets: button and keyboard shortcut.
  const views=page.getByRole('toolbar',{name:'視角'});
- await views.getByRole('button',{name:/刀具/}).click();
- await expect(views.getByRole('button',{name:/刀具/})).toHaveAttribute('aria-pressed','true');
+ await expect(views.getByRole('button')).toHaveCount(2);
+ await views.getByRole('button',{name:/特寫/}).click();
+ await expect(views.getByRole('button',{name:/特寫/})).toHaveAttribute('aria-pressed','true');
  await page.keyboard.press('1');
- await expect(views.getByRole('button',{name:/全景/})).toHaveAttribute('aria-pressed','true');
+ await expect(views.getByRole('button',{name:/工作區/})).toHaveAttribute('aria-pressed','true');
  // Stock (and vise on milling / drill).
  await page.getByRole('button',{name:/放上工件/}).click();
  await expect(page.getByRole('button',{name:'換新毛胚'})).toBeVisible({timeout:30000});
