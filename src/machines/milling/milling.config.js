@@ -1,5 +1,5 @@
 /**
- * Milling Machine Configuration (v1.0)
+ * Milling Machine Configuration
  * Vertical Knee-Type Milling Machine Contract Definition
  */
 export const MILLING_CONFIG = {

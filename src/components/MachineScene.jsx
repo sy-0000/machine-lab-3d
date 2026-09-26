@@ -1,12 +1,10 @@
-import {Component,Suspense,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
+import {Component,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls,PerspectiveCamera,Grid} from '@react-three/drei';
 import {Box3,PMREMGenerator} from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {CAMERA_VIEWS,cameraPose,frontYaw} from '../machines/cameraViews.js';
 import MachineModel from './MachineModel';
-import DuskMeadowWorld,{SUN_DIR} from './DuskMeadowWorld';
-import WorkshopWorld from './WorkshopWorld';
 import SteampunkWorkshopWorld from './SteampunkWorkshopWorld';
 import PartTooltip from './PartTooltip';
 import LoadingScreen from './LoadingScreen';
@@ -23,9 +21,7 @@ function softwareRenderer(){
 }
 const params=new URLSearchParams(location.search);
 const LOW_GFX=params.has('lowgfx')||(!params.has('hifx')&&softwareRenderer());
-// Light theme world: the steampunk dome workshop (src/vendor/steampunk-workshop) by default;
-// ?scene=meadow shows the dusk meadow, ?scene=classic the earlier, lighter procedural workshop.
-const MEADOW=params.get('scene')==='meadow',CLASSIC=params.get('scene')==='classic';
+// Light theme world: the steampunk dome workshop (src/vendor/steampunk-workshop).
 // Bench machines stand on an iron pedestal (metres) so they sit at working height in the full-size room.
 const PEDESTAL={drill:.72};
 function Pedestal({model,height}){
@@ -109,7 +105,7 @@ function ViewBar({active,onSelect,disabled}){
  return <div className="view-bar" role="toolbar" aria-label="視角">{CAMERA_VIEWS.map(v=><button key={v.id} aria-pressed={active===v.id} disabled={disabled} onClick={()=>onSelect(v.id)} title={'快捷鍵 '+v.key}><kbd>{v.key}</kbd>{v.label}</button>)}</div>;
 }
 export default function MachineScene({model,controls,error,progress,onError,name,machineId}){
- const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark',indoor=!dark&&!MEADOW,steam=indoor&&!CLASSIC,[roomReady,setRoomReady]=useState(false);
+ const orbit=useRef(),r=model?.radius||2,[view,setView]=useState({id:'overview',n:0}),[theme]=useTheme(),dark=theme==='dark',steam=!dark,[roomReady,setRoomReady]=useState(false);
  const pedestal=steam&&model?PEDESTAL[model.config.id]||0:0;
  useEffect(()=>{if(!steam)setRoomReady(false);},[steam]);
  // The loading screen stays until the machine (and the steampunk room) has been drawn, then fades out.
@@ -121,28 +117,23 @@ export default function MachineScene({model,controls,error,progress,onError,name
  return <section className="viewport" aria-label={`3D ${name}互動展示區`}>
   <div className="view-top"><ViewBar active={view.id} disabled={!model} onSelect={id=>setView(v=>({id,n:v.n+1}))}/></div>
   <Boundary onError={onError}><Canvas frameloop="demand" shadows={!LOW_GFX} dpr={LOW_GFX?1:[1,1.5]} fallback={<div className="scene-overlay">瀏覽器不支援 WebGL，請啟用硬體加速。</div>}>
-   {/* Dark: the clear studio (e721766). Light: the domed steampunk workshop (or ?scene=meadow, the dusk meadow). */}
+   {/* Dark: the clear studio (e721766). Light: the domed steampunk workshop. */}
    {dark&&<color attach="background" args={['#151e24']}/>}
-   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495} maxDistanceR={indoor?5.2:Infinity} lookUp={!dark}/>{!LOW_GFX&&!steam&&<StudioEnvironment intensity={dark?.55:.35}/>}
+   <PerspectiveCamera makeDefault fov={42} position={[6,4,7]}/><CameraRig model={model} resetKey={controls.resetKey} orbit={orbit} view={view} maxPolarAngle={dark?Math.PI:Math.PI*.495} maxDistanceR={steam?5.2:Infinity} lookUp={!dark}/>{!LOW_GFX&&dark&&<StudioEnvironment intensity={.55}/>}
    {/* The steampunk workshop brings its own sun, sky bounce, lamps, fire, reflections and fog. */}
-   {steam?null:dark?<><ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/></>
-    :indoor?<><ambientLight intensity={.3} color="#ffd8b0"/><hemisphereLight args={['#ffe4c4','#4a3a30',.8]}/></>
-    :<><ambientLight intensity={.35} color="#ffd2a8"/><hemisphereLight args={['#ffb98c','#3c4a2a',.9]}/></>}
-   {!steam&&<directionalLight position={[r*2,r*3,r]} intensity={dark?3:indoor?2:2.3} color={dark?'#ffffff':indoor?'#ffe2bc':'#ffc48a'} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>}
-   {steam?null:dark?<directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/>
-    :indoor?<directionalLight position={[-r*2,r*1.2,-r*3]} intensity={.8} color="#ff9a5a"/>
-    :<directionalLight position={[SUN_DIR.x*r*4,r*.8,SUN_DIR.z*r*4]} intensity={1.6} color="#ff9a5a"/>}
+   {dark&&<><ambientLight intensity={1.2}/><hemisphereLight args={['#e3f6ff','#394245',1.5]}/>
+   <directionalLight position={[r*2,r*3,r]} intensity={3} color="#ffffff" castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-r*2} shadow-camera-right={r*2} shadow-camera-top={r*2} shadow-camera-bottom={-r*2} shadow-camera-far={r*10} shadow-bias={-.0002}/>
+   <directionalLight position={[-r,r,-r*2]} intensity={1.4} color="#98c8ff"/></>}
    <SceneShown gate={gate} onShown={()=>setShown(true)}/>
    {model&&<><MachineModel model={model} controls={controls} orbit={orbit}/>
     {import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')&&<MachineDebug model={model} controls={controls} orbit={orbit}/>}
     {dark?<>
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,model.floor-r*.005,0]} receiveShadow><planeGeometry args={[r*20,r*20]}/><meshStandardMaterial color="#182329"/></mesh>
     <Grid position={[0,model.floor,0]} args={[r*10,r*10]} cellSize={r/5} sectionSize={r} cellColor="#293a40" sectionColor="#3c565b" fadeDistance={r*8}/>
-    </>:steam?<>
+    </>:<>
      {pedestal>0&&<Pedestal model={model} height={pedestal}/>}
      <SteampunkWorkshopWorld floor={model.floor-pedestal-.002} facing={frontYaw(model.config.id)} low={LOW_GFX} onReady={()=>setRoomReady(true)}/>
-    </>:<Suspense fallback={null}>{indoor?<WorkshopWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} animate={!LOW_GFX}/>
-     :<DuskMeadowWorld r={r} floor={model.floor-r*.002} shadows={!LOW_GFX} blades={!LOW_GFX}/>}</Suspense>}
+    </>}
    </>}
   </Canvas></Boundary>
   {!overlayGone&&!error&&<LoadingScreen progress={!model?progress*.8:!gate?88:shown?100:95} stage={stage} machineId={machineId} done={shown}/>}

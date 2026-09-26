@@ -15,7 +15,7 @@ import {
 } from '../runtime.js';
 
 /**
- * MachineBase - Unified Lifecycle & Contract Base Class for all Machine Modules (v1.0)
+ * MachineBase - Unified Lifecycle & Contract Base Class for all Machine Modules
  */
 export class MachineBase {
   /**

@@ -24,8 +24,8 @@ Used for:
 
 ## Lathe
 
-"lathe" by Oleg  
-Source: https://skfb.ly/6XJP6  
+"The_ussr_lathe_16k20" by kidakai12  
+Source: https://skfb.ly/oS77T  
 License: Creative Commons Attribution 4.0 International (CC BY 4.0)  
 License URL: https://creativecommons.org/licenses/by/4.0/
 
@@ -33,3 +33,8 @@ Used for:
 - `public/models/machines/lathe/lathe.glb`
 - `public/models/lathe_parts.json`
 
+## Steampunk Workshop (light-theme background)
+
+`src/vendor/steampunk-workshop/` was generated with an AI assistant for this project. The room,
+props, materials and textures are all built in code at runtime; it uses no third-party image,
+model or texture files.

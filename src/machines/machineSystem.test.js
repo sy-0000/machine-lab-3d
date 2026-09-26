@@ -34,7 +34,7 @@ const near = (a, b, eps = 1e-5) => assert.ok(Math.abs(a - b) < eps, `${a} != ${b
 const worldPos = n => n.getWorldPosition(new Vector3());
 const worldQuat = n => n.getWorldQuaternion(new Quaternion());
 
-test('Machine System v1.0: Full Lifecycle, Mount Points, Tool & Workpiece Integration', async () => {
+test('Machine System: Full Lifecycle, Mount Points, Tool & Workpiece Integration', async () => {
   // 1. LATHE TEST: Load, Mount Workpiece & Turning Tool, Spindle Rotation & Tool Post Indexing
   const lathe = await MachineRegistry.load('lathe');
   assert.equal(MachineRegistry.getCurrentMachine(), lathe);

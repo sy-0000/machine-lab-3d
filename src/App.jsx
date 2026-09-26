@@ -5,6 +5,13 @@ import { useTheme } from './theme.js';
 import { challengeById } from './levels/challenges.js';
 import MachineIcon from './components/MachineIcon.jsx';
 
+// 3D model credits (CC licences require the title, author, source and licence to be shown).
+const MODEL_CREDITS = [
+  { machine: '車床', title: 'The_ussr_lathe_16k20', url: 'https://skfb.ly/oS77T', author: 'kidakai12', license: 'CC BY 4.0', licenseUrl: 'http://creativecommons.org/licenses/by/4.0/' },
+  { machine: '銑床', title: 'Milling Machine', url: 'https://skfb.ly/6ZEWZ', author: 'SusiePhilpott', license: 'CC BY 4.0', licenseUrl: 'http://creativecommons.org/licenses/by/4.0/' },
+  { machine: '鑽床', title: 'Drill Press - INTERKRENN MASCHINEN TB 14/5', url: 'https://skfb.ly/oOuL8', author: 'xplanepilot', license: 'CC BY-SA 4.0', licenseUrl: 'http://creativecommons.org/licenses/by-sa/4.0/' },
+];
+
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
 const LevelsPage = lazy(() => import('./pages/LevelsPage'));
@@ -32,7 +39,7 @@ export default function App() {
           </span>
           <span>
             MACHINE<span className="brand-light"> LAB</span>
-            <small>工具機 3D 互動教學 · v1.0</small>
+            <small>工具機 3D 互動教學 · v{__APP_VERSION__}</small>
           </span>
         </a>
 
@@ -44,7 +51,7 @@ export default function App() {
             工安守則
           </a>
           <a className={`nav-link ${route === 'tools' ? 'active' : ''}`} href="#/tools">
-            刀具介紹
+            工具盒
           </a>
           <a className={`nav-link ${isGameRoute ? 'active' : ''}`} href="#/lathe">
             加工教室
@@ -67,7 +74,7 @@ export default function App() {
           <SafetyPage />
         </Suspense>
       ) : route === 'tools' ? (
-        <Suspense fallback={<main>正在載入刀具目錄…</main>}>
+        <Suspense fallback={<main>正在載入工具盒…</main>}>
           <ToolsPage />
         </Suspense>
       ) : route === 'levels' ? (
@@ -94,7 +101,7 @@ export default function App() {
 
           <ol className="course-route" aria-label="課程路線">
             <li><a href="#/safety"><b>01</b>工安守則<small>進工場前必讀</small></a></li>
-            <li><a href="#/tools"><b>02</b>刀具介紹<small>認識加工刀具</small></a></li>
+            <li><a href="#/tools"><b>02</b>工具盒<small>認識常用工具</small></a></li>
             <li><a href="#/lathe"><b>03</b>加工教室<small>車床・銑床・鑽床功能</small></a></li>
             <li><a href="#/levels"><b>04</b>加工關卡<small>車床・銑床・鑽床 限時挑戰</small></a></li>
           </ol>
@@ -128,13 +135,24 @@ export default function App() {
               <b>03　理解</b>檢視真實節點與設定限制
             </p>
           </div>
+
+          <section className="model-credits" aria-labelledby="model-credits-title">
+            <h2 id="model-credits-title">3D 模型來源與授權</h2>
+            <ul>
+              {MODEL_CREDITS.map(c => <li key={c.url}>
+                <span className="credit-machine">{c.machine}</span>
+                <span>"<a href={c.url} target="_blank" rel="noopener noreferrer">{c.title}</a>" by {c.author} is licensed under <a href={c.licenseUrl} target="_blank" rel="noopener noreferrer license">Creative Commons {c.license.startsWith('CC BY-SA') ? 'Attribution-ShareAlike' : 'Attribution'}</a>（{c.license}）.</span>
+              </li>)}
+            </ul>
+            <p>模型已為教學互動調整（拆件、壓縮、加入可動節點）。</p>
+          </section>
         </main>
       )}
 
       <footer>
-        <span>MACHINE LAB / 工具機互動學習 · Machine System v1.0</span>
+        <span>MACHINE LAB / 工具機互動學習 · v{__APP_VERSION__}</span>
         <span>
-          模型由使用者提供 · 來源與授權待確認 · 教學模擬不替代實機操作訓練
+          3D 模型採 Creative Commons 授權，來源見首頁 · 教學模擬不替代實機操作訓練
         </span>
       </footer>
     </>

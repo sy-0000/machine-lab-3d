@@ -31,7 +31,7 @@ export default function SafetyPage() {
         <section className="safety-card milling-safety">
           <h2>三、銑床 (Milling Machine) 操作安全守則</h2>
           <ul>
-            <li><strong>工件固定：</strong>工件必須牢固夾緊於精密虎鉗或壓板螺栓上；銑削前確認切削方向，避免順銑產生推擠拉動。</li>
+            <li><strong>工件固定：</strong>工件必須牢固夾緊於精密虎鉗或壓板螺栓上。</li>
             <li><strong>更換刀具：</strong>安裝或拆卸端銑刀、面銑刀時，主軸必須完全切斷電源並落鎖，使用專用扳手確實鎖緊筒夾 (Collet)。</li>
             <li><strong>鐵屑清除：</strong>清除工作臺鐵屑必須使用專用毛刷或鐵屑鉤，嚴禁用手直接抓取或用嘴吹拂。</li>
           </ul>
