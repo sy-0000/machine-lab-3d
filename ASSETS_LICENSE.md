@@ -32,16 +32,4 @@ License URL: https://creativecommons.org/licenses/by/4.0/
 Used for:
 - `public/models/machines/lathe/lathe.glb`
 - `public/models/lathe_parts.json`
-## Steampunk Scenery (light theme) — license NOT verified
 
-Steampunk images supplied by the project owner as a prototype. Several carry "pngtree" watermarks, so
-they appear to be watermarked previews, not licensed files. Replace them with licensed or self-made
-art before any public release.
-
-Sources: `assets-src/scenery/` (clock, airships, clock tower, kiosk, manor, globe, telescope,
-gear panel, wall clock). Cut out by
-`scripts/cutout-scenery.mjs`.
-
-Used for:
-- `public/scenery/*.webp` (billboards and sky clock in `src/components/DuskMeadowWorld.jsx`;
-  globe, telescope and the two framed wall pictures in `src/components/WorkshopWorld.jsx`)
