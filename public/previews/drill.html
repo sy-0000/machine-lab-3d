@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>鑽床是怎麼鑽孔的？｜繪本風鑽孔動畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F0E1; --ink:#4B3A30; --muted:#8A7565;
+  --panel:#FFFBF2; --btn:#FFF6E6; --btn-on:#F29E4C; --btn-on-ink:#FFFBF2;
+  --blob1:#E6F0E2; --blob2:#FCE6D2;
+  --rot:#3D7CC9; --feed:#E35D4F; --rapid:#A0928A;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#2B2622; --ink:#F1E6D4; --muted:#BBA894;
+    --panel:#352F2A; --btn:#3E3731; --btn-on:#F29E4C; --btn-on-ink:#2B2622;
+    --blob1:#33392F; --blob2:#3F332B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#2B2622; --ink:#F1E6D4; --muted:#BBA894;
+  --panel:#352F2A; --btn:#3E3731; --btn-on:#F29E4C; --btn-on-ink:#2B2622;
+  --blob1:#33392F; --blob2:#3F332B;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  height:100%;margin:0;overflow:hidden;background:var(--paper);color:var(--ink);
+  font-family:"LXGW WenKai TC","Kaiti TC","DFKai-SB","PingFang TC","Microsoft JhengHei",serif;
+}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+.page{
+  position:fixed;left:50%;transform:translateX(-50%);
+  top:calc(env(safe-area-inset-top,0px) + 14px);
+  width:min(720px, calc(100vw - 28px));
+  background:var(--panel);border:2px solid var(--ink);border-radius:16px;
+  box-shadow:5px 5px 0 rgba(75,58,48,.16);
+  padding:12px 18px 12px;
+}
+.page .meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--muted);margin:0 0 4px}
+.page h1{font-size:14px;font-weight:400;margin:0;color:var(--muted)}
+.page h2{font-size:23px;font-weight:700;margin:0 0 4px;line-height:1.3}
+.desc{font-size:17px;line-height:1.7;margin:0;min-height:3.4em}
+
+.bar{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  width:min(720px, calc(100vw - 28px));
+  background:var(--panel);border:2px solid var(--ink);border-radius:16px;
+  box-shadow:5px 5px 0 rgba(75,58,48,.16);
+  padding:10px 14px 12px;display:flex;flex-direction:column;gap:10px;
+}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spacer{flex:1}
+button{
+  font:inherit;font-size:15px;color:var(--ink);background:var(--btn);
+  border:2px solid var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer;
+  box-shadow:2px 2px 0 rgba(75,58,48,.18);
+}
+button:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(75,58,48,.18)}
+button:focus-visible{outline:3px solid var(--rot);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--btn-on);color:var(--btn-on-ink)}
+#play{min-width:76px;font-weight:700}
+.speed{display:flex;align-items:center;gap:5px}
+.speed span{font-size:14px;color:var(--muted);margin-right:2px}
+.speed button{padding:3px 10px;font-size:14px}
+.track{display:flex;gap:4px;height:14px}
+.seg{
+  flex-grow:var(--w);flex-basis:0;position:relative;overflow:hidden;padding:0;
+  border:2px solid var(--ink);border-radius:999px;background:var(--btn);box-shadow:none;cursor:pointer;
+}
+.seg .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--muted)}
+.seg.cut .fill{background:var(--feed)}
+.seg:active{transform:none}
+
+@media (max-width:560px){
+  .page{padding:10px 13px}
+  .page h2{font-size:19px}
+  .desc{font-size:15px;min-height:0}
+  button{font-size:14px;padding:3px 11px}
+}
+
+/* ---- 預覽模式（?preview）：放在網站首頁的機台卡片裡，滑鼠停在卡片上時播放 ---- */
+html.preview .bar{display:none}
+html.preview .page{
+  left:14px;top:50%;transform:translateY(-50%);
+  width:min(36%, 330px);padding:12px 16px;box-shadow:3px 3px 0 rgba(75,58,48,.16);
+}
+html.preview .page h2{font-size:19px}
+html.preview .desc{font-size:14px;line-height:1.65;min-height:0}
+@media (max-width:640px){
+  html.preview .page{top:auto;bottom:10px;left:10px;right:10px;width:auto;transform:none;padding:8px 12px}
+  html.preview .page h2{font-size:16px;margin:0}
+  html.preview .desc{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+
+<section class="page" id="page" aria-live="polite">
+  <div class="meta"><h1>鑽床是怎麼鑽孔的？</h1><span id="step">第 1 頁 / 8</span></div>
+  <h2 id="stageName">主軸啟動</h2>
+  <p class="desc" id="stageDesc"></p>
+</section>
+
+<div class="bar" id="bar" role="group" aria-label="播放控制">
+  <div class="row">
+    <button id="play" type="button">暫停</button>
+    <button id="restart" type="button">從頭看</button>
+    <span class="spacer"></span>
+    <div class="speed" role="group" aria-label="播放速度">
+      <span>速度</span>
+      <button type="button" data-speed="0.25" aria-pressed="false">0.25×</button>
+      <button type="button" data-speed="0.5" aria-pressed="false">0.5×</button>
+      <button type="button" data-speed="1" aria-pressed="true">1×</button>
+      <button type="button" data-speed="2" aria-pressed="false">2×</button>
+    </div>
+  </div>
+  <div class="track" id="track"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // 預覽模式：網站首頁卡片用 <iframe src="…?preview"> 嵌入，由外層用 postMessage 控制播放
+  const params = new URLSearchParams(location.search);
+  const PREVIEW = params.has('preview');
+  if (PREVIEW) document.documentElement.classList.add('preview');
+  if (params.get('theme') === 'dark' || params.get('theme') === 'light') document.documentElement.dataset.theme = params.get('theme');
+  /* ---------- 尺寸（剖面正視圖：x 向右，v 向下，工件上表面 v=0） ---------- */
+  const BX = 1.6, BH = 1.8, RH = 0.38;
+  const TAN59 = Math.tan(59 * Math.PI / 180);
+  const CONE_H = RH / TAN59;
+  const FLUTE_L = 1.9, SHANK_L = 0.6, PITCH = 1.45;
+  const W_MAX = 5.0;
+  const UP_Y = 0.65, NEAR_Y = 0.12, PECK_D = 0.7, FINAL_D = 1.3;
+  const VIEW = { x0: -2.7, x1: 3.0, z0: -4.2, z1: 2.1 };
+
+  const stages = [
+    { type:'spin',    dur:2.0, to:UP_Y,           name:'主軸啟動',
+      desc:'鑽頭開始轉囉！鑽孔和銑削一樣，是刀具在轉，工件乖乖不動。工件切開一半，讓你看得到孔的裡面。' },
+    { type:'rapid',   dur:1.2, to:NEAR_Y,         name:'快速下降',
+      desc:'鑽頭快快降到工件上方，還沒碰到工件。' },
+    { type:'feed',    dur:3.4, to:-PECK_D,        name:'往下鑽',
+      desc:'鑽頭一邊轉一邊往下。尖尖的鑽尖把材料削下來，切屑順著螺旋溝槽一路往上爬出來。' },
+    { type:'retract', dur:1.0, to:0.3,            name:'啄鑽：先退出來',
+      desc:'鑽到一半先整支退出來，把溝槽裡的切屑甩掉。這叫「啄鑽」，像小鳥啄東西一樣一下一下地鑽，切屑才不會卡住。' },
+    { type:'rapid',   dur:0.8, to:-PECK_D + 0.08, name:'回到孔裡',
+      desc:'鑽頭快快回到剛剛的深度附近。' },
+    { type:'feed',    dur:3.0, to:-FINAL_D,       name:'繼續往下鑽',
+      desc:'繼續鑽到需要的深度。孔底留下尖尖的錐形，因為鑽尖就是這個形狀。沒有鑽穿的孔叫做盲孔。' },
+    { type:'retract', dur:1.4, to:UP_Y,           name:'退刀',
+      desc:'鑽頭退出孔外，回到上面。' },
+    { type:'stop',    dur:1.5, to:UP_Y,           name:'主軸停止',
+      desc:'鑽頭停下來休息，一個漂亮的孔完成了！' }
+  ];
+  let acc = 0, prevTo = UP_Y;
+  stages.forEach(s => { s.start = acc; acc += s.dur; s.from = prevTo; prevTo = s.to; });
+  const TOTAL = acc;
+  const smooth = p => p * p * (3 - 2 * p);
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+
+  function stateAt(t){
+    let k = stages.length - 1;
+    for (let i = 0; i < stages.length; i++){ if (t < stages[i].start + stages[i].dur){ k = i; break; } }
+    const s = stages[k];
+    const p = clamp01((t - s.start) / s.dur);
+    const e = s.type === 'feed' ? p : smooth(p);
+    const tipY = s.from + (s.to - s.from) * e;
+    let omega = W_MAX;
+    if (s.type === 'spin') omega = W_MAX * smooth(p);
+    if (s.type === 'stop') omega = W_MAX * (1 - smooth(p));
+    let depth = 0;
+    if (k === 2) depth = Math.max(0, -tipY);
+    else if (k > 2 && k < 5) depth = PECK_D;
+    else if (k === 5) depth = Math.max(PECK_D, -tipY);
+    else if (k > 5) depth = FINAL_D;
+    return { k, tipV: -tipY, omega, depth, moving: p < 1 && s.from !== s.to, dirV: -Math.sign(s.to - s.from) };
+  }
+
+  /* ---------- 介面 ---------- */
+  const $ = id => document.getElementById(id);
+  const stepEl = $('step'), nameEl = $('stageName'), descEl = $('stageDesc'), playBtn = $('play');
+  const segFills = stages.map((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg' + (s.type === 'feed' ? ' cut' : '');
+    b.style.setProperty('--w', s.dur);
+    b.setAttribute('aria-label', '翻到第 ' + (i + 1) + ' 頁：' + s.name);
+    b.title = s.name;
+    const f = document.createElement('span'); f.className = 'fill'; b.appendChild(f);
+    b.addEventListener('click', () => seek(s.start));
+    $('track').appendChild(b);
+    return f;
+  });
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let simTime = 0, speed = PREVIEW ? 1.25 : 1, playing = !reduceMotion && !PREVIEW, spin = 0, lastStage = -1;
+
+  function updatePlayLabel(){ playBtn.textContent = simTime >= TOTAL ? '再看一次' : (playing ? '暫停' : '播放'); }
+  function seek(t){ simTime = Math.max(0, Math.min(TOTAL, t)); chips.length = 0; updatePlayLabel(); }
+  playBtn.addEventListener('click', () => {
+    if (simTime >= TOTAL){ seek(0); playing = true; } else playing = !playing;
+    updatePlayLabel();
+  });
+  $('restart').addEventListener('click', () => { seek(0); playing = true; updatePlayLabel(); });
+  document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+    speed = parseFloat(b.dataset.speed);
+    document.querySelectorAll('[data-speed]').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  }));
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && !(e.target instanceof HTMLButtonElement)){ e.preventDefault(); playBtn.click(); }
+  });
+
+  /* ---------- 畫布與版面 ---------- */
+  const cv = $('c'), ctx = cv.getContext('2d');
+  let dpr = 1, S = 50, OX = 0, OY = 0, CW = 0, CH = 0;
+  let THEME = {};
+  function readTheme(){
+    const cs = getComputedStyle(document.documentElement);
+    ['--paper','--ink','--blob1','--blob2','--rot','--feed','--rapid'].forEach(k => { THEME[k] = cs.getPropertyValue(k).trim(); });
+  }
+  function layout(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    CW = window.innerWidth; CH = window.innerHeight;
+    cv.width = Math.round(CW * dpr); cv.height = Math.round(CH * dpr);
+    if (PREVIEW){
+      // 說明面板在左側（窄的時候在下方）。機台只畫在面板右邊（CLIP_X），從畫面外滑進來的東西不會跑到面板後面
+      const pr = $('page').getBoundingClientRect(), side = CW > 640;
+      CLIP_X = side ? Math.round(pr.right + 6) : 0;
+      const x0 = CLIP_X + 6, x1 = CW - 12, y0 = 10, y1 = side ? CH - 10 : pr.top - 8;
+      const pw = Math.max(80, x1 - x0), ph = Math.max(80, y1 - y0);
+      S = Math.min(pw / (VIEW.x1 - VIEW.x0), ph / (VIEW.z1 - VIEW.z0));
+      OX = (x0 + x1) / 2 - S * (VIEW.x0 + VIEW.x1) / 2;
+      OY = (y0 + y1) / 2 - S * (VIEW.z0 + VIEW.z1) / 2;
+      makeGrain();
+      return;
+    }
+    const top = $('page').getBoundingClientRect().bottom + 16;
+    const bottom = $('bar').getBoundingClientRect().top - 12;
+    const rw = CW - 32, rh = Math.max(120, bottom - top);
+    S = Math.min(rw / (VIEW.x1 - VIEW.x0), rh / (VIEW.z1 - VIEW.z0));
+    OX = CW / 2 - S * (VIEW.x0 + VIEW.x1) / 2;
+    OY = top + rh / 2 - S * (VIEW.z0 + VIEW.z1) / 2;
+    makeGrain();
+  }
+  window.addEventListener('resize', layout);
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); });
+  new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  const X = x => OX + x * S, Y = z => OY + z * S;
+
+  // 紙張顆粒
+  let grain = null;
+  function makeGrain(){
+    const g = document.createElement('canvas'); g.width = g.height = 220;
+    const gc = g.getContext('2d'), img = gc.createImageData(220, 220);
+    for (let i = 0; i < img.data.length; i += 4){
+      const v = 200 + Math.random() * 55;
+      img.data[i] = v; img.data[i + 1] = v * 0.97; img.data[i + 2] = v * 0.92; img.data[i + 3] = 255;
+    }
+    gc.putImageData(img, 0, 0);
+    // 幾道淡淡的纖維
+    gc.strokeStyle = 'rgba(120,90,60,0.12)'; gc.lineWidth = 1;
+    for (let i = 0; i < 26; i++){
+      const x = Math.random() * 220, y = Math.random() * 220, a = Math.random() * Math.PI;
+      gc.beginPath(); gc.moveTo(x, y); gc.lineTo(x + Math.cos(a) * 14, y + Math.sin(a) * 14); gc.stroke();
+    }
+    grain = ctx.createPattern(g, 'repeat');
+  }
+
+  /* ---------- 手繪線條 ---------- */
+  const hash = (x, y) => { const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; return s - Math.floor(s); };
+  function wobblePath(pts, closed){
+    // pts：螢幕座標；沿邊細分並加入些微抖動，像手繪線
+    ctx.beginPath();
+    const n = pts.length, last = closed ? n : n - 1;
+    for (let i = 0; i < last; i++){
+      const a = pts[i], b = pts[(i + 1) % n];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const steps = Math.max(1, Math.ceil(len / 16));
+      for (let s = 0; s < steps; s++){
+        const t = s / steps;
+        const x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t;
+        const jx = (hash(Math.round(x / 6), Math.round(y / 6)) - 0.5) * 1.6;
+        const jy = (hash(Math.round(y / 6) + 7, Math.round(x / 6)) - 0.5) * 1.6;
+        if (i === 0 && s === 0) ctx.moveTo(x + jx, y + jy); else ctx.lineTo(x + jx, y + jy);
+      }
+    }
+    if (closed) ctx.closePath();
+    else { const e = pts[n - 1]; ctx.lineTo(e[0], e[1]); }
+  }
+  function rrPts(x, y, w, h, r){
+    const pts = [], seg = 5;
+    const corner = (cx, cy, a0) => { for (let i = 0; i <= seg; i++){ const a = a0 + (Math.PI / 2) * i / seg; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } };
+    corner(x + w - r, y + r, -Math.PI / 2);
+    corner(x + w - r, y + h - r, 0);
+    corner(x + r, y + h - r, Math.PI / 2);
+    corner(x + r, y + r, Math.PI);
+    return pts;
+  }
+  function shape(pts, fill, opts){
+    opts = opts || {};
+    const sh = opts.shadow !== false;
+    if (sh){
+      ctx.save(); ctx.translate(5, 6);
+      wobblePath(pts, true); ctx.fillStyle = 'rgba(75,58,48,0.13)'; ctx.fill();
+      ctx.restore();
+    }
+    wobblePath(pts, true);
+    ctx.fillStyle = fill; ctx.fill();
+    if (opts.stroke !== false){
+      ctx.lineWidth = opts.lw || 2.6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.strokeStyle = THEME['--ink'] || '#4B3A30'; ctx.stroke();
+    }
+  }
+  function mix(hex, amt){  // amt>0 變亮，<0 變暗
+    const n = parseInt(hex.slice(1), 16);
+    let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    const t = amt > 0 ? 255 : 0, a = Math.abs(amt);
+    r = Math.round(r + (t - r) * a); g = Math.round(g + (t - g) * a); b = Math.round(b + (t - b) * a);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function star(x, y, r){
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++){
+      const a = i * Math.PI / 4, rr = i % 2 ? r * 0.3 : r;
+      const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+  }  function arrow(x1, y1, x2, y2, color, curveTo){
+    const ink = INK();
+    const draw = (w, c) => {
+      ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x1, y1);
+      if (curveTo) ctx.quadraticCurveTo(curveTo[0], curveTo[1], x2, y2); else ctx.lineTo(x2, y2);
+      ctx.stroke();
+    };
+    draw(9, ink); draw(5, color);
+    // 箭頭
+    let dx, dy;
+    if (curveTo){ dx = x2 - curveTo[0]; dy = y2 - curveTo[1]; } else { dx = x2 - x1; dy = y2 - y1; }
+    const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+    const hs = 15, px = -dy, py = dx;
+    ctx.beginPath();
+    ctx.moveTo(x2 + dx * hs * 0.9, y2 + dy * hs * 0.9);
+    ctx.lineTo(x2 + px * hs * 0.7, y2 + py * hs * 0.7);
+    ctx.lineTo(x2 - px * hs * 0.7, y2 - py * hs * 0.7);
+    ctx.closePath();
+    ctx.fillStyle = color; ctx.fill();
+    ctx.lineWidth = 2.4; ctx.lineJoin = 'round'; ctx.strokeStyle = ink; ctx.stroke();
+  }  function pill(text, x, y, color){
+    ctx.font = '700 15px "LXGW WenKai TC","Kaiti TC","PingFang TC",serif';
+    const w = ctx.measureText(text).width + 22, h = 28;
+    const pts = rrPts(x - w / 2, y - h, w, h, 13);
+    shape(pts, color, { lw: 2.2 });
+    ctx.fillStyle = '#FFFBF2'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y - h / 2 + 1);
+  }
+
+  /* ---------- 繪製 ---------- */
+  const INK = () => THEME['--ink'] || '#4B3A30';
+  const C_SEC = '#F6DCC0', C_HATCH = 'rgba(160,110,70,0.45)', C_HOLE = '#E4ECF1';
+  const C_LAND = '#DCE5EA', C_FLUTE = '#7A8893', C_SHANK = '#BFCBD3', C_CHUCK = '#86AED0', C_CHIP = '#E0913A', C_CHALK = '#F4C542';
+
+  let hatch = null;
+  function makeHatch(){
+    const c = document.createElement('canvas'); c.width = c.height = 18;
+    const g = c.getContext('2d');
+    g.fillStyle = C_SEC; g.fillRect(0, 0, 18, 18);
+    g.strokeStyle = C_HATCH; g.lineWidth = 2; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-2, 20); g.lineTo(20, -2); g.stroke();
+    g.beginPath(); g.moveTo(-2, 2); g.lineTo(2, -2); g.stroke();
+    g.beginPath(); g.moveTo(16, 20); g.lineTo(20, 16); g.stroke();
+    hatch = ctx.createPattern(c, 'repeat');
+  }
+
+  function backdrop(){
+    ctx.fillStyle = THEME['--paper'] || '#F7F0E1';
+    ctx.fillRect(0, 0, CW, CH);
+    ctx.fillStyle = THEME['--blob1'] || '#E6F0E2';
+    ctx.beginPath(); ctx.ellipse(X(0.1), Y(-0.6), S * 3.2, S * 3.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = THEME['--blob2'] || '#FCE6D2';
+    ctx.beginPath(); ctx.ellipse(X(2.2), Y(-3.0), S * 0.9, S * 0.8, 0.2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function holePts(d){
+    const rTop = Math.min(RH, d * TAN59);
+    if (d <= 0) return null;
+    if (d <= CONE_H) return [[-rTop, 0], [0, d], [rTop, 0]];
+    return [[-RH, 0], [-RH, d - CONE_H], [0, d], [RH, d - CONE_H], [RH, 0]];
+  }
+
+  function drawWork(d){
+    const hp = holePts(d);
+    const pts = [[-BX, 0]];
+    if (hp) hp.forEach(p => pts.push(p));
+    pts.push([BX, 0], [BX, BH], [-BX, BH]);
+    const scr = pts.map(p => [X(p[0]), Y(p[1])]);
+    ctx.save(); ctx.translate(5, 6); wobblePath(scr, true); ctx.fillStyle = 'rgba(75,58,48,0.13)'; ctx.fill(); ctx.restore();
+    // 剖面：斜線
+    wobblePath(scr, true);
+    ctx.save(); ctx.translate(X(0), Y(0)); ctx.fillStyle = hatch; ctx.fill(); ctx.restore();
+    // 孔的內壁（後半圈），中間亮、兩側暗
+    if (hp){
+      const hs = hp.map(p => [X(p[0]), Y(p[1])]);
+      ctx.beginPath(); hs.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+      const g = ctx.createLinearGradient(X(-RH), 0, X(RH), 0);
+      g.addColorStop(0, mix(C_HOLE, -0.3)); g.addColorStop(0.35, mix(C_HOLE, 0.4)); g.addColorStop(1, mix(C_HOLE, -0.35));
+      ctx.fillStyle = g; ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      if (d > 0.4) star(X(-RH * 0.35), Y(d * 0.45), S * 0.06);
+    }
+    wobblePath(scr, true);
+    ctx.lineWidth = 2.6; ctx.lineJoin = 'round'; ctx.strokeStyle = INK(); ctx.stroke();
+  }
+
+  function drawDrill(tipV){
+    const top = tipV - FLUTE_L;
+    const body = [[0, tipV], [-RH, tipV - CONE_H], [-RH, top], [RH, top], [RH, tipV - CONE_H]].map(p => [X(p[0]), Y(p[1])]);
+    // 陰影
+    ctx.save(); ctx.translate(5, 6); wobblePath(body, true); ctx.fillStyle = 'rgba(75,58,48,0.13)'; ctx.fill(); ctx.restore();
+
+    // 刃帶底色
+    ctx.save();
+    wobblePath(body, true); ctx.clip();
+    ctx.fillStyle = C_LAND; ctx.fillRect(X(-RH) - 4, Y(top) - 2, S * 2 * RH + 8, S * FLUTE_L + 4);
+    // 螺旋溝槽：逐列計算正面看得到的溝槽範圍，旋轉時溝槽看起來往上爬
+    ctx.fillStyle = C_FLUTE;
+    const k = 2 * Math.PI / PITCH;
+    const rowH = 1.5 / S;
+    for (let v = top; v < tipV; v += rowH){
+      const y = tipV - v;                                   // 從鑽尖往上的距離
+      const w = RH * Math.min(1, y / CONE_H);
+      const c = (((k * y + spin) % Math.PI) + Math.PI) % Math.PI;
+      for (let n = -3; n <= 2; n++){
+        let a0 = c + Math.PI / 2 + n * Math.PI, a1 = c + Math.PI + n * Math.PI;
+        a0 = Math.max(a0, -Math.PI / 2); a1 = Math.min(a1, Math.PI / 2);
+        if (a1 <= a0) continue;
+        const x0 = w * Math.sin(a0), x1 = w * Math.sin(a1);
+        ctx.fillRect(X(x0), Y(v), (x1 - x0) * S, 1.8);
+      }
+    }
+    // 圓柱明暗
+    const g = ctx.createLinearGradient(X(-RH), 0, X(RH), 0);
+    g.addColorStop(0, 'rgba(60,50,40,0.28)'); g.addColorStop(0.3, 'rgba(255,255,255,0.35)');
+    g.addColorStop(0.55, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(60,50,40,0.32)');
+    ctx.fillStyle = g; ctx.fillRect(X(-RH) - 4, Y(top) - 2, S * 2 * RH + 8, S * FLUTE_L + 4);
+    ctx.restore();
+    wobblePath(body, true);
+    ctx.lineWidth = 2.6; ctx.lineJoin = 'round'; ctx.strokeStyle = INK(); ctx.stroke();
+
+    // 鑽柄
+    const sh = rrPts(X(-RH * 0.95), Y(top - SHANK_L), S * RH * 1.9, S * (SHANK_L + 0.03), S * 0.03);
+    wobblePath(sh, true);
+    const g2 = ctx.createLinearGradient(X(-RH), 0, X(RH), 0);
+    g2.addColorStop(0, mix(C_SHANK, -0.2)); g2.addColorStop(0.3, mix(C_SHANK, 0.35)); g2.addColorStop(1, mix(C_SHANK, -0.25));
+    ctx.fillStyle = g2; ctx.fill(); ctx.lineWidth = 2.6; ctx.strokeStyle = INK(); ctx.stroke();
+
+    // 鑽夾頭
+    const cTop = top - SHANK_L;
+    shape([[X(-0.45), Y(cTop + 0.02)], [X(0.45), Y(cTop + 0.02)], [X(0.72), Y(cTop - 0.32)], [X(-0.72), Y(cTop - 0.32)]], C_CHUCK);
+    shape(rrPts(X(-0.72), Y(cTop - 1.0), S * 1.44, S * 0.7, S * 0.1), mix(C_CHUCK, -0.08));
+    // 夾頭上的粉筆線，跟著轉
+    for (let n = 0; n < 2; n++){
+      const th = spin + n * Math.PI, c = Math.cos(th);
+      if (c <= 0) continue;
+      ctx.globalAlpha = Math.min(1, c * 1.8);
+      ctx.strokeStyle = C_CHALK; ctx.lineWidth = Math.max(2, S * 0.07 * c); ctx.lineCap = 'round';
+      const sx = 0.62 * Math.sin(th);
+      wobblePath([[X(sx), Y(cTop - 0.9)], [X(sx), Y(cTop - 0.4)]], false); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    return cTop;
+  }
+
+  /* ---------- 切屑 ---------- */
+  const chips = [];
+  let chipTimer = 0, burstDone = false;
+  function spawnChip(v, fling){
+    const side = Math.random() < 0.5 ? -1 : 1;
+    chips.push({ x: side * RH * 0.95, z: v, vx: side * ((fling ? 1.8 : 0.8) + Math.random() * 0.9), vz: -(1.2 + Math.random() * 1.2),
+                 rot: Math.random() * 6, vr: (Math.random() - 0.5) * 9, life: 0 });
+    if (chips.length > 70) chips.shift();
+  }
+  function drawChips(dt){
+    for (let i = chips.length - 1; i >= 0; i--){
+      const c = chips[i];
+      c.life += dt; c.x += c.vx * dt; c.z += c.vz * dt; c.vz += 4.5 * dt; c.rot += c.vr * dt;
+      if (Math.abs(c.x) < BX + 0.1 && Math.abs(c.x) > RH && c.z > -0.04 && c.vz > 0){ c.z = -0.04; c.vx = 0; c.vz = 0; c.vr = 0; }
+      if (c.life > 1.8){ chips.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = c.life > 1.3 ? (1.8 - c.life) / 0.5 : 1;
+      ctx.translate(X(c.x), Y(c.z)); ctx.rotate(c.rot);
+      ctx.strokeStyle = C_CHIP; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+      ctx.beginPath();
+      for (let t = 0; t <= 1; t += 0.05){
+        const ang = t * Math.PI * 3.6, rr = S * 0.08 * (0.3 + t * 0.7);
+        const px = Math.cos(ang) * rr + t * S * 0.1, py = Math.sin(ang) * rr;
+        if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* ---------- 主迴圈 ---------- */
+  let last = performance.now();
+  function frame(now){
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const sdt = playing ? dt * speed : 0;
+    if (playing){
+      simTime += sdt;
+      if (simTime >= TOTAL){
+        simTime = TOTAL;
+        if (PREVIEW){ holdEnd += dt; if (holdEnd > 1.6){ holdEnd = 0; seek(0); } }  // 預覽：停一下再從頭循環
+        else { playing = false; updatePlayLabel(); }
+      }
+    }
+    const st = stateAt(simTime), s = stages[st.k];
+    spin -= st.omega * sdt;               // 俯視順時針
+
+    if (playing && s.type === 'feed' && st.tipV > 0){
+      chipTimer += sdt;
+      while (chipTimer > 0.09){ chipTimer -= 0.09; spawnChip(-0.05, false); }
+    }
+    if (st.k === 3 && st.tipV < -0.05 && !burstDone && playing){
+      burstDone = true;
+      for (let i = 0; i < 12; i++) spawnChip(-0.1 - Math.random() * 0.6, true);
+    }
+    if (st.k < 3) burstDone = false;
+
+    if (!hatch) makeHatch();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    backdrop();
+    if (CLIP_X){ ctx.save(); ctx.beginPath(); ctx.rect(CLIP_X, 0, CW - CLIP_X, CH); ctx.clip(); }
+    // 地面
+    shape(rrPts(X(-2.4), Y(BH), S * 4.8, S * 0.22, S * 0.1), '#E9D2B0');
+    drawWork(st.depth);
+    const cTop = drawDrill(st.tipV);
+    drawChips(sdt);
+
+    const spinVis = st.omega / W_MAX;
+    if (spinVis > 0.05){
+      ctx.globalAlpha = Math.min(1, spinVis * 1.4);
+      const va = st.tipV - FLUTE_L - 0.3, col = THEME['--rot'] || '#3D7CC9';
+      arrow(X(0.85), Y(va), X(-0.85), Y(va - 0.04), col, [X(0), Y(va + 0.55)]);
+      pill('鑽頭旋轉', X(-1.35), Y(va - 0.15), col);
+      ctx.globalAlpha = 1;
+    }
+
+    if (st.moving && s.type !== 'spin' && s.type !== 'stop'){
+      const isCut = s.type === 'feed';
+      const col = isCut ? (THEME['--feed'] || '#E35D4F') : (THEME['--rapid'] || '#A0928A');
+      const x = RH + 0.75, vc = st.tipV - 0.9;
+      arrow(X(x), Y(vc - 0.4 * st.dirV), X(x), Y(vc + 0.4 * st.dirV), col);
+      const label = { rapid: '快速移動', feed: '往下進給', retract: '退刀' }[s.type];
+      pill(label, X(x + 0.35), Y(vc - 0.6), col);
+    }
+
+    if (CLIP_X) ctx.restore();
+
+    if (grain){
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = grain; ctx.fillRect(0, 0, CW, CH);
+      ctx.restore();
+    }
+
+    if (st.k !== lastStage){
+      lastStage = st.k;
+      stepEl.textContent = '第 ' + (st.k + 1) + ' 頁 / ' + stages.length;
+      nameEl.textContent = s.name;
+      descEl.textContent = s.desc;
+    }
+    for (let i = 0; i < stages.length; i++){
+      segFills[i].style.width = (clamp01((simTime - stages[i].start) / stages[i].dur) * 100).toFixed(1) + '%';
+    }
+    if (!PREVIEW || active) requestAnimationFrame(frame); else looping = false;
+  }
+
+  // 預覽：外層送來 play / pause / theme。暫停時整個繪製迴圈停下，不佔效能
+  let active = !PREVIEW, looping = true, holdEnd = 0, CLIP_X = 0;
+  if (PREVIEW) window.addEventListener('message', e => {
+    if (e.source !== window.parent || e.origin !== location.origin || !e.data) return;
+    if (e.data.type === 'play'){
+      seek(0); holdEnd = 0; playing = !reduceMotion; active = true;
+      if (!looping){ looping = true; last = performance.now(); requestAnimationFrame(frame); }
+    } else if (e.data.type === 'pause'){
+      playing = false; active = false;
+    } else if (e.data.type === 'theme'){
+      document.documentElement.dataset.theme = e.data.theme;
+      readTheme();
+      if (!looping){ looping = true; requestAnimationFrame(frame); }  // 重畫一格新配色
+    }
+  });
+
+  readTheme();
+  layout();
+  updatePlayLabel();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

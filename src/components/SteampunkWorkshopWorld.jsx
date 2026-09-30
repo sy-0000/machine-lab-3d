@@ -9,6 +9,7 @@ import { createPostPipeline } from '../vendor/steampunk-workshop/src/core/postpr
 import { buildWorld } from '../vendor/steampunk-workshop/src/app/world.js';
 import { createLights } from '../vendor/steampunk-workshop/src/lighting/lights.js';
 import { createEffects } from '../vendor/steampunk-workshop/src/effects/effects.js';
+import { prewarmWorkshop, warmUpGpu } from '../prewarm/prewarm.js';
 
 // 蒸汽龐克穹頂工作室（src/vendor/steampunk-workshop，未修改）當作機台操作的背景。
 // 不用 createWorkshop()（它會自己開 renderer 與迴圈），而是把同一套房間、燈光、天空、粒子與後製
@@ -55,12 +56,19 @@ export default function SteampunkWorkshopWorld({ floor, facing = 0, low = false,
     const saved = { environment: scene.environment, environmentIntensity: scene.environmentIntensity, fog: scene.fog, background: scene.background };
     const autoUpdate = gl.shadowMap.autoUpdate;
     (async () => {
+      // Textures are painted in the background worker (usually already done while the home page was open).
+      await prewarmWorkshop();
+      if (cancelled) return;
       const sky = createSky(root);
       const world = await buildWorld(root, q);
       if (cancelled) return;
       const lights = createLights(root, q, world.anchors);
       const effects = world.panels ? createEffects(root, gl, camera, q, world) : null;
       Object.assign(scene, { environment: env.environment, environmentIntensity: env.environmentIntensity, fog: env.fog, background: null });
+      // Upload the room's textures a few at a time and compile its shaders (with the fog and reflections just set)
+      // before it is first drawn, so the first frame with the room does not stall for half a second.
+      await warmUpGpu(gl, root, camera, scene);
+      if (cancelled) return;
       scene.add(root);
       // The room is static; like createWorkshop(), refresh the shadow map every other frame.
       gl.shadowMap.autoUpdate = false;
