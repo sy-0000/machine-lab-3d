@@ -3,7 +3,8 @@ import { MACHINES } from './machines/catalog';
 import GameWorkspace from './pages/GameWorkspace';
 import { useTheme } from './theme.js';
 import { challengeById } from './levels/challenges.js';
-import MachineIcon from './components/MachineIcon.jsx';
+import MachineCard from './components/MachineCard.jsx';
+import { prewarmInBackground } from './prewarm/prewarm.js';
 
 // 3D model credits (CC licences require the title, author, source and licence to be shown).
 const MODEL_CREDITS = [
@@ -19,6 +20,9 @@ const LevelsPage = lazy(() => import('./pages/LevelsPage'));
 export default function App() {
   const [route, setRoute] = useState(location.hash.slice(2));
   const [theme, toggleTheme] = useTheme();
+
+  // 開站後趁空檔在背景準備工具盒與機台場景（貼圖、模型），進入時就不必等
+  useEffect(prewarmInBackground, []);
 
   useEffect(() => {
     const change = () => setRoute(location.hash.slice(2));
@@ -107,21 +111,7 @@ export default function App() {
           </ol>
 
           <section className="machine-cards" aria-label="選擇工具機">
-            {MACHINES.map(machine => (
-              <a className="machine-card" key={machine.id} href={`#/${machine.id}`}>
-                <div className="card-visual" aria-hidden="true"><MachineIcon id={machine.id} /></div>
-                <div className="card-content">
-                  <span className="card-number">{machine.number} / INTERACTIVE LESSON</span>
-                  <h2>
-                    {machine.name}
-                    <span>↗</span>
-                  </h2>
-                  <small>{machine.subtitle}</small>
-                  <p>{machine.description}</p>
-                  <span className="card-action">進入互動教室 →</span>
-                </div>
-              </a>
-            ))}
+            {MACHINES.map(machine => <MachineCard key={machine.id} machine={machine} theme={theme} />)}
           </section>
 
           <div className="home-notes">

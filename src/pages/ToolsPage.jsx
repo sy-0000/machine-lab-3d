@@ -1,17 +1,22 @@
-import { ToolRegistry } from '../tools/ToolRegistry.js';
+import { useRef, useState } from 'react';
+import SteampunkToolbox from '../components/SteampunkToolbox.jsx';
+import { TOOLS as TOOLBOX_TOOLS } from '../vendor/steampunk-toolbox/src/config/tools.config.js';
 
 // 工具盒頁面（#/tools）。之後要改內容：
-// - 上方的介紹與分類：直接改下面的 TOOLBOX_SECTIONS 與文字
-// - 下方的刀具卡片：資料來自 src/tools/tool.config.js（機台加工也會用到，改名稱或尺寸要小心）
-const TOOLBOX_SECTIONS = [
-  { title: '量具', text: '【佔位】例如游標卡尺、分厘卡、量錶……之後補上用途與使用方式。' },
-  { title: '手工具', text: '【佔位】例如夾頭扳手、內六角扳手、毛刷、鐵屑鉤……之後補上用途與注意事項。' },
-  { title: '夾持工具', text: '【佔位】例如虎鉗、壓板、頂心……之後補上用途。' },
-  { title: '切削刀具', text: '【佔位】例如車刀、立銑刀、面銑刀、鑽頭、絲攻……之後補上用途。' },
-];
+// - 3D 工具盒與工具介紹卡片：名稱、數量、說明都來自 src/vendor/steampunk-toolbox/src/config/tools.config.js
+//   （3D 面板與卡片共用同一份資料）；卡片上的分類標籤在下面的 CATEGORY
+const CATEGORY = {
+  'vernier-caliper': '量具', 'steel-ruler': '量具', 'try-square': '量具',
+  'hex-key': '手工具', files: '手工具', 'center-punch': '手工具', scriber: '手工具',
+  'paint-brush': '清潔', 'brass-brush': '清潔',
+  'knurling-tool': '車床刀具',
+  'jaw-covers': '夾持輔助', shims: '夾持輔助',
+  'safety-glasses': '安全防護',
+};
 
 export default function ToolsPage() {
-  const tools = ToolRegistry.getAvailableTools();
+  const toolbox = useRef(null);
+  const [active, setActive] = useState(-1);
 
   return (
     <main className="info-page tools-page">
@@ -21,49 +26,22 @@ export default function ToolsPage() {
         <p className="subtitle">TOOLBOX · 加工實習常用工具</p>
       </div>
 
-      <section className="toolbox-placeholder" aria-label="工具盒內容（準備中）">
-        <p className="toolbox-note">【佔位】這裡之後會介紹加工實習時通常會用到的工具。內容準備中。</p>
-        <div className="toolbox-sections">
-          {TOOLBOX_SECTIONS.map(s => <article key={s.title}><h2>{s.title}</h2><p>{s.text}</p></article>)}
+      <SteampunkToolbox ref={toolbox} onChange={setActive} />
+
+      <section className="toolbox-cards" aria-label="工具盒裡的工具">
+        <h2 className="toolbox-subhead">工具盒裡有什麼</h2>
+        <p className="toolbox-lead">加工實習時隨身帶著的量具與手工具。在上方的工具盒點選工具，或按下面的卡片，就能把它拿起來轉著看。</p>
+        <div className="tools-grid">
+          {TOOLBOX_TOOLS.map((tool, i) => (
+            <button type="button" className={`tool-card${active === i ? ' is-active' : ''}`} key={tool.id} onClick={() => toolbox.current?.showTool(i)} aria-pressed={active === i}>
+              <div className="tool-badge">{CATEGORY[tool.id] ?? '工具'}</div>
+              <h2>{tool.name}<span className="tool-qty">數量 {tool.quantity}</span></h2>
+              <p className="tool-desc">{tool.description}</p>
+              <span className="tool-look">{active === i ? '● 正在展示' : '在工具盒中查看 ›'}</span>
+            </button>
+          ))}
         </div>
       </section>
-
-      <h2 className="toolbox-subhead">目前網站使用的刀具與量具</h2>
-
-      <div className="tools-grid">
-        {tools.map(tool => (
-          <article className="tool-card" key={tool.id}>
-            <div className="tool-badge">{tool.type.toUpperCase()}</div>
-            <h2>{tool.name}</h2>
-            <p className="tool-desc">{tool.description}</p>
-
-            <div className="tool-specs">
-              <h3>幾何尺寸與規格</h3>
-              <ul>
-                {Object.entries(tool.dimensions).map(([key, val]) => (
-                  <li key={key}>
-                    <span>{key}：</span>
-                    <strong>{Array.isArray(val) ? val.join(' ~ ') : val}</strong>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="tool-footer">
-              <div className="compatible">
-                <span>適用機台：</span>
-                <strong>{tool.compatibleMachines?.join(', ') || '通用'}</strong>
-              </div>
-              {tool.operations && (
-                <div className="operations">
-                  <span>加工工序：</span>
-                  <strong>{tool.operations.join(' · ')}</strong>
-                </div>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
     </main>
   );
 }

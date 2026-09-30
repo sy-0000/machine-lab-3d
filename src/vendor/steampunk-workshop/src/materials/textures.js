@@ -11,6 +11,8 @@ export function setTextureAnisotropy(a) {
 // ---------------------------------------------------------------- helpers
 
 function makeCanvas(w, h) {
+  // No document inside the background texture worker (src/prewarm): use an OffscreenCanvas there.
+  if (typeof document === 'undefined') return new OffscreenCanvas(w, h);
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
@@ -1324,10 +1326,21 @@ function makeStainDecal(seed) {
 // ---------------------------------------------------------------- registry (lazy + cached)
 
 const cache = new Map();
+// Textures painted ahead of time in the background worker (src/prewarm); used instead of painting on the main thread.
+const primed = new Map();
+const withAnisotropy = (v) => {
+  if (v?.isTexture) v.anisotropy = ANISOTROPY;
+  else if (v && typeof v === 'object') Object.values(v).forEach(withAnisotropy);
+  return v;
+};
 const lazy = (key, fn) => () => {
-  if (!cache.has(key)) cache.set(key, fn());
+  if (!cache.has(key)) cache.set(key, primed.has(key) ? withAnisotropy(primed.get(key)) : fn());
   return cache.get(key);
 };
+/** @param {Iterable<[string, any]>} entries  registry key → the same shape its maker returns */
+export function primeTextures(entries) {
+  for (const [key, value] of entries) if (!cache.has(key)) primed.set(key, value);
+}
 
 export const Textures = {
   brick: lazy('brick', makeBrick),
