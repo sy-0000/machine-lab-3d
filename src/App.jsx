@@ -20,6 +20,16 @@ const LevelsPage = lazy(() => import('./pages/LevelsPage'));
 export default function App() {
   const [route, setRoute] = useState(location.hash.slice(2));
   const [theme, toggleTheme] = useTheme();
+  // 手機與平板（≤1024px）的漢堡選單；換頁、按 Esc、點選單外面都會收起
+  const [menuOpen, setMenuOpen] = useState(false);
+  // 換頁：收起選單，並從新頁面的最上面開始（否則會停在上一頁捲到的位置）
+  useEffect(() => { setMenuOpen(false); scrollTo(0, 0); }, [route]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = e => { if (e.key === 'Escape') setMenuOpen(false); };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   // 開站後趁空檔在背景準備工具盒與機台場景（貼圖、模型），進入時就不必等
   useEffect(prewarmInBackground, []);
@@ -47,7 +57,7 @@ export default function App() {
           </span>
         </a>
 
-        <nav className="nav-links" aria-label="全站主導覽">
+        <nav id="site-menu" className={`nav-links${menuOpen ? ' is-open' : ''}`} aria-label="全站主導覽" onClick={e => { if (e.target.closest('a')) setMenuOpen(false); }}>
           <a className={`nav-link ${!route || route === 'home' ? 'active' : ''}`} href="#/">
             首頁
           </a>
@@ -70,8 +80,12 @@ export default function App() {
           <button className="theme-toggle" onClick={toggleTheme} aria-label={theme === 'dark' ? '切換為淺色模式' : '切換為深色模式'} title={theme === 'dark' ? '切換為淺色模式' : '切換為深色模式'}>
             {theme === 'dark' ? '☀️ 淺色' : '🌙 深色'}
           </button>
+          <button className="menu-toggle" aria-expanded={menuOpen} aria-controls="site-menu" aria-label={menuOpen ? '關閉選單' : '開啟選單'} onClick={() => setMenuOpen(o => !o)}>
+            <span className="bars" aria-hidden="true"><span /><span /><span /></span>
+          </button>
         </div>
       </header>
+      {menuOpen && <div className="menu-scrim" onClick={() => setMenuOpen(false)} />}
 
       {route === 'safety' ? (
         <Suspense fallback={<main>正在載入工安規範…</main>}>

@@ -181,3 +181,10 @@
 :where(:root[data-theme=light]) .console-position strong{color:var(--ink)}
 :where(:root[data-theme=light]) .console-hold button{background:var(--card);color:var(--ink)}
 :where(:root[data-theme=light]) button:disabled{color:var(--muted)}
+
+/* 手機與平板的漢堡選單 */
+@media(max-width:1024px){
+  :where(:root[data-theme=light]) .menu-toggle{color:var(--nav-text);border-color:var(--nav-text-2)}
+  :where(:root[data-theme=light]) .nav-links{background:var(--ink);border-bottom-color:rgba(255,255,255,.12)}
+  :where(:root[data-theme=light]) .nav-links .nav-link.active{clip-path:none;padding-left:14px;padding-right:14px}
+}
