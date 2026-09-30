@@ -21,7 +21,7 @@
 .safety-card ul{line-height:2;color:#a1b5be;font-size:14px;padding-left:20px}.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}.tool-card{background:#141f24;border:1px solid #2a3c44;border-radius:12px;padding:22px;display:flex;flex-direction:column}.tool-badge{display:inline-block;font-size:10px;letter-spacing:1px;font-weight:700;color:#102520;background:#9beecd;padding:3px 8px;border-radius:4px;margin-bottom:12px;align-self:flex-start}.tool-card h2{font-size:18px;margin:0 0 10px;color:#e2ecf0}.tool-desc{font-size:13px;color:#8fa4ae;line-height:1.7;margin-bottom:16px;flex:1}
 .level-action{display:block;text-align:center;padding:10px;background:#1b2a30;border:1px solid #334c56;border-radius:7px;color:#98edd1;text-decoration:none;font-size:13px;font-weight:500;transition:background .15s}
 .level-action:hover{background:#233941;border-color:#5eb499}
-@media(max-width:760px){.nav-links{display:none}.machine-switcher{width:100%;margin-top:12px}}
+@media(max-width:760px){.machine-switcher{width:100%;margin-top:12px}}
 
 
 /* Homepage: horizontal cards on desktop, stacked content on mobile. */
@@ -30,7 +30,8 @@
 .home-intro p{color:#9bafb8;font-size:14px;line-height:1.9}
 .machine-cards{display:grid;gap:20px;max-width:1120px;margin:0 auto}
 .machine-card{position:relative;display:block;overflow:hidden;border:1px solid #30434a;border-radius:14px;background:#151e24;text-decoration:none;transition:border-color .15s,background .15s}
-.card-face{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(0,1.5fr);align-items:center}
+.card-face{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(0,1.5fr);align-items:center;color:inherit;text-decoration:none}
+.card-face:focus-visible{outline:2px solid #9becce;outline-offset:-4px}
 .machine-card:hover{border-color:#80cdb3;background:#19282e}
 .card-visual{display:grid;place-items:center;align-self:stretch;padding:26px;background:linear-gradient(135deg,#1b3433,#15242c);border-right:1px solid #30434a}
 .card-visual svg{width:100%;max-width:300px;height:auto}
@@ -62,10 +63,36 @@
 /* 首頁機台卡片：滑鼠停留時卡片表面滑開，露出底下的加工原理動畫（src/components/MachineCard.jsx） */
 .card-face{position:relative;z-index:1;background:inherit;border-radius:inherit;transition:transform .6s cubic-bezier(.65,0,.35,1),box-shadow .6s ease}
 .card-preview{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;background:#F7F0E1}
+.card-preview-link{position:absolute;inset:0;z-index:0}
 .machine-card.is-previewing .card-face{transform:translateX(calc(100% + 40px)) rotate(3deg);box-shadow:-18px 0 30px rgba(0,0,0,.25);transition-duration:.7s}
 .card-preview-tag{position:absolute;right:14px;bottom:12px;z-index:2;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#FFFBF2;background:rgba(75,58,48,.82);opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease;pointer-events:none}
 .machine-card.is-previewing .card-preview-tag{opacity:1;transform:none;transition-delay:.35s}
+/* 觸控裝置的預覽開關（有滑鼠時不顯示，改用滑鼠停留） */
+.card-preview-toggle{position:absolute;top:12px;right:12px;z-index:3;min-height:36px;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.04em;color:#FFFBF2;background:rgba(75,58,48,.85);border:1.5px solid rgba(255,251,242,.55);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+.card-preview-toggle[aria-expanded=true]{background:#F29E4C;color:#2B2622;border-color:#4B3A30}
+.card-preview-toggle:focus-visible{outline:2px solid #9becce;outline-offset:2px}
+/* 窄卡片：動畫的步驟說明在下方，提示改到左上角並縮短 */
+@media(max-width:760px){.card-preview-tag{top:12px;bottom:auto;left:12px;right:auto}.card-preview-tag .tag-name{display:none}}
 @media(prefers-reduced-motion:reduce){
   .card-face{transition:opacity .3s ease}
   .machine-card.is-previewing .card-face{transform:none;opacity:0;box-shadow:none}
 }
+
+/* 手機與平板：導覽列收進漢堡選單（App.jsx 的 menu-toggle） */
+.menu-toggle{display:none}
+@media(max-width:1024px){
+  header{position:relative;z-index:50}
+  .menu-toggle{display:inline-grid;place-items:center;width:44px;height:44px;padding:0;border-radius:10px;background:transparent;border:1.5px solid #42535b;color:#b3c2c8;cursor:pointer}
+  .menu-toggle span{display:block;width:20px;height:2px;border-radius:2px;background:currentColor;transition:transform .25s ease,opacity .2s ease}
+  .menu-toggle .bars{display:grid;gap:5px}
+  .menu-toggle[aria-expanded=true] .bars span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .menu-toggle[aria-expanded=true] .bars span:nth-child(2){opacity:0}
+  .menu-toggle[aria-expanded=true] .bars span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .nav-links,.nav-links.is-open{display:flex}
+  .nav-links{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:4px;padding:10px 16px 16px;background:#10181c;border-bottom:1px solid #283137;box-shadow:0 14px 30px rgba(0,0,0,.35);
+    visibility:hidden;opacity:0;transform:translateY(-8px);transition:opacity .2s ease,transform .2s ease,visibility 0s linear .2s}
+  .nav-links.is-open{visibility:visible;opacity:1;transform:none;transition:opacity .2s ease,transform .2s ease}
+  .nav-links .nav-link{font-size:16px;padding:13px 14px;border-radius:8px}
+  .menu-scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35)}
+}
+@media(max-width:1024px) and (prefers-reduced-motion:reduce){.nav-links,.nav-links.is-open{transform:none;transition:none}}

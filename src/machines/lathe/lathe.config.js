@@ -1,12 +1,12 @@
 /**
  * Lathe Machine Configuration
- * 16K20 Engine Lathe Contract Definition
+ * Engine Lathe Contract Definition
  */
 export const LATHE_CONFIG = {
   id: 'lathe',
   name: '普通車床',
-  modelName: '16K20',
-  subtitle: '16K20 · 縱向與橫向進給',
+  modelName: 'Engine Lathe',
+  subtitle: 'LATHE · 縱向與橫向進給',
   number: '01',
   description: '認識主軸、溜板、四方刀架與尾座的機械連動。',
 
