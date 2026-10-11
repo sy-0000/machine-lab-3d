@@ -12,6 +12,7 @@ import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
 import { disposeTree } from '../dispose.js';
 import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
+import { ROOM } from '../../vendor/steampunk-workshop/src/config/layout.js';
 
 // 機台在房間裡的朝向：把各模型的操作側轉到 +Z（南）。車床、鑽床的操作側原本就在 +Z，銑床在 +X。
 export const VR_FACING = { lathe: 0, milling: -Math.PI / 2, drill: 0 };
@@ -36,6 +37,19 @@ function createPedestal(object, height) {
 
 // 展示工具時其他燈光剩下的比例
 const DIM_TO = 0.15;
+// 搖桿走動的範圍：八角牆內縮 0.6 m；機台鋼板（2.2 × 1.6，外加 0.3）與工作桌（外加 0.3）不能穿過。其他擺設暫不擋。
+const WALL_LIMIT = ROOM.apothem - 0.6;
+const BLOCKS = [
+  { x0: -1.4, x1: 1.4, z0: -1.1, z1: 1.1 },
+  { x0: -1.2, x1: 1.2, z0: 5.1, z1: 6.45 },
+];
+export function canStandInWorkshop(x, z) {
+  for (let k = 0; k < ROOM.sides; k++) {
+    const t = k * Math.PI * 2 / ROOM.sides;
+    if (x * Math.sin(t) - z * Math.cos(t) > WALL_LIMIT) return false;
+  }
+  return !BLOCKS.some(b => x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1);
+}
 
 export function createWorkshop({ renderer, camera, quality, environment, status, input }) {
   let scene = null, post = null, room = null, machine = null, desk = null, frame = 0, disposed = false;
@@ -49,6 +63,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
     machine: () => machine,
     get machineId() { return machine?.id || null; },
     get toolbox() { return desk; },
+    canStand: canStandInWorkshop,
 
     async enter({ machineId = 'lathe' } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點
@@ -65,6 +80,8 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       const root = new Group();
       root.name = 'SteampunkWorkshop';
       const sky = createSky(root);
+      // 天空在不透明物件之後才畫（它不寫深度）：被牆與穹頂框架擋住的像素不必算天空著色器
+      root.getObjectByName('ProceduralSky').renderOrder = 100;
       const world = await buildWorld(root, quality);
       if (disposed) { disposeTree(root); alive(); }
       const lights = createLights(root, quality, world.anchors);
@@ -78,7 +95,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       root.traverse(o => { if (o.isLight) roomLights.push({ light: o, base: o.intensity, animated: /^(BoilerFire|EdisonLamp_)/.test(o.name) }); });
 
       status('擺放工作桌與工具箱…');
-      desk = await createDeskToolbox({ input, envMap: environment.texture, alive });
+      desk = await createDeskToolbox({ input, camera, envMap: environment.texture, alive });
       await warmUpGpu(renderer, desk.object, camera, scene);
       if (disposed) { desk.dispose(); disposeTree(desk.object); desk = null; alive(); }
       scene.add(desk.object);

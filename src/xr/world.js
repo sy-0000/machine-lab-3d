@@ -13,6 +13,7 @@ import { createLobby } from './areas/Lobby.js';
 import { createWorkshop, DESK_SPOT } from './areas/Workshop.js';
 import { createProgress } from './progress.js';
 import { createMenu } from './ui/Menu.js';
+import { createLocomotion } from './Locomotion.js';
 
 /**
  * @param {HTMLElement} container
@@ -130,6 +131,9 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   const menu = createMenu({ input, player, camera, items: menuItems, run: runMenu });
   if (import.meta.env.DEV) window.__xrWorld.menu = menu;
 
+  // 搖桿走動（左手移動、右手快速轉向）；換區域或淡出淡入中不動
+  const locomotion = createLocomotion({ renderer, player, camera, input, canMove: () => !manager.busy, area: () => manager.current });
+
   // 右手 B：開關 FPS；左手 Y：叫出／關閉選單
   input.onButton('right', 5, () => fps.toggle());
   input.onButton('left', 5, () => menu.toggle());
@@ -153,6 +157,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       renderer.xr.updateCamera(camera);
       camera.updateMatrixWorld(true);
     } else { stepViewTween(dt); orbit.update(); }
+    locomotion.update(dt);
     input.update();
     menu.update(dt);
     manager.update(dt, elapsed);

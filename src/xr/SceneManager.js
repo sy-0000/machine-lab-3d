@@ -119,10 +119,10 @@ export class SceneManager {
 
   /**
    * 在目前區域內換站位。station = { position: 地面座標, yaw, view?: { eye, target } }（view 給桌機用）。
-   * VR：淡出 → 移過去 → 淡入；桌機：鏡頭在 seconds 秒內平滑移到 view。
+   * VR：淡出 → 移過去 → 淡入；桌機：鏡頭在 seconds 秒內平滑移到 view。回傳 Promise；忙碌中回傳 null。
    */
-  async moveTo(station, { seconds = 1.2 } = {}) {
-    if (this.#busy) return;
+  moveTo(station, { seconds = 1.2 } = {}) {
+    if (this.#busy) return null; // 正在換站位或換區域：不接受（呼叫端據此判斷沒有移動）
     const { renderer, setDesktopView } = this.ctx;
     const run = (async () => {
       this.spawn = { position: station.position.clone(), yaw: station.yaw ?? 0, view: station.view };
@@ -139,18 +139,22 @@ export class SceneManager {
   /** 只淡出（不換站位）：例如開金庫門後再切換到工作室，讓黑幕銜接 */
   fadeOut() { return this.#fadeTo(1); }
 
+  // 淡出／淡入：回傳到達目標時完成的 Promise。另一個要求改了目標時，先前在等的立刻完成（不會永遠卡住，
+  // 否則 moveTo／go 的 #busy 不會清掉，之後的換區域會一直排隊，畫面停在黑幕）
   #fadeTo(value) {
+    if (this.fadeTarget !== value) this.#settleFades();
     this.fadeTarget = value;
     if (this.fadeValue === value) return Promise.resolve();
-    return new Promise(resolve => { this.#fadeDone = resolve; });
+    return new Promise(resolve => this.#fadeWaiters.push(resolve));
   }
-  #fadeDone = null;
+  #settleFades() { const list = this.#fadeWaiters; this.#fadeWaiters = []; list.forEach(resolve => resolve()); }
+  #fadeWaiters = [];
 
   update(dt, elapsed) {
     if (this.fadeValue !== this.fadeTarget) {
       const step = dt / FADE_SECONDS;
       this.fadeValue = this.fadeTarget > this.fadeValue ? Math.min(this.fadeTarget, this.fadeValue + step) : Math.max(this.fadeTarget, this.fadeValue - step);
-      if (this.fadeValue === this.fadeTarget) { const done = this.#fadeDone; this.#fadeDone = null; done?.(); }
+      if (this.fadeValue === this.fadeTarget) this.#settleFades();
     }
     this.fade.material.opacity = this.fadeValue;
     this.fade.visible = this.fadeValue > 0.001;

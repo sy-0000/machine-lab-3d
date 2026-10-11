@@ -95,7 +95,13 @@ export class InputManager {
       else gamepad?.vibrationActuator?.playEffect?.('dual-rumble', { duration: ms, strongMagnitude: intensity, weakMagnitude: intensity });
     } catch { /* 不支援震動 */ }
   }
-  /** 左／右手控制器的 grip 空間（選單掛在左手腕上） */
+  /** 搖桿 [x, y]（xr-standard：axes 2、3；往前推 y < 0）；沒有控制器時 [0, 0] */
+  stick(hand) {
+    const axes = this.controllers.find(c => c.inputSource?.handedness === hand && c.active)?.inputSource?.gamepad?.axes;
+    if (!axes) return [0, 0];
+    return axes.length >= 4 ? [axes[2], axes[3]] : [axes[0] || 0, axes[1] || 0];
+  }
+  /** 左／右手控制器的 grip 空間 */
   grip(hand) { return this.controllers.find(c => c.inputSource?.handedness === hand && c.active)?.grip || null; }
 
   #pick(raycaster) {

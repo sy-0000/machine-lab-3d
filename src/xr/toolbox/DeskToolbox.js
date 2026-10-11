@@ -1,5 +1,6 @@
 // 工作室的工作桌與工具箱（VR／桌機 #/world 共用）：沿用網站工具盒的模型與流程（toolboxCore.js），
-// 射線點選工具 → 升起到桌子上方 → 單獨聚光、工作室其他燈光漸暗 → 旁邊 3D 說明面板（上一項／下一項／放回盒中）。
+// 射線點選工具 → 升起到工具箱正上方（放大 1.8 倍）→ 單獨聚光、工作室其他燈光漸暗 →
+// 說明面板出現在玩家看向工具的方向、工具上方，面向玩家（上一項／下一項／放回盒中）。
 // 展示中可用 grip（滑鼠：按住拖曳）抓住工具轉動檢視。
 // 工作桌中心 (0, 0, 5.8)、1.8 × 0.8 × 0.9 m；工具箱與工具整組縮成 0.36 倍（箱子約 0.72 × 0.4 m），放在桌子左半邊，
 // 打開的箱蓋才不會擋住站在桌前看向中央機台的視線。
@@ -17,10 +18,13 @@ import { COLORS, drawEnamel, drawFrame, FONT_SERIF_TC, loadSignFonts } from '../
 
 export const DESK = { x: 0, z: 5.8, width: 1.8, depth: 0.8, height: 0.9 };
 const SCALE = 0.36, TRAY_X = -0.4;
-// 展示點（世界座標）：站在桌前 (0, 6.7) 時，眼前約 0.7 m、胸口高度
-const SHOW_AT = new Vector3(-0.15, 1.38, 6.08);
-const PANEL_AT = new Vector3(0.38, 1.36, 6.14), PANEL_YAW = -0.5;
-const PANEL = { w: 0.5, h: 0.36, px: 1000 };
+// 展示點（世界座標）：工具箱正上方、略往前（箱蓋在後面當背景）
+const SHOW_AT = new Vector3(TRAY_X, 1.24, DESK.z + 0.05);
+// 展示時工具再放大（網站工具盒的 display.scale × SHOW_SCALE；工具箱裡是接近實物的大小）
+const SHOW_SCALE = 1.8;
+// 說明面板：拿起時擺在「玩家眼睛 → 工具」的水平方向上，距離 0.8 m、比眼睛高一點（在工具上方），面向玩家
+const PANEL_DISTANCE = 0.8, PANEL_RISE = 0.12;
+const PANEL = { w: 0.44, h: 0.3, px: 1000 };
 
 const ROTATE_GAIN = 1 / 0.006 * 1.6; // 射線轉 1 弧度 ≈ 工具轉 1.6 弧度（ToolController.drag 每像素 0.006）
 
@@ -54,8 +58,8 @@ function createInfoPanel(onPrev, onNext, onReturn) {
     ['next', buttonFace('下一項', 'next'), 0, onNext],
     ['back', buttonFace('放回盒中', 'back'), 0.17, onReturn],
   ].map(([key, faceTex, x, fn]) => {
-    const b = brassButton(faceTex, { width: 0.155, height: 0.05 });
-    b.object.position.set(x, -PANEL.h / 2 - 0.04, 0);
+    const b = brassButton(faceTex, { width: 0.135, height: 0.044 });
+    b.object.position.set(x * 0.86, -PANEL.h / 2 - 0.036, 0);
     b.object.scale.z = 0.5;
     b.object.name = `ToolPanel_${key}`;
     object.add(b.object);
@@ -75,7 +79,7 @@ function createInfoPanel(onPrev, onNext, onReturn) {
  * @param {{ input: import('../InputManager.js').InputManager, renderer, envMap }} options
  * @returns {Promise<{ object, update(dt, elapsed), readonly dim: number, readonly busy: boolean, putAway(), dispose() }>}
  */
-export async function createDeskToolbox({ input, envMap, alive = () => {} }) {
+export async function createDeskToolbox({ input, camera, envMap, alive = () => {} }) {
   const quality = resolveQuality();
   await prewarmToolbox();
   alive();
@@ -98,6 +102,8 @@ export async function createDeskToolbox({ input, envMap, alive = () => {} }) {
   root.add(tray);
   const { toolbox, entries } = await buildToolbox(tray, mat, { envMap });
   alive();
+  // 展示放大：換成自己的設定副本（網站工具盒頁面共用同一份 TOOLS，不能直接改）
+  for (const e of entries) e.config = { ...e.config, display: { ...e.config.display, scale: e.config.display.scale * SHOW_SCALE } };
   toolbox.traverse(o => { if (o.isMesh) o.receiveShadow = true; });
   root.updateMatrixWorld(true);
   const showLocal = tray.worldToLocal(SHOW_AT.clone());
@@ -117,7 +123,7 @@ export async function createDeskToolbox({ input, envMap, alive = () => {} }) {
   const flow = createToolFlow({
     scene: tray, entries, showcasePoint: showLocal, tweens, puff,
     view: {
-      onSelect(i) { setTimeout(() => panel.show(TOOLS[i], i), 650); },
+      onSelect(i) { placePanel(); setTimeout(() => panel.show(TOOLS[i], i), 650); },
       onSwitch(prev, next) { panel.hide(); setTimeout(() => panel.show(TOOLS[next], next), 600); },
       onPutAway() { panel.hide(); },
     },
@@ -126,10 +132,20 @@ export async function createDeskToolbox({ input, envMap, alive = () => {} }) {
   const showing = () => sm.is(STATES.SHOWCASE);
 
   panel = createInfoPanel(() => flow.step(-1), () => flow.step(1), () => flow.putAway());
-  panel.object.position.copy(PANEL_AT);
-  panel.object.rotation.y = PANEL_YAW;
   panel.hide();
   root.add(panel.object);
+  const eye = new Vector3(), toward = new Vector3();
+  function placePanel() {
+    camera.getWorldPosition(eye);
+    toward.subVectors(SHOW_AT, eye).setY(0);
+    if (toward.lengthSq() < 1e-4) toward.set(0, 0, -1);
+    toward.normalize();
+    root.updateMatrixWorld(true);
+    const at = eye.clone().addScaledVector(toward, PANEL_DISTANCE);
+    at.y = eye.y + PANEL_RISE;
+    panel.object.position.copy(root.worldToLocal(at));
+    panel.object.lookAt(eye);
+  }
 
   // ---- 互動 ----
   const offs = [];

@@ -199,6 +199,8 @@ export function createExterior(M, root) {
     textures: [sign.texture],
     occluders,
     get doorOpen() { return openT >= 1; },
+    /** 大門正在打開（陰影要跟著更新） */
+    get moving() { return openT >= 0 && openT < 1; },
     /** 直接把大門設成打開（從選單回到玄關時） */
     setDoorsOpen() { openT = 1; for (const { pivot, side } of doors.leaves) pivot.rotation.y = side < 0 ? 1.45 : -1.45; },
     /** 推開大門（約 1 秒）；回傳在門開好時完成的 Promise */

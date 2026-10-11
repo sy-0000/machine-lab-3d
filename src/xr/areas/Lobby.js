@@ -2,7 +2,7 @@
 // 工作室（穹頂）內部不動；外牆、玄關、金庫門都在這個場景裡（見 src/xr/lobby/）。
 // VR 中程式不會自行移動或旋轉視角：換站位一律「淡出 → 固定站位 → 淡入」（SceneManager.moveTo）；桌機 #/world 平滑移鏡頭。
 // 進度存在 localStorage（src/xr/progress.js），重新進入時壓力錶與指示燈維持完成狀態。
-import { BoxGeometry, DirectionalLight, FogExp2, Group, HemisphereLight, PlaneGeometry, Scene, Vector2, Vector3 } from 'three';
+import { BoxGeometry, DirectionalLight, FogExp2, Frustum, Group, HemisphereLight, Matrix4, PlaneGeometry, Scene, Vector2, Vector3 } from 'three';
 import { createMaterials } from '../../vendor/steampunk-workshop/src/materials/library.js';
 import { createSky } from '../../vendor/steampunk-workshop/src/core/sky.js';
 import { add } from '../../vendor/steampunk-workshop/src/utils/geometry.js';
@@ -34,13 +34,41 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
   let scene = null, sky = null, exterior = null, vestibule = null, vault = null, board = null, screen = null, disposed = false;
   let where = 'outside';
   const offs = [], textures = [], bufferSize = new Vector2();
+  let shadowFrames = 0;
 
-  const station = name => { where = name; return moveTo(STATIONS[name]); };
+  // 換站位：正在換（或正要離開玄關）時不接受，where 只在真的開始移動時才改
+  let leaving = false;
+  const station = name => {
+    if (leaving) return null;
+    const moving = moveTo(STATIONS[name]);
+    if (moving) where = name;
+    return moving;
+  };
+  // 放映幕是否在視野內（XR 用頭盔相機）：看不到時動畫暫停，不重畫也不上傳貼圖
+  const frustum = new Frustum(), viewProj = new Matrix4();
+  const inView = object => {
+    const cam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+    viewProj.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(viewProj);
+    return frustum.intersectsObject(object);
+  };
 
   return {
     get scene() { return scene; },
     /** 目前站位（outside／center／board／screen／vault），選單用來標示所在地點 */
     get where() { return where; },
+    /** 搖桿走動：玄關室內、（大門開著時）門口、門外前庭可以站 */
+    canStand(x, z) {
+      if (Math.abs(x) < VEST.x - 0.35 && z > VEST.z0 + 0.35 && z < VEST.z1 - 0.3) return true;
+      if (exterior?.doorOpen && Math.abs(x) < 0.85 && z >= VEST.z1 - 0.3 && z <= FACADE_Z + 0.4) return true;
+      return z > FACADE_Z + 0.4 && z < 34 && Math.abs(x) < 14;
+    },
+    /** 走進／走出玄關時更新站位（決定哪些東西可以點） */
+    onWalk(x, z) {
+      if (leaving) return;
+      if (z < VEST.z1 - 0.2 && where === 'outside') where = 'center';
+      else if (z > FACADE_Z && where !== 'outside') where = 'outside';
+    },
     view: STATIONS.outside.view,
     /** 選單／L 鍵：回到門外 */
     goOutside() { return station('outside'); },
@@ -62,6 +90,8 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       const root = new Group();
       root.name = 'Lobby';
       sky = createSky(root);
+      // 天空在不透明物件之後才畫（它不寫深度）：被牆擋住的像素不必算天空著色器
+      root.getObjectByName('ProceduralSky').renderOrder = 100;
 
       // 天光＋西南斜陽（照亮南面入口；天空的太陽在北邊，入口原本是背光面）。玄關屋頂會擋住陽光
       root.add(new HemisphereLight(0xdfe9f5, 0x6b5a46, 0.75));
@@ -139,11 +169,12 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
         });
       }
       input.add(vault.wheelTarget, {
-        enabled: () => !vault.opening && where !== 'outside',
+        enabled: () => !leaving && !vault.opening && where !== 'outside',
         onSelect: async () => {
           // 和兩個面板一樣：第一次點先走到門前，站在門前再點才會抖動（未解鎖）或開門
           if (where !== 'vault') return station('vault');
           if (!progress.unlocked) return vault.rattle();
+          leaving = true; // 開門到進工廠之間不再換站位（避免兩段淡出淡入互相打斷）
           await vault.open({ onBolts: () => {
             for (let i = 0; i < 6; i++) {
               const a = i / 6 * Math.PI * 2;
@@ -186,6 +217,8 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       await warmUpGpu(renderer, root, camera, scene);
       alive();
       scene.add(root);
+      renderer.shadowMap.autoUpdate = false;
+      shadowFrames = 2;
       // 從選單「回到玄關」進來：出生在玄關中央、大門已打開
       where = STATIONS[startAt] ? startAt : 'outside';
       if (where !== 'outside') exterior.setDoorsOpen();
@@ -197,7 +230,10 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       if (!scene) return;
       sky?.update(dt, elapsed);
       exterior?.update(dt, elapsed);
-      screen?.update(dt);
+      // 放映幕：在玄關裡、而且看得到時才播放（每秒重畫 30 次並上傳 1280×800 貼圖，看不到時省下）
+      if (screen && where !== 'outside' && inView(screen.picture)) screen.update(dt);
+      // 陰影：場景靜態，只有大門、金庫門在動或正在轉閥門時才重算陰影貼圖
+      if (exterior?.moving || vault?.opening || input.grabbing || shadowFrames-- > 0) renderer.shadowMap.needsUpdate = true;
       vault?.update(dt);
       vestibule?.update(dt, elapsed, vault?.gearBoost ?? 1);
       // 蒸汽粒子的像素大小（與工作室 effects 相同的算法；XR 用固定值）
@@ -210,6 +246,7 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
     exit() {
       if (disposed) return;
       disposed = true;
+      renderer.shadowMap.autoUpdate = true;
       offs.forEach(off => off());
       if (scene) disposeTree(scene); // 共用的反射環境不在這裡釋放
       board?.dispose(); screen?.dispose(); vault?.dispose();

@@ -38,7 +38,7 @@ function createGears(M, root) {
     const list = GEARS.filter(g => g[3] === size);
     const mesh = new InstancedMesh(createGearGeometry({ ...spec, thickness: 0.04, bore: 0.03 }), materials[size], list.length);
     mesh.name = `WallGears_${size}`;
-    mesh.castShadow = true;
+    mesh.castShadow = false; // 一直在轉；大門口的陰影是靜態的（只在門動時更新），齒輪不投影
     root.add(mesh);
     meshes[size] = mesh;
     list.forEach(([wall, along, y, , dir], i) => {
