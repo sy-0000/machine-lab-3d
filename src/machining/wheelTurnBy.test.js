@@ -77,3 +77,18 @@ test('wheel.turnBy 在主軸運轉時會切削（與桌機同一條路徑）', a
     assert.ok(2 * w.profile.radiusMm[Math.floor((w.lengthMm - 1) / res)] < 20, '外徑被車小');
   } finally { await close(); }
 });
+
+test('wheel.grip：手握著鑽床進給手柄時不會回彈，放開（wheel.release）才回彈', async () => {
+  const { machine, session, tick, close } = await fixture('drill');
+  try {
+    send(session, { type: 'wheel.grip', key: 'feed' });
+    send(session, { type: 'wheel.turnBy', key: 'feed', deltaAngle: -0.6 });
+    const down = machine.getState().offsets.quill;
+    assert.ok(down < 0, '套筒往下');
+    for (let i = 0; i < 60; i++) tick(1 / 60);
+    near(machine.getState().offsets.quill, down);
+    send(session, { type: 'wheel.release' });
+    for (let i = 0; i < 180; i++) tick(1 / 60);
+    near(machine.getState().offsets.quill, 0, 1e-6);
+  } finally { await close(); }
+});

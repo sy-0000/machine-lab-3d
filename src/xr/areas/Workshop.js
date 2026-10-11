@@ -11,7 +11,8 @@ import { createEffects } from '../../vendor/steampunk-workshop/src/effects/effec
 import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
 import { MachineSession } from '../../machining/MachineSession.js';
-import { attachHandwheels } from '../machine/vrHandwheels.js';
+import { attachMachineControls } from '../machine/vrMachineControls.js';
+import { createDashboard } from '../machine/Dashboard.js';
 import { disposeTree } from '../dispose.js';
 import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
 import { createTeleportDiscs, discStations } from '../workshop/teleportDiscs.js';
@@ -57,7 +58,9 @@ export function canStandInWorkshop(x, z) {
 
 export function createWorkshop({ renderer, camera, quality, environment, status, input, progress, moveTo }) {
   let scene = null, post = null, room = null, machine = null, desk = null, discs = null, frame = 0, disposed = false;
-  let session = null, clock = null, sessionFrame = 0, detachWheels = null;
+  let session = null, clock = null, sessionFrame = 0, detachControls = null, dashboard = null;
+  // 手輪每格（10°）的進給量（mm），儀表板切換；換機台時保留
+  const feed = { mm: 0.1 };
   let roomLights = [];
   const machineRoot = new Group();
   machineRoot.name = 'MachineSlot';
@@ -134,7 +137,11 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       clock = session.claimClock();
       sessionFrame = 0;
       machine = { id: machineId, instance, runtime: m, session };
-      detachWheels = attachHandwheels({ session, runtime: m, input, machineId });
+      // 銑床手輪沒有提供真實比例（需要教學比例）：VR 用每格進給量，直接開啟教學比例
+      if (m.config.wheels.some(w => w.needsCalibration)) session.command({ type: 'teaching.set', enabled: true });
+      detachControls = attachMachineControls({ session, runtime: m, input, feed });
+      dashboard = createDashboard({ session, machineId, input, feed, maxRpm: m.config.maxRpm });
+      scene.add(dashboard.object);
 
       // 瞬移圓盤（打開金庫門、進入工廠後解鎖）：拋物線或射線點圓盤都可以移過去；桌機點圓盤平滑移鏡頭
       progress?.enterFactory();
@@ -160,6 +167,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       room.world.update(dt, elapsed, camera);
       room.lights.update(elapsed);
       session?.update(dt, { clock, frameId: sessionFrame++ });
+      dashboard?.update(dt);
       desk?.update(dt);
       discs?.update(elapsed);
       // 展示工具時其他燈光漸暗
@@ -182,7 +190,8 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       renderer.shadowMap.autoUpdate = true;
       post?.dispose();
       machineRoot.removeFromParent();
-      detachWheels?.(); detachWheels = null;
+      detachControls?.(); detachControls = null;
+      dashboard?.dispose(); dashboard = null;
       session?.dispose(); session = null; clock = null;
       MachineRegistry.unload(); // 也會取消還在下載的機台
       for (const child of machineRoot.children) if (child.name === 'MachinePedestal') disposeTree(child);

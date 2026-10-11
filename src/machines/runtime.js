@@ -119,6 +119,11 @@ export function turnControl(m,key,direction,delta,teaching=false){
  const w=m.controls[key];if(!w||w.type!=='wheel')return;
  turnControlBy(m,key,direction*w.speed*delta*(m.holdSpeedScale??1),teaching);
 }
+// Axis travel (world units) per radian of a wheel: supplied ratio, lever range, or the teaching default.
+export function wheelRatio(m,key){
+ const w=m.controls[key],a=w&&m.config.axes.find(a=>a.id===w.drives);if(!w||!a)return null;
+ return w.ratio??(w.angleRange?Math.abs(a.range[0]/w.angleRange[0]):(a.range[1]-a.range[0])/(m.config.lesson.teachingTurnsForFullTravel*2*Math.PI));
+}
 // Turn a handwheel by an angle (radians): angle change → travel → travel limits. VR turns wheels by hand with this.
 // Returns null when the wheel cannot turn, else { atLimit } (true when the axis or lever range stopped the turn).
 export function turnControlBy(m,key,deltaAngle,teaching=false){

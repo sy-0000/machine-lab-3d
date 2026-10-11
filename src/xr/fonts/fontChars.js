@@ -11,6 +11,8 @@ export const SOURCES = [
   'public/previews/lathe.anim.js',
   'public/previews/milling.anim.js',
   'public/previews/drill.anim.js',
+  // 儀表板顯示的機台安全提示（safetyStatus）
+  'src/machines/runtime.js',
 ];
 const SKIP = /(\.test\.js$)|([\\/]fonts[\\/])/;
 

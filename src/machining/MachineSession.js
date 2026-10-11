@@ -94,6 +94,10 @@ export class MachineSession {
           this.#adapter.validateWheel(command.key, command.direction);
           this.#held = { key: command.key, direction: command.direction, input }; break;
         case 'wheel.release': if (this.#held?.input === input) this.#held = null; break;
+        // Hand on a wheel without turning it (VR): a spring-return lever stays put while gripped. Released by wheel.release.
+        case 'wheel.grip':
+          this.#adapter.validateWheel(command.key, 1);
+          this.#held = { key: command.key, direction: 0, input }; break;
         // Turn by an angle (VR hand). Result carries atLimit so the caller can give limit feedback.
         case 'wheel.turnBy': {
           const result = this.#adapter.turnWheelBy(command.key, command.deltaAngle);
