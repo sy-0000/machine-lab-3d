@@ -4,7 +4,7 @@ import './world.css';
 
 // #/world：VR 世界的容器。three.js 世界（world.js）再動態載入一次，這個頁面本身很小。
 // 從首頁「進入 VR」過來時，首頁已經開好 XR session，這裡交給世界接手；離開 VR 後回到首頁。
-// 桌機直接開這個網址：滑鼠拖曳繞看，按 F 開關 FPS；裝了 Immersive Web Emulator 時也能按「進入 VR」。
+// 桌機直接開這個網址：滑鼠拖曳繞看、點選物件，F 開關 FPS、L 回大門口；裝了 Immersive Web Emulator 時也能按「進入 VR」。
 export default function WorldPage() {
   const container = useRef(null), world = useRef(null);
   const [status, setStatus] = useState('正在載入 3D 世界…'), [ready, setReady] = useState(false), [xrSupported, setXrSupported] = useState(false);
@@ -19,8 +19,7 @@ export default function WorldPage() {
     (async () => {
       const { createWorld } = await import('./world.js');
       if (!live) return;
-      const machineId = new URLSearchParams(location.search).get('machine') || 'lathe';
-      const w = createWorld(container.current, { machineId, onStatus: setStatus, onExitVR: leave });
+      const w = createWorld(container.current, { onStatus: setStatus, onExitVR: leave });
       world.current = w;
       setReady(true);
       if (session) {
@@ -55,7 +54,7 @@ export default function WorldPage() {
     <div className="world-bar">
       <a className="back-link" href="#/">← 返回首頁</a>
       {status && <span className="world-status" role="status">{status}</span>}
-      <span className="world-hint">拖曳繞看 · 滾輪縮放 · F 開關 FPS</span>
+      <span className="world-hint">拖曳繞看 · 點選物件 · F 開關 FPS · L 回大門口</span>
       {xrSupported && <button type="button" className="primary" disabled={!ready} onClick={enter}>🥽 進入 VR</button>}
     </div>
   </main>;

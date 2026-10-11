@@ -14,9 +14,9 @@
 
 | # | 階段 | 狀態 |
 |---|---|---|
-| 1 | 加入 WebXR 支援，確認現有工作室與一台機台能在 Quest 中看到 | ✅ 完成（待實機確認） |
-| 2 | SceneManager、大門口（含動畫螢幕） | 未開始 |
-| 3 | InputManager（射線、grip）與左手 Y 鍵選單 | 未開始 |
+| 1 | 加入 WebXR 支援，確認現有工作室與一台機台能在 Quest 中看到 | ✅ 完成（模擬器通過，實機與第 2 階段一起測） |
+| 2 | SceneManager、大門口（含動畫螢幕） | ✅ 完成（待模擬器與實機確認） |
+| 3 | InputManager（射線、grip）與左手 Y 鍵選單 | 未開始（hover／select、雙手射線、高亮已在第 2 階段先做） |
 | 4 | 工作桌：工安規則 → 工具箱，燈光切換（含 3D UI 面板與子集字型） | 未開始 |
 | 5 | 固定瞬移點 | 未開始 |
 | 6 | 機台手輪 VR 操作（先一個，確認手感後全部）＋ VR 操作介面（儀表板） | 未開始 |
@@ -232,9 +232,23 @@
 
 其餘 15 項在 `feature/webxr`（第 1 階段）全部通過；其中 5 項（drill bit tooling、lathe challenge、workspace fullscreen toggle、levels page、demo workpiece mounts and unmounts…）也在 `main` 上確認通過，另外 10 項（browser.spec.js 的其餘測試，含首頁測試）只在 feature 上跑過。之後每個階段的回歸檢查以「這 15 項仍通過」為準。
 
+- 不穩定：`v2 milling real model switch and feed` 第 1 階段時通過；第 2 階段時在第 1 階段的 commit 上重跑也一樣失敗（3D 零件點選的 `visibleControl` 逾時），屬於這台電腦上時好時壞的測試，不列入回歸判斷。第 2 階段回歸：其餘 14 項全部通過。
+
 ## 第 1 階段實作摘要
 
 - `src/components/VrEntryButton.jsx`：首頁「進入 VR」。
 - `src/xr/WorldPage.jsx`、`src/xr/world.css`：`#/world` 容器（動態載入）。
 - `src/xr/world.js`：renderer、工作室、機台（`?machine=lathe|milling|drill`，預設車床）、出生點在機台正面 (0, 0, 1.6)。
 - `src/xr/FpsMeter.js`：頭盔中的 FPS 顯示。
+
+## 第 2 階段實作摘要
+
+- `src/xr/SceneManager.js`：區域註冊與切換（`go(name, options)`；切換中再要求只保留最後一次）、黑幕淡出淡入（0.35 秒）、載入提示（超過 0.3 秒才顯示）、XR 中把玩家放到出生點／桌機設定滑鼠繞看視角。區域模組介面：`enter(options) → { spawn, yaw }`、`exit()`、`update(dt, elapsed)`、可選 `render(xr, dt, elapsed)`、`resize()`、`scene`、`view`。
+- `src/xr/InputManager.js`：`add(object, { onSelect, onHover, enabled, highlight })` 登記可互動物件；滑鼠（點一下且沒拖曳）與控制器 trigger（按下與放開都指著同一物件）都觸發 `onSelect`；雙手射線、指到時高亮；`onButton(hand, index, fn)` 偵測控制器按鈕。第 3 階段再加 grip 的 grab／drag／release、震動與選單。
+- `src/xr/areas/Lobby.js`：大門口。外牆（八面磚牆、鑄鐵壁柱、簷口、石材牆基）＋工作室的玻璃穹頂（沿用 `createDome`）＋拱門、壁燈、門上銘牌；三個黃銅操作台（工安規則／進入工廠／工具箱）；門旁立式動畫螢幕與三個按鈕。出生點 (0, 0, 12.6) 面向北。
+- `src/xr/areas/Workshop.js`：第 1 階段的工作室與機台搬成區域；從大門口進來都站在工作桌前 (0, 0, 6.7)。`options.start`（`factory`／`safety`／`toolbox`）已傳進來，第 4 階段依它決定一進來顯示的畫面。
+- `src/xr/AnimationScreen.js`：三段動畫輪播（一段播完停 1.6 秒換下一段），每秒重畫 30 次到 1280×800 的 CanvasTexture，標題、頁碼、說明畫在上方。
+- `public/previews/{lathe,milling,drill}.anim.js`：從三個預覽頁抽出的繪圖模組 `createAnimation(ctx)` → `drawFrame(simTime, sdt, playing)`、`layout()`、`clearChips()`。因為旋轉角度與切屑會逐格累積，`drawFrame` 需要 `sdt`（這一格前進的動畫秒數），不是純粹 `drawFrame(ctx, t)`。原本的 html 改用這個模組，用逐格驅動＋固定亂數比對前後畫面：18 張截圖像素完全相同。
+- `src/xr/dispose.js`：`disposeTree()` 也會呼叫 `light.dispose()`（陰影貼圖）。工作室的 `createScene()` 每次呼叫會留下幾個小幾何，所以反射環境改成整個世界只建一次、各區域共用。實測大門口 ⇄ 工作室來回切換，GPU 幾何與貼圖數量固定不再增加。
+- 暫時的操作（第 3 階段取代）：VR 中左手 Y 鍵回大門口；桌機按 L 回大門口。
+- 除錯：開發模式下 `window.__xrWorld = { renderer, manager }`；網址參數 `?area=workshop`、`?machine=milling|drill`、`?fps`。
