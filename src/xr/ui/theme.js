@@ -1,6 +1,6 @@
 // VR 牌子的共用風格（車站翻牌板）：胡桃木外框＋細黃銅線、深色底、墨綠琺瑯招牌、黑色翻牌字牌。
 // 選單、按鈕、壓力錶名牌、提示牌、載入提示、門外招牌都用這裡的顏色與畫法，風格一致。
-import { loadGlyphs } from './canvasText.js';
+import { FONT_SERIF, loadGlyphs } from './canvasText.js';
 
 export const COLORS = {
   walnut: '#3a2617',      // 外框
@@ -25,10 +25,10 @@ export const COLORS = {
 };
 
 export const FONT_FELL = '"IM Fell English SC", "Cormorant Garamond", Georgia, serif';
-export const FONT_SERIF_TC = '"Noto Serif TC", "PMingLiU", "Songti TC", serif';
+export const FONT_SERIF_TC = FONT_SERIF;
 
-// 只在 VR 世界載入（不改 index.html，桌機其他頁面不會多下載）
-const FONT_CSS = 'https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Noto+Serif+TC:wght@500;700&display=swap';
+// 英文招牌字 IM Fell English SC：只在 VR 世界從 Google Fonts 載入（不改 index.html，桌機其他頁面不會多下載）；中文用打包的子集字型
+const FONT_CSS = 'https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap';
 let cssLoaded = null;
 function loadCss() {
   if (cssLoaded) return cssLoaded;
@@ -41,7 +41,7 @@ function loadCss() {
   });
   return cssLoaded;
 }
-/** 牌子用的字型：IM Fell English SC（英文、羅馬數字）與 Noto Serif TC 500／700（中文）。text 是會畫到的所有字。 */
+/** 牌子用的字型：IM Fell English SC（英文、羅馬數字）與子集宋體 500／700（中文）。text 是會畫到的所有字。 */
 export async function loadSignFonts(text) {
   await loadCss();
   try { await document.fonts.load(`40px ${FONT_FELL}`, 'Machine Yard IVXY'); } catch { /* 用備用字型 */ }

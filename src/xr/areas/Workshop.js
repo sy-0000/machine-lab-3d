@@ -1,6 +1,7 @@
 // 工作室（穹頂工作室內部）：現有的 steampunk-workshop 場景（未修改）＋ 房間中央的一台機台。
 // 房間固定不轉，機台正面朝南（+Z，朝大門與工作桌）。
-// 從玄關的金庫門進來，站在工作桌前 (0, 0, 6.7) 面向北；工作桌（只放工具箱）在第 4 階段加入。
+// 從玄關的金庫門進來，站在工作桌前 (0, 0, 6.7) 面向北；工作桌上只放工具箱（src/xr/toolbox/DeskToolbox.js）。
+// 拿起工具展示時，工作室其他燈光與反射環境漸暗到約 15%，放回後恢復。
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Scene, Vector3 } from 'three';
 import { createSky } from '../../vendor/steampunk-workshop/src/core/sky.js';
 import { createPostPipeline } from '../../vendor/steampunk-workshop/src/core/postprocessing.js';
@@ -10,6 +11,7 @@ import { createEffects } from '../../vendor/steampunk-workshop/src/effects/effec
 import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
 import { disposeTree } from '../dispose.js';
+import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
 
 // 機台在房間裡的朝向：把各模型的操作側轉到 +Z（南）。車床、鑽床的操作側原本就在 +Z，銑床在 +X。
 export const VR_FACING = { lathe: 0, milling: -Math.PI / 2, drill: 0 };
@@ -32,8 +34,12 @@ function createPedestal(object, height) {
   return g;
 }
 
-export function createWorkshop({ renderer, camera, quality, environment, status }) {
-  let scene = null, post = null, room = null, machine = null, frame = 0, disposed = false;
+// 展示工具時其他燈光剩下的比例
+const DIM_TO = 0.15;
+
+export function createWorkshop({ renderer, camera, quality, environment, status, input }) {
+  let scene = null, post = null, room = null, machine = null, desk = null, frame = 0, disposed = false;
+  let roomLights = [];
   const machineRoot = new Group();
   machineRoot.name = 'MachineSlot';
 
@@ -42,6 +48,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
     view: { eye: [0, 1.65, 7.6], target: [0, 1.0, 0] },
     machine: () => machine,
     get machineId() { return machine?.id || null; },
+    get toolbox() { return desk; },
 
     async enter({ machineId = 'lathe' } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點
@@ -66,6 +73,15 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
       if (disposed) { disposeTree(root); alive(); }
       scene.add(root);
       room = { root, world, lights, effects, sky };
+      // 燈光漸暗用：記住每盞燈的原始強度（爐火與燈泡每格會重設強度，其餘固定）
+      roomLights = [];
+      root.traverse(o => { if (o.isLight) roomLights.push({ light: o, base: o.intensity, animated: /^(BoilerFire|EdisonLamp_)/.test(o.name) }); });
+
+      status('擺放工作桌與工具箱…');
+      desk = await createDeskToolbox({ input, envMap: environment.texture, alive });
+      await warmUpGpu(renderer, desk.object, camera, scene);
+      if (disposed) { desk.dispose(); disposeTree(desk.object); desk = null; alive(); }
+      scene.add(desk.object);
 
       status('下載機台模型…');
       const instance = await MachineRegistry.load(machineId, { onProgress: p => status(`下載機台模型 ${Math.round(p)}%`) });
@@ -94,6 +110,11 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
       if (frame++ % 2 === 0) renderer.shadowMap.needsUpdate = true;
       room.world.update(dt, elapsed, camera);
       room.lights.update(elapsed);
+      desk?.update(dt);
+      // 展示工具時其他燈光漸暗
+      const k = 1 - (1 - DIM_TO) * (desk?.dim || 0);
+      for (const l of roomLights) l.light.intensity = (l.animated ? l.light.intensity : l.base) * k;
+      scene.environmentIntensity = environment.intensity * k;
       room.effects?.update(dt, elapsed);
       room.sky.update(dt, elapsed);
     },
@@ -112,8 +133,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
       machineRoot.removeFromParent();
       MachineRegistry.unload(); // 也會取消還在下載的機台
       for (const child of machineRoot.children) if (child.name === 'MachinePedestal') disposeTree(child);
+      desk?.dispose();
       if (scene) disposeTree(scene); // 共用的反射環境不在這裡釋放
-      scene = null; room = null; machine = null;
+      scene = null; room = null; machine = null; desk = null; roomLights = [];
     },
   };
 }

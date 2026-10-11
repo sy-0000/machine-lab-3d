@@ -8,9 +8,10 @@
     "dev:xr": "vite --host 0.0.0.0 --mode xr",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test src/lathe.test.js src/machines/runtime.test.js src/machines/v3.test.js src/machines/refinements.test.js src/machines/machineSystem.test.js src/levels/challenges.test.js src/machining/MachineSession.test.js src/machining/WorkpieceState.test.js src/xr/interaction/wheelGrab.test.js",
+    "test": "node --test src/lathe.test.js src/machines/runtime.test.js src/machines/v3.test.js src/machines/refinements.test.js src/machines/machineSystem.test.js src/levels/challenges.test.js src/machining/MachineSession.test.js src/machining/WorkpieceState.test.js src/xr/interaction/wheelGrab.test.js src/xr/fonts/fontChars.test.js",
     "test:browser": "playwright test",
     "audit:models": "node scripts/audit-machines.mjs",
+    "fonts": "node scripts/subset-fonts.mjs",
     "optimize:models": "node scripts/optimize-model.mjs lathe && node scripts/optimize-model.mjs milling"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "meshoptimizer": "^1.2.0",
     "sharp": "^0.35.4",
+    "subset-font": "^2.9.0",
     "vite": "^6.1.0"
   }
 }

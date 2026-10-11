@@ -17,7 +17,7 @@
 | 1 | 加入 WebXR 支援，確認現有工作室與一台機台能在 Quest 中看到 | ✅ 完成（模擬器通過，實機與第 2 階段一起測） |
 | 2 | SceneManager、大門口（Machine Yard 入口、玄關、金庫圓門） | ✅ 完成（模擬器通過） |
 | 3 | InputManager（射線、grip）與左手 Y 鍵選單 | ✅ 完成（模擬器通過；選單改成車站翻牌板、放在視野中央） |
-| 4 | 工作桌：只放工具箱（工安規則已移到玄關），燈光切換（含子集字型） | 未開始 |
+| 4 | 工作桌：只放工具箱（工安規則已移到玄關），燈光切換（含子集字型） | ✅ 完成（待模擬器確認） |
 | 5 | 固定瞬移點（打開金庫門、進入工廠後解鎖） | 未開始 |
 | 6 | 機台手輪 VR 操作（先一個，確認手感後全部）＋ VR 操作介面（儀表板） | 未開始 |
 | 7 | 翻轉鐵板切換機台（方案 A） | 未開始 |
@@ -36,7 +36,7 @@
 - **單一 WebGLRenderer**（vanilla three.js，`xr.enabled`，`local-floor`），`src/xr/world.js`。XR 中略過後製（EffectComposer）；桌機開 `#/world` 時保留後製。
 - **SceneManager**：大門口與工作室為獨立場景模組，提供 `enter()` / `exit()` / `update(dt)`；`exit` 時 dispose 幾何、材質、貼圖；切換時淡出淡入。
 - **InputManager**：滑鼠點擊與控制器 trigger → `hover` / `select`；控制器 grip → `grab` / `drag` / `release`。各區域只聽這些事件。兩手控制器都顯示射線，hover 時物件高亮。不支援手部追蹤，但架構保留擴充空間。
-- **3D UI**：CanvasTexture 面板；繁中字型在建置時依 data 檔與 UI 字串產生子集 woff2。面板距離使用者約 1–1.5 m，字要大到在頭盔中清楚可讀。桌機沿用 HTML 介面。
+- **3D UI**：CanvasTexture 面板；繁中字型用子集 woff2（`npm run fonts` 依資料檔與 VR 字串產生、commit 進 repo，見第 4 階段摘要）。面板距離使用者約 1–1.5 m，字要大到在頭盔中清楚可讀。桌機沿用 HTML 介面。
 - **工安規則**在 `src/data/safety-rules.json`（從原 SafetyPage 原樣抽出，文字不改；每條是文字片段陣列，`strong: true` 為粗體）。桌機 `SafetyPage` 改讀這份，改前改後的頁面 HTML 逐字相同。
 - **VR 不自動移動視角**：VR 中程式不可自行移動或旋轉視角；所有「鏡頭移動」一律「淡出 → 固定站位 → 淡入」（`SceneManager.moveTo`）。桌機 `#/world`（除錯）可以平滑移動鏡頭。
 - **點光源**：每個場景 6 盞以內（大門口目前 4 盞：門外 2 盞煤氣燈、玄關 2 盞吊燈；室內點光源不開陰影）。
@@ -131,8 +131,9 @@
 
 - 桌子中心 **(0, 0, 5.8)**，長邊東西向，1.8 × 0.8 × 0.9 m；桌前瞬移點 **(0, 0, 6.7)** 面向北（越過桌子看到中央機台與北牆鍋爐）。
 - 從金庫門進來就站在工作桌前。桌上只放工具箱；工安規則已移到玄關，工作桌不再放工安告示板。
-- 工具箱沿用原本功能與 LightRig：13 項工具，選取 → 升起 → 單獨聚光 → 顯示名稱與功能 → 選下一項；選取時工作室環境光漸暗，放回後恢復。VR 用射線點選，說明用 3D 面板。
-  - 需要把 `src/vendor/steampunk-toolbox/src/mount.js` 拆成「場景與控制器（可重用）」與「桌機外層包裝（行為不變）」兩層。
+- 工具箱沿用原本功能：13 項工具，選取 → 升起 → 單獨聚光 → 顯示名稱與功能 → 選下一項；選取時工作室其他燈光與反射環境漸暗到約 15%，放回後恢復。VR 用射線點選，說明用 3D 面板（上一項／下一項／放回盒中），展示中可用 grip 抓住工具轉動檢視（桌機：按住拖曳）。
+  - 工作桌是網站工具盒的舊木工作台縮成 1.8 × 0.8 × 0.9 m；工具箱整組縮成 0.36 倍（約 0.72 × 0.4 m），放在桌子左半邊（中心 x −0.4），打開的箱蓋才不會擋住看向中央機台的視線。展示點在桌子上方 (−0.15, 1.38, 6.08)，說明面板在右側 (0.38, 1.36, 6.14)。
+  - `src/vendor/steampunk-toolbox/src/mount.js` 已拆成 `toolboxCore.js`（工具盒、工具、拿起／切換／放回流程與燈光混合值，可重用）與 `mount.js`（桌機外層：renderer、相機、後處理、HTML 面板與指標輸入，行為不變）。
 
 ```
                          北牆：鍋爐 (z=-10)
@@ -307,6 +308,16 @@
 - `src/xr/WorldPage.jsx`、`src/xr/world.css`：`#/world` 容器（動態載入）。
 - `src/xr/world.js`：renderer、工作室、機台（`?machine=lathe|milling|drill`，預設車床）、出生點在機台正面 (0, 0, 1.6)。
 - `src/xr/FpsMeter.js`：頭盔中的 FPS 顯示。
+
+## 第 4 階段實作摘要
+
+- `src/vendor/steampunk-toolbox/src/toolboxCore.js`：`buildToolbox(parent, mat)` 建工具盒與工具；`createToolFlow({ scene, entries, showcasePoint, tweens, puff, view })` 管拿起／切換／放回與 `blend`（0 瀏覽、1 展示），外層用 `view.setMode／onSelect／onSwitch／onPutAway` 配合。桌機 `mount.js` 改用它，工具盒頁面點卡片、下一項、放回盒中都照舊。
+- `src/xr/toolbox/DeskToolbox.js`：工作桌、工具箱、展示聚光燈（不開陰影）、升起細塵、3D 說明面板（翻牌板配色）、grip 轉動。`Workshop.js` 依 `desk.dim` 把房間燈光（爐火與燈泡每格重設強度後再乘）與 `environmentIntensity` 漸暗。
+- 子集字型：`npm run fonts`（`scripts/subset-fonts.mjs`，套件 subset-font）從本機的 Noto Sans TC／Noto Serif TC 可變字型（OFL，Windows 內建 `C:WindowsFonts`，或用 `FONT_DIR` 指定）產生 `src/xr/fonts/xr-sans-tc.woff2`（約 200 KB）、`xr-serif-tc.woff2`（約 270 KB），保留字重 400–900。收字來源見 `src/xr/fonts/fontChars.js`（`src/xr`、工安規則 JSON、工具清單、三段切削動畫，去掉註解）；清單存在 `chars.txt`。
+  - 產生的字型 commit 進 repo，GitHub Pages 建置不需要原始字型。
+  - 單元測試 `fontChars.test.js`：VR 用到的字都在子集裡；改了文字沒重跑 `npm run fonts` 就會失敗並列出缺字。
+  - VR 畫面字型改成「XR Sans TC」「XR Serif TC」（`canvasText.js` 的 `loadXrFonts`）；子集外的字才向 Google Fonts 要。英文招牌字 IM Fell English SC 仍從 Google Fonts 載入，離線時退回 Georgia。
+- 回歸：14 項中 13 項通過；`demo workpiece mounts and unmounts after moving each lathe axis` 第一次失敗、單獨重跑通過（車床工件測試，與 XR 改動無關，列為偶發）。
 
 ## 第 3 階段實作摘要
 
