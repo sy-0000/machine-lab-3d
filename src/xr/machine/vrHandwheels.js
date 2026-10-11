@@ -8,6 +8,9 @@ import { createWheelGrab } from '../interaction/wheelGrab.js';
 
 export const VR_WHEELS = { lathe: ['carriageHandwheel'], milling: [], drill: [] };
 const TICK = Math.PI / 18;
+// 手（控制器）離手輪中心 0.22 m 內＝手就在手輪上：用手的位置畫圈；更遠時改用射線打在手輪平面上的點
+// （站在圓盤上用射線抓、或模擬器裡轉動控制器瞄準，都能轉）
+const REACH = 0.22;
 
 /** 回傳移除函式 */
 export function attachHandwheels({ session, runtime, input, machineId }) {
@@ -31,6 +34,7 @@ export function attachHandwheels({ session, runtime, input, machineId }) {
       center: () => node.getWorldPosition(new Vector3()),
       axis: () => localAxis.clone().transformDirection(node.matrixWorld),
       tick: TICK,
+      reach: REACH,
       onTurn: (delta, info) => {
         const result = session.command({ type: 'wheel.turnBy', key, deltaAngle: delta });
         if (result.atLimit && !atLimit) info.pulse?.(0.9, 70); // 碰到行程極限：較強震動一次

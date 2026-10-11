@@ -165,6 +165,7 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
             axis: () => new Vector3(0, 1, 0).transformDirection(wheel.matrixWorld),
             onTurn: delta => wheel.rotateY(delta),
             tick: Math.PI / 6,
+            reach: 0.22, // 手在閥門上才用手的位置；遠一點用射線打在轉動平面上的點
           }),
         });
       }

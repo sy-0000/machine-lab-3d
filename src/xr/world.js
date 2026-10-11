@@ -122,9 +122,10 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     } else if (['lathe', 'milling', 'drill'].includes(key)) {
       // 暫時：淡出淡入重建工作室；第 7 階段改成蒸汽遮住視線的快速切換
       lastMachine = key;
-      // 站在圓盤上換機台時，換好後站回同一個圓盤（不跑回工作桌前）
-      const head = camera.getWorldPosition(new Vector3());
-      const disc = manager.currentName === 'workshop' ? manager.current.discNear?.(head.x, head.z) : null;
+      // 站在圓盤上換機台時，換好後站回同一個圓盤（不跑回工作桌前）。先看站的位置（瞬移／搖桿移動的是 player），
+      // 再看頭的位置：模擬器用 WASD 移動頭盔、或在房間裡實際走動時，頭會離開 player 原點
+      const head = camera.getWorldPosition(new Vector3()), area = manager.currentName === 'workshop' ? manager.current : null;
+      const disc = area?.discNear?.(player.position.x, player.position.z) || area?.discNear?.(head.x, head.z) || null;
       ctx.go('workshop', { machineId: key, disc });
     } else if (key === 'exit') {
       if (renderer.xr.isPresenting) renderer.xr.getSession()?.end();

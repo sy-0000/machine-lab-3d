@@ -163,6 +163,7 @@
 - 實作：`src/xr/Teleport.js`（拋物線、吸附、放開移動）、`src/xr/workshop/teleportDiscs.js`（圓盤與站位）；`progress.factory` 記錄是否進過工廠（`enterFactory()`）。
 - 瞬移點：工作桌前、機台正面（操作位）、機台左側、機台右側。每台機台的左右側位置可以不同（以方便轉動該機台手輪為準），機台切換時一起更新。
 - 所有瞬移點都在鋼板範圍之外（方案 A 地面以上只佔鋼板面積）：工作桌前 (0, 6.7) 面北、正面 (0, 1.05) 面北、兩側 (±1.35, z) 面向機台；z：車床 0.15、銑床 0.4、鑽床 0.05（第 6 階段依手輪手感再調）。
+- 從選單換機台時，依站的位置（player 原點，其次頭的位置）找 0.6 m 內的圓盤，換好後站回同一個圓盤。
 - 搖桿走動的機台禁區改成鋼板外加 0.1 m（|x| < 1.2、|z| < 0.9），兩側圓盤才站得上去。
 
 ### 機台尺寸與手輪位置（量自實際模型；鋼板座標＝機台正面朝 +Z、機台中心在原點）
@@ -194,7 +195,7 @@
 - 先完成一個手輪讓需求方測試手感，再套用到所有可轉動零件。
 - **第 6 階段第一部分（已完成）**：
   - `runtime.js` 的 `turnControl` 拆出 `turnControlBy(m, key, Δθ)`（角度 → 行程 → 上下限，回傳 `{ atLimit }`）；`turnControl` 改成用「速度 × 時間 × holdSpeedScale」呼叫它，桌機數學不變（原有單元測試全過）。`MachineBase.turnHandwheelBy`、`MachineV1Adapter.turnWheelBy`（與 step() 相同的切削、錐度靠模、接觸標記路徑）、`MachineSession` 指令 `wheel.turnBy { key, deltaAngle }` → `{ ok, atLimit }`。單元測試 `src/machining/wheelTurnBy.test.js`：與按住手輪同比例、上下限、主軸運轉時會切削。
-  - VR 工作室建立和桌機同一個 `MachineSession`（VR 迴圈供應時間）。`src/xr/machine/vrHandwheels.js`：grip 抓住手輪畫圈（`createWheelGrab`），每次角度變化送出 `wheel.turnBy`；每 10° 輕震、碰到行程極限較強震動一次（手輪轉不過去）；指到時用機台自己的高亮。目前只開放車床縱向進給手輪（`VR_WHEELS`）。
+  - VR 工作室建立和桌機同一個 `MachineSession`（VR 迴圈供應時間）。`src/xr/machine/vrHandwheels.js`：grip 抓住手輪畫圈（`createWheelGrab`），每次角度變化送出 `wheel.turnBy`；每 10° 輕震、碰到行程極限較強震動一次（手輪轉不過去）；手離手輪中心 0.22 m 內用手的位置畫圈，更遠時用射線打在手輪平面上的點（站在圓盤上用射線抓、模擬器轉動控制器瞄準都能轉）；指到時用機台自己的高亮。目前只開放車床縱向進給手輪（`VR_WHEELS`）。
   - 目前用桌機的教學比例（車床縱向 18 mm／弧度，約 113 mm／圈），手輪看起來跟手同步。「每格進給量」（每 10° 走 0.01／0.1／1 mm）要和儀表板一起做；屆時手輪是否仍跟手同步轉、或依進給量轉，待需求方試過手感再決定。
 - 鑽床進給手柄沿用 −115°～0° 與放開回彈。
 
