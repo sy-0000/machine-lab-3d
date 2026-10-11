@@ -40,7 +40,7 @@ export default function WorldPage() {
     };
   }, []);
 
-  // 桌機選單（M 鍵或角落按鈕）：項目與 VR 左手腕選單相同
+  // 桌機選單（M 鍵或角落按鈕）：項目與 VR 翻牌板選單相同
   const [menu, setMenu] = useState(null), [menuNote, setMenuNote] = useState('');
   const openMenu = () => { if (world.current) { setMenu(world.current.menuItems()); setMenuNote(''); } };
   const toggleMenu = () => (menu ? setMenu(null) : openMenu());
@@ -79,7 +79,7 @@ export default function WorldPage() {
     </div>
     {menu && <nav className="world-menu" aria-label="VR 世界選單">
       <strong>選單 · Machine Yard</strong>
-      {menu.map(item => <button key={item.key} type="button" aria-disabled={!item.enabled} className={item.enabled ? '' : 'is-disabled'} title={item.enabled ? undefined : item.reason} onClick={() => pick(item)}>{item.label}</button>)}
+      {menu.map(item => <button key={item.key} type="button" aria-disabled={!item.enabled} className={item.enabled ? '' : 'is-disabled'} title={item.enabled ? undefined : item.reason} onClick={() => pick(item)}>{item.label}{item.current ? '（目前）' : ''}</button>)}
       <small role="status">{menuNote || 'M 或 Esc 關閉'}</small>
     </nav>}
   </main>;

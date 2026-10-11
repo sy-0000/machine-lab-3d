@@ -39,6 +39,8 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
 
   return {
     get scene() { return scene; },
+    /** 目前站位（outside／center／board／screen／vault），選單用來標示所在地點 */
+    get where() { return where; },
     view: STATIONS.outside.view,
     /** 選單／L 鍵：回到門外 */
     goOutside() { return station('outside'); },

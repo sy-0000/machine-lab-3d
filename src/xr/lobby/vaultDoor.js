@@ -5,8 +5,9 @@
 import { BackSide, BoxGeometry, CircleGeometry, CylinderGeometry, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { createGauge, setGaugeValue, createHandwheel } from '../../vendor/steampunk-workshop/src/utils/fixtures.js';
 import { add, group } from '../../vendor/steampunk-workshop/src/utils/geometry.js';
-import { brassPlate } from '../ui/buttons.js';
-import { canvasTexture, FONT_SANS } from '../ui/canvasText.js';
+import { signPlate } from '../ui/buttons.js';
+import { drawNotice, FONT_SERIF_TC, loadSignFonts } from '../ui/theme.js';
+import { canvasTexture } from '../ui/canvasText.js';
 
 export const DOOR_CENTER_Y = 1.35;
 const R_DOOR = 1.12, R_FRAME = 1.32, BOLTS = 10, RING_TEETH = 48;
@@ -65,7 +66,7 @@ export function createVaultDoor(M) {
     g.object.position.set(x, 1.5, 0.08);
     root.add(g.object);
     add(root, new CylinderGeometry(0.03, 0.03, 0.5, 8), M.copper, 'GaugePipe', [x, 1.5 + 0.45, 0.04]);
-    const plate = brassPlate(512, 128, (ctx, w, h) => { ctx.font = `700 64px ${FONT_SANS}`; ctx.fillText(label, w / 2, h / 2 + 2); });
+    const plate = signPlate(512, 128, (ctx, w, h) => { ctx.font = `700 60px ${FONT_SERIF_TC}`; ctx.fillText(label, w / 2, h / 2 + 2); }, label);
     add(root, new PlaneGeometry(0.36, 0.09), new MeshBasicMaterial({ map: plate.texture, toneMapped: false }), 'GaugeLabel', [x, 1.2, 0.05]);
     gauges[key] = { needle: g.needle, value: 0, target: 0, steamAt: new Vector3(x, 2.15, 0.12) };
     setGaugeValue(g.needle, 0);
@@ -86,14 +87,10 @@ export function createVaultDoor(M) {
 
   // 未解鎖提示（浮在手輪上方）
   const hint = canvasTexture(1400, 180);
-  {
-    const { ctx } = hint;
-    ctx.fillStyle = 'rgba(30,21,12,.9)'; ctx.beginPath(); ctx.roundRect(4, 4, 1392, 172, 30); ctx.fill();
-    ctx.strokeStyle = '#c9a25a'; ctx.lineWidth = 5; ctx.stroke();
-    ctx.fillStyle = '#ffd9a0'; ctx.font = `700 64px ${FONT_SANS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('需先閱讀工安規則並觀看切削動畫', 700, 94);
-    hint.texture.needsUpdate = true;
-  }
+  const HINT = '需先閱讀工安規則並觀看切削動畫';
+  const paintHint = () => { drawNotice(hint.ctx, 1400, 180, HINT, { size: 62 }); hint.texture.needsUpdate = true; };
+  paintHint();
+  loadSignFonts(HINT).then(paintHint);
   const hintMesh = add(root, new PlaneGeometry(1.4, 0.18), new MeshBasicMaterial({ map: hint.texture, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }), 'LockedHint', [0, DOOR_CENTER_Y + 0.62, 0.55]);
   hintMesh.renderOrder = 20;
   hintMesh.userData.noHighlight = true;

@@ -5,7 +5,8 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 //   hover / select：滑鼠移過與點一下（沒拖曳）、控制器射線指著與 trigger（按下與放開都指著同一物件才算）
 //   grab / drag / release：控制器 grip 按住、移動、放開；滑鼠在可抓物件上按住拖曳也走同一組事件
 // 兩手控制器都有射線；指到可互動物件時物件高亮（同一物件被兩手同時指到也只亮一次）。
-// 回呼收到的 info：{ kind: 'mouse' | 'controller', hand, ray（世界座標）, position（控制器位置；滑鼠為 null）, pulse(強度, 毫秒) }
+// 回呼收到的 info：{ kind: 'mouse' | 'controller', hand, ray（世界座標）, position（控制器位置；滑鼠為 null）, uv（射線命中點的貼圖座標）, pulse(強度, 毫秒) }
+// onMove(info)：指著物件期間每次更新命中點都會呼叫（例如選單用 uv 判斷指到哪一列）
 // 手部追蹤目前不支援：指標都包成「來源（source）」，日後加入 hand 只要多一種來源、產生同樣的 info。
 
 const RAY_LENGTH = 4;
@@ -33,7 +34,7 @@ function setHighlight(meshes, on) {
 }
 
 export class InputManager {
-  #targets = new Map();   // object → { onSelect, onHover, onGrab, onDrag, onRelease, enabled, persistent, meshes }
+  #targets = new Map();   // object → { onSelect, onHover, onMove, onGrab, onDrag, onRelease, enabled, persistent, meshes }
   #occluders = new Set(); // 牆面等：射線先打到它就不算指到後面的物件
   #sources = [];          // 指標：滑鼠與兩支控制器
   #hoverCount = new Map();
@@ -51,7 +52,7 @@ export class InputManager {
   /**
    * 登記可互動物件。回傳移除函式。persistent: true 的物件（例如選單）換區域時不會被清掉。
    * @param {import('three').Object3D} object
-   * @param {{ onSelect?, onHover?, onGrab?, onDrag?, onRelease?, enabled?: () => boolean, highlight?: boolean, persistent?: boolean }} handlers
+   * @param {{ onSelect?, onHover?, onMove?, onGrab?, onDrag?, onRelease?, enabled?: () => boolean, highlight?: boolean, persistent?: boolean }} handlers
    */
   add(object, handlers = {}) {
     const meshes = handlers.highlight === false ? [] : prepareHighlight(object);
@@ -102,12 +103,19 @@ export class InputManager {
     const hit = raycaster.intersectObjects([...objects, ...this.#occluders], true)[0];
     if (!hit) return null;
     for (let o = hit.object; o; o = o.parent) {
-      if (this.#targets.has(o)) return { object: o, distance: hit.distance, point: hit.point };
+      if (this.#targets.has(o)) return { object: o, distance: hit.distance, point: hit.point, uv: hit.uv || null };
       if (this.#occluders.has(o)) return null;
     }
     return null;
   }
   #isVisible(object) { for (let o = object; o; o = o.parent) if (!o.visible) return false; return true; }
+  /** 更新指標指到的物件與命中點；有 onMove 的物件每次都通知 */
+  #point(source, hit) {
+    source.uv = hit?.uv || null;
+    this.#hover(source, hit?.object || null);
+    const t = hit && this.#targets.get(hit.object);
+    t?.onMove?.(this.#info(source));
+  }
   #hover(source, object) {
     if (source.hovered === object) return;
     const leave = source.hovered;
@@ -133,6 +141,7 @@ export class InputManager {
   #info(source) {
     const info = source.info ??= { kind: source.kind, hand: null, ray: new Ray(), position: null, pulse: (i, ms) => this.pulse(source, i, ms) };
     info.hand = source.inputSource?.handedness || null;
+    info.uv = source.uv || null;
     if (source.kind === 'controller') {
       source.controller.updateMatrixWorld(true);
       info.position ??= new Vector3();
@@ -179,7 +188,7 @@ export class InputManager {
       if (source.grabbed) { cast(e); this.#targets.get(source.grabbed)?.onDrag?.(this.#info(source)); return; }
       if (source.at && Math.hypot(e.clientX - source.at[0], e.clientY - source.at[1]) > 6) source.pressed = null;
       const hit = cast(e);
-      this.#hover(source, hit?.object || null);
+      this.#point(source, hit);
       dom.style.cursor = hit ? (this.#targets.get(hit.object)?.onGrab ? 'grab' : 'pointer') : '';
     };
     // 捕獲階段：抓住物件時攔下事件，滑鼠繞看（OrbitControls）就不會一起轉
@@ -199,7 +208,8 @@ export class InputManager {
       if (source.grabbed) { this.#release(source); dom.style.cursor = ''; return; }
       if (!source.at) return;
       const pressed = source.pressed; source.at = null; source.pressed = null;
-      if (pressed && cast(e)?.object === pressed) this.#select(pressed, source);
+      const hit = cast(e);
+      if (pressed && hit?.object === pressed) { source.uv = hit.uv; this.#select(pressed, source); }
     };
     const leave = () => { if (!source.grabbed) { this.#hover(source, null); dom.style.cursor = ''; } };
     const listeners = [['pointermove', move], ['pointerdown', down, true], ['pointerup', up], ['pointerleave', leave]];
@@ -255,7 +265,7 @@ export class InputManager {
       this.#raycaster.ray.origin.setFromMatrixPosition(s.controller.matrixWorld);
       this.#raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.#matrix);
       const hit = this.#pick(this.#raycaster);
-      this.#hover(s, hit?.object || null);
+      this.#point(s, hit);
       s.line.scale.z = hit ? hit.distance : RAY_LENGTH;
       s.dot.visible = !!hit;
       if (hit) s.dot.position.set(0, 0, -hit.distance);

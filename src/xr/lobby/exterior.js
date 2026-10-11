@@ -8,7 +8,8 @@ import { BoxGeometry, CylinderGeometry, ExtrudeGeometry, MeshBasicMaterial, Path
 import { ROOM } from '../../vendor/steampunk-workshop/src/config/layout.js';
 import { createDome } from '../../vendor/steampunk-workshop/src/structure/dome.js';
 import { GeoBatch, add, group, compose } from '../../vendor/steampunk-workshop/src/utils/geometry.js';
-import { canvasTexture, FONT_SERIF } from '../ui/canvasText.js';
+import { canvasTexture } from '../ui/canvasText.js';
+import { COLORS, drawEnamel, drawFrame, FONT_FELL, loadSignFonts } from '../ui/theme.js';
 import { DOOR_CENTER_Y } from './vaultDoor.js';
 
 export const AE = ROOM.apothem + ROOM.wallThickness; // 八角外牆面到中心：10.6
@@ -146,24 +147,19 @@ function createLantern(M) {
   return { object: g, light };
 }
 
-// 舊木招牌（鏈條吊掛）：木紋底、淺金色字「Machine Yard」
+// 招牌（鏈條吊掛）：和選單同一套風格——胡桃木框、墨綠琺瑯底、黃銅色 IM Fell English SC「Machine Yard」
 function createSign(M) {
   const surface = canvasTexture(1600, 360), { ctx } = surface, w = 1600, h = 360;
-  const g0 = ctx.createLinearGradient(0, 0, 0, h);
-  g0.addColorStop(0, '#6b4a2c'); g0.addColorStop(0.5, '#5a3c22'); g0.addColorStop(1, '#4a3019');
-  ctx.fillStyle = g0; ctx.fillRect(0, 0, w, h);
-  for (let i = 0; i < 70; i++) { // 木紋
-    const y = (i * 53.7) % h, a = 0.05 + (i % 5) * 0.02;
-    ctx.strokeStyle = `rgba(30,18,8,${a})`; ctx.lineWidth = 2 + (i % 3);
-    ctx.beginPath(); ctx.moveTo(0, y); for (let x = 0; x <= w; x += 80) ctx.lineTo(x, y + Math.sin(x / 140 + i) * 6); ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(25,14,6,.7)'; ctx.lineWidth = 14; ctx.strokeRect(10, 10, w - 20, h - 20);
-  ctx.font = `900 170px ${FONT_SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(20,10,4,.7)'; ctx.fillText('Machine Yard', w / 2 + 5, h / 2 + 9);
-  const gold = ctx.createLinearGradient(0, h * 0.25, 0, h * 0.75);
-  gold.addColorStop(0, '#f6dc9a'); gold.addColorStop(0.5, '#d9b46a'); gold.addColorStop(1, '#b8893f');
-  ctx.fillStyle = gold; ctx.fillText('Machine Yard', w / 2, h / 2 + 4);
-  surface.texture.needsUpdate = true;
+  const paint = () => {
+    const inner = drawFrame(ctx, w, h, { border: 30, radius: 18 });
+    drawEnamel(ctx, inner.x, inner.y, inner.w, inner.h, 8);
+    ctx.font = `170px ${FONT_FELL}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillText('Machine Yard', w / 2 + 4, h / 2 + 10);
+    ctx.fillStyle = COLORS.brass; ctx.fillText('Machine Yard', w / 2, h / 2 + 4);
+    surface.texture.needsUpdate = true;
+  };
+  paint();
+  loadSignFonts('').then(paint);
   const g = group('MachineYardSign');
   const bw = 2.4, bh = bw * h / w;
   add(g, new BoxGeometry(bw + 0.06, bh + 0.06, 0.06), M.woodPlanks, 'Board', [0, 0, -0.035]);

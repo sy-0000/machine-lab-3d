@@ -87,19 +87,25 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   // 開發模式除錯用：檢查換區域後 GPU 資源有沒有釋放（renderer.info.memory）
   if (import.meta.env.DEV) window.__xrWorld = { renderer, manager };
 
-  // ---- 選單（VR：左手腕面板；桌機：WorldPage 的 HTML 選單，用同一份項目）
+  // ---- 選單（VR：視野正前方的翻牌板；桌機：WorldPage 的 HTML 選單，用同一份項目）
   const LOCKED = '需先在玄關讀完工安規則並看完切削動畫';
+  // 每項：label（翻牌字牌，最多 4 字）、platform（月台號）、group（分組）、current（目前所在地點）
   const menuItems = () => {
-    const xr = renderer.xr.isPresenting, here = currentMachine();
+    const here = currentMachine(), where = manager.currentName === 'lobby' ? manager.current?.where : null;
     const unlock = item => ({ ...item, enabled: progress.unlocked, reason: LOCKED });
-    const machine = (key, label) => here === key ? { key, label, enabled: false, reason: `目前就在${label}` } : unlock({ key, label });
+    const machine = (key, label, platform) => here === key
+      ? { key, label, platform, group: 1, current: true, enabled: false, reason: `目前就在${label}` }
+      : unlock({ key, label, platform, group: 1 });
     return [
-      { key: 'outside', label: '回到門外', enabled: true },
-      { key: 'vestibule', label: '回到玄關', enabled: true },
-      unlock({ key: 'toolbox', label: '工具箱' }),
-      machine('lathe', '車床'), machine('milling', '銑床'), machine('drill', '鑽床'),
-      { key: 'save', label: '存檔／讀取', enabled: false, reason: '存檔／讀取在第 8 階段加入' },
-      { key: 'exit', label: xr ? '離開 VR' : '返回首頁', enabled: true },
+      where === 'outside'
+        ? { key: 'outside', label: '門外', platform: 'I', group: 0, current: true, enabled: false, reason: '目前就在門外' }
+        : { key: 'outside', label: '門外', platform: 'I', group: 0, enabled: true },
+      // 在玄關裡但不在中央（面板前、金庫門前）時仍可點，回到玄關中央
+      { key: 'vestibule', label: '玄關', platform: 'II', group: 0, current: !!where && where !== 'outside', enabled: where !== 'center', reason: '目前就在玄關' },
+      unlock({ key: 'toolbox', label: '工具箱', platform: 'III', group: 1 }),
+      machine('lathe', '車床', 'IV'), machine('milling', '銑床', 'V'), machine('drill', '鑽床', 'VI'),
+      { key: 'save', label: '存檔', group: 2, enabled: false, reason: '存檔在第 8 階段加入' },
+      { key: 'exit', label: '返回首頁', group: 2, enabled: true },
     ];
   };
   const runMenu = key => {
@@ -122,6 +128,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     return '';
   };
   const menu = createMenu({ input, player, camera, items: menuItems, run: runMenu });
+  if (import.meta.env.DEV) window.__xrWorld.menu = menu;
 
   // 右手 B：開關 FPS；左手 Y：叫出／關閉選單
   input.onButton('right', 5, () => fps.toggle());
@@ -147,7 +154,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       camera.updateMatrixWorld(true);
     } else { stepViewTween(dt); orbit.update(); }
     input.update();
-    menu.update();
+    menu.update(dt);
     manager.update(dt, elapsed);
     manager.render(xr, dt, elapsed);
   });

@@ -1,5 +1,6 @@
 import { BackSide, Color, Mesh, MeshBasicMaterial, PlaneGeometry, Scene, SphereGeometry, Vector3 } from 'three';
-import { canvasTexture, FONT_SANS } from './ui/canvasText.js';
+import { canvasTexture } from './ui/canvasText.js';
+import { drawNotice, loadSignFonts } from './ui/theme.js';
 
 // 場景管理：大門口、工作室等「區域」各是一個模組，提供
 //   enter(options) → Promise<{ spawn: Vector3, yaw, view? }>     建場景，回傳玩家出生點（地面座標）、面向與桌機視角
@@ -49,11 +50,11 @@ export class SceneManager {
     const { ctx, canvas, texture } = this.label;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (text) {
-      ctx.fillStyle = 'rgba(30,21,12,.92)'; ctx.beginPath(); ctx.roundRect(6, 6, 1012, 180, 30); ctx.fill();
-      ctx.strokeStyle = '#c9a25a'; ctx.lineWidth = 5; ctx.stroke();
-      ctx.fillStyle = '#f3e3c3'; ctx.font = `500 58px ${FONT_SANS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(text, 512, 98);
+      drawNotice(ctx, canvas.width, canvas.height, text, { size: 56 });
+      // 字型分片還沒下載的字：下載好後若仍是同一句就重畫
+      loadSignFonts(text).then(() => { if (this.statusText === text) { drawNotice(ctx, canvas.width, canvas.height, text, { size: 56 }); texture.needsUpdate = true; } });
     }
+    this.statusText = text;
     texture.needsUpdate = true;
     this.loading.visible = !!text;
     this.ctx.onStatus?.(text);

@@ -1,19 +1,21 @@
-// 共用的黃銅銘牌與按鈕（CanvasTexture 文字＋低多邊形外形）。按鈕交給 InputManager.add() 登記點選。
+// 共用的牌子與按鈕（CanvasTexture 文字＋低多邊形外形），風格見 theme.js（車站翻牌板）。按鈕交給 InputManager.add() 登記點選。
+// 牌子先用目前已有的字畫一次，字型（IM Fell English SC、Noto Serif TC）下載好後自動重畫。
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry } from 'three';
-import { canvasTexture, FONT_SANS } from './canvasText.js';
+import { canvasTexture } from './canvasText.js';
+import { COLORS, drawEnamel, drawFrame, FONT_SERIF_TC, loadSignFonts } from './theme.js';
 
-/** 黃銅底色、深色框線與四角鉚釘的銘牌；draw(ctx, w, h) 畫上文字 */
-export function brassPlate(width, height, draw) {
+/** 胡桃木框、墨綠琺瑯底的名牌；draw(ctx, w, h) 畫上文字（預設黃銅色、置中）；text：會畫到的字（字型下載好後重畫） */
+export function signPlate(width, height, draw, text = '') {
   const surface = canvasTexture(width, height), { ctx } = surface;
-  const g = ctx.createLinearGradient(0, 0, 0, height);
-  g.addColorStop(0, '#e6c27a'); g.addColorStop(0.5, '#c79a4e'); g.addColorStop(1, '#9c7333');
-  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(0, 0, width, height, height * 0.12); ctx.fill();
-  ctx.strokeStyle = '#5b3f17'; ctx.lineWidth = height * 0.035;
-  ctx.beginPath(); ctx.roundRect(height * 0.05, height * 0.05, width - height * 0.1, height - height * 0.1, height * 0.09); ctx.stroke();
-  for (const [x, y] of [[0.06, 0.18], [0.94, 0.18], [0.06, 0.82], [0.94, 0.82]]) { ctx.fillStyle = '#6e4c1d'; ctx.beginPath(); ctx.arc(width * x, height * y, height * 0.035, 0, Math.PI * 2); ctx.fill(); }
-  ctx.fillStyle = '#3a2610'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  draw(ctx, width, height);
-  surface.texture.needsUpdate = true;
+  const paint = () => {
+    const inner = drawFrame(ctx, width, height, { border: Math.round(height * 0.1) });
+    drawEnamel(ctx, inner.x, inner.y, inner.w, inner.h, Math.max(3, Math.round(height * 0.03)));
+    ctx.fillStyle = COLORS.brass; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    draw(ctx, width, height);
+    surface.texture.needsUpdate = true;
+  };
+  paint();
+  loadSignFonts(text).then(paint);
   return surface;
 }
 
@@ -25,28 +27,34 @@ const ICONS = {
   back: (ctx, cx, cy) => { ctx.moveTo(cx - 22, cy); ctx.lineTo(cx, cy - 22); ctx.lineTo(cx, cy - 9); ctx.lineTo(cx + 22, cy - 9); ctx.lineTo(cx + 22, cy + 9); ctx.lineTo(cx, cy + 9); ctx.lineTo(cx, cy + 22); },
 };
 
-/** 按鈕面的貼圖：左邊小圖示、右邊文字 */
+/** 按鈕面的貼圖：胡桃木框、深色底；左邊琥珀色小圖示、右邊奶油白文字 */
 export function buttonFace(label, icon = null, { width = 384, height = 128 } = {}) {
-  return brassPlate(width, height, (ctx, w, h) => {
-    const cy = h / 2;
-    if (icon) { ctx.beginPath(); ICONS[icon](ctx, 66, cy); ctx.fill(); }
-    ctx.font = `700 ${Math.round(h * 0.4)}px ${FONT_SANS}`;
-    ctx.textAlign = icon ? 'left' : 'center';
-    ctx.fillText(label, icon ? 104 : w / 2, cy + 2);
-  });
+  const surface = canvasTexture(width, height), { ctx } = surface;
+  const paint = () => {
+    drawFrame(ctx, width, height, { border: Math.round(height * 0.1) });
+    const cy = height / 2;
+    if (icon) { ctx.fillStyle = COLORS.platform; ctx.beginPath(); ICONS[icon](ctx, 72, cy); ctx.fill(); }
+    ctx.fillStyle = COLORS.cream; ctx.font = `700 ${Math.round(height * 0.4)}px ${FONT_SERIF_TC}`;
+    ctx.textAlign = icon ? 'left' : 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, icon ? 110 : width / 2, cy + 2);
+    surface.texture.needsUpdate = true;
+  };
+  paint();
+  loadSignFonts(label).then(paint);
+  return surface;
 }
 
 let capMaterial = null;
 /**
- * 黃銅按鈕（寬 width 公尺）。回傳 { object, setFace(surface), dispose }；正面朝 +Z。
- * 外殼材質共用；按鈕面的貼圖由呼叫端管理（可以換：例如暫停／播放）。
+ * 按鈕（寬 width 公尺）：胡桃木外殼＋貼圖面。回傳 { object, setFace(surface) }；正面朝 +Z。
+ * 外殼材質共用（高亮時 InputManager 會各自複製）；按鈕面的貼圖由呼叫端管理（可以換：例如暫停／播放）。
  */
 export function brassButton(face, { width = 0.4, height = 0.13 } = {}) {
-  capMaterial ??= new MeshStandardMaterial({ color: 0xb8893f, metalness: 0.85, roughness: 0.38 });
+  capMaterial ??= new MeshStandardMaterial({ color: 0x3a2617, metalness: 0.15, roughness: 0.6 });
   const object = new Group();
-  object.name = 'BrassButton';
+  object.name = 'SignButton';
   const cap = new Mesh(new BoxGeometry(width, height, 0.03), capMaterial);
-  const plate = new Mesh(new PlaneGeometry(width * 0.95, height * 0.95), new MeshBasicMaterial({ map: face.texture, toneMapped: false }));
+  const plate = new Mesh(new PlaneGeometry(width * 0.97, height * 0.95), new MeshBasicMaterial({ map: face.texture, toneMapped: false }));
   plate.position.z = 0.0155;
   plate.userData.noHighlight = true;
   object.add(cap, plate);
