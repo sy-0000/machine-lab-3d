@@ -1,7 +1,8 @@
 // 大門口的動畫螢幕：輪播首頁的三段繪本動畫（public/previews/*.anim.js，與網站的預覽頁共用同一份繪圖程式）。
 // 每格由 XR 迴圈呼叫 update(dt) 畫到 CanvasTexture（不用 iframe：XR 中頁面的 requestAnimationFrame 可能停住）。
 // 標題、頁碼與說明也畫進畫布；一段播完停一下再換下一段。
-import { canvasTexture, FONT_SERIF, FONT_SANS, wrapText } from './ui/canvasText.js';
+// onComplete(fn)：某一段從頭完整播到最後時呼叫 fn(clipId)（按上一段／下一段會從頭開始，跳過的不算）。
+import { canvasTexture, FONT_SERIF, FONT_SANS, loadGlyphs, wrapText } from './ui/canvasText.js';
 
 const CLIPS = [
   { id: 'lathe', title: '車床是怎麼切削的？' },
@@ -15,6 +16,8 @@ const W = 1280, H = 800, HEADER = 236, HOLD_SECONDS = 1.6, REDRAW = 1 / 30;
 export async function createAnimationScreen() {
   // 執行期以網址載入 public/ 底下的模組（開發與 GitHub Pages 都在網站根目錄的 previews/）
   const modules = await Promise.all(CLIPS.map(c => import(/* @vite-ignore */ new URL(`previews/${c.id}.anim.js`, document.baseURI).href)));
+  // 標題、各頁名稱與說明的字先下載好（見 loadGlyphs）
+  await loadGlyphs(CLIPS.map(c => c.title).join('') + modules.map(m => m.createAnimation(document.createElement('canvas').getContext('2d')).stages.map(s => s.name + s.desc).join('')).join('') + '第頁／（暫停中）0123456789');
   const surface = canvasTexture(W, H);
   const { ctx, texture } = surface;
   const anims = modules.map(m => {
@@ -28,7 +31,7 @@ export async function createAnimationScreen() {
   });
 
   let index = 0, simTime = 0, hold = 0, playing = true, sinceDraw = REDRAW, pendingDt = 0;
-  const listeners = new Set();
+  const listeners = new Set(), completeListeners = new Set();
   const notify = () => listeners.forEach(fn => fn());
 
   function header(stage, k, total) {
@@ -61,6 +64,8 @@ export async function createAnimationScreen() {
     get playing() { return playing; },
     get index() { return index; },
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    onComplete(fn) { completeListeners.add(fn); return () => completeListeners.delete(fn); },
+    clips: CLIPS,
     next() { show(index + 1); },
     prev() { show(index - 1); },
     togglePlay() { playing = !playing; sinceDraw = REDRAW; notify(); },
@@ -68,7 +73,10 @@ export async function createAnimationScreen() {
       const a = anims[index];
       if (playing) {
         simTime += dt;
-        if (simTime >= a.TOTAL) { simTime = a.TOTAL; hold += dt; if (hold > HOLD_SECONDS) return show(index + 1); }
+        if (simTime >= a.TOTAL) {
+          if (hold === 0) completeListeners.forEach(fn => fn(CLIPS[index].id));
+          simTime = a.TOTAL; hold += dt; if (hold > HOLD_SECONDS) return show(index + 1);
+        }
       }
       // 每秒重畫 30 次；切屑與旋轉依累積的時間前進
       pendingDt += playing ? dt : 0;
@@ -78,6 +86,6 @@ export async function createAnimationScreen() {
       draw(pendingDt);
       pendingDt = 0;
     },
-    dispose() { listeners.clear(); texture.dispose(); },
+    dispose() { listeners.clear(); completeListeners.clear(); texture.dispose(); },
   };
 }

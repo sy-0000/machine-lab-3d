@@ -29,7 +29,11 @@ export function wrapText(ctx, text, maxWidth) {
   return lines;
 }
 
-/** 等網頁字型載入（畫 CanvasTexture 前呼叫，否則第一次會用到備用字型） */
-export async function fontsReady(families = ['500 40px "Noto Sans TC"', '700 40px "Noto Serif TC"']) {
-  try { await Promise.all(families.map(f => document.fonts.load(f, '工安工具機'))); } catch { /* 用備用字型 */ }
+/**
+ * 載入要畫的字：Google Fonts 的中文字型依字元分片下載，canvas 用到還沒下載的字會改用備用字型（同一行粗細不一）。
+ * 畫 CanvasTexture 前把所有會出現的文字交給這裡，各字重的分片都下載好再畫。
+ */
+export async function loadGlyphs(text, specs = ['400 40px "Noto Sans TC"', '500 40px "Noto Sans TC"', '700 40px "Noto Sans TC"', '700 40px "Noto Serif TC"', '900 40px "Noto Serif TC"']) {
+  const chars = [...new Set(text)].join('');
+  try { await Promise.all(specs.map(f => document.fonts.load(f, chars))); } catch { /* 用備用字型 */ }
 }

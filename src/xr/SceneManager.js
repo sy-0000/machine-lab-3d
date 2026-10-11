@@ -2,11 +2,13 @@ import { BackSide, Color, Mesh, MeshBasicMaterial, PlaneGeometry, Scene, SphereG
 import { canvasTexture, FONT_SANS } from './ui/canvasText.js';
 
 // 場景管理：大門口、工作室等「區域」各是一個模組，提供
-//   enter(options) → Promise<{ spawn: Vector3, yaw: number }>   建場景，回傳玩家出生點（地面座標）與面向
+//   enter(options) → Promise<{ spawn: Vector3, yaw, view? }>     建場景，回傳玩家出生點（地面座標）、面向與桌機視角
 //   exit()                                                  dispose 幾何、材質、貼圖
 //   update(dt, elapsed)、render(xr, dt, elapsed)（可省略，預設直接繪製 area.scene）
 //   scene、view: { eye, target }（桌機直接開 #/world 時的滑鼠繞看視角）
 // 切換時先淡出成全黑 → 換場景 → 淡入，避免 VR 中瞬間跳切造成不適；載入較久時黑幕上顯示提示。
+// 同一區域內換站位用 moveTo()：VR 中程式絕不自行移動或旋轉視角，一律「淡出 → 移到固定站位 → 淡入」；
+// 桌機直接開 #/world（除錯）時改成平滑移動鏡頭。
 
 const FADE_SECONDS = 0.35;
 
@@ -84,10 +86,10 @@ export class SceneManager {
     const slow = setTimeout(() => this.status('載入中…'), 300);
     const area = factory(this.ctx);
     try {
-      const { spawn, yaw = 0 } = await area.enter(options);
+      const { spawn, yaw = 0, view } = await area.enter(options);
       this.current = area;
       area.scene.add(player);
-      this.spawn = { position: spawn.clone(), yaw };
+      this.spawn = { position: spawn.clone(), yaw, view };
       this.placePlayer();
     } catch (error) {
       clearTimeout(slow);
@@ -100,7 +102,7 @@ export class SceneManager {
     await this.#fadeTo(0);
   }
 
-  /** XR 中把玩家放到目前區域的出生點；桌機改設滑鼠繞看視角 */
+  /** XR 中把玩家放到目前站位；桌機改設滑鼠繞看視角 */
   placePlayer() {
     const { player, renderer, setDesktopView } = this.ctx;
     if (renderer.xr.isPresenting && this.spawn) {
@@ -109,9 +111,32 @@ export class SceneManager {
     } else {
       player.position.set(0, 0, 0);
       player.rotation.set(0, 0, 0);
-      if (this.current?.view) setDesktopView(this.current.view);
+      const view = this.spawn?.view || this.current?.view;
+      if (view) setDesktopView(view);
     }
   }
+
+  /**
+   * 在目前區域內換站位。station = { position: 地面座標, yaw, view?: { eye, target } }（view 給桌機用）。
+   * VR：淡出 → 移過去 → 淡入；桌機：鏡頭在 seconds 秒內平滑移到 view。
+   */
+  async moveTo(station, { seconds = 1.2 } = {}) {
+    if (this.#busy) return;
+    const { renderer, setDesktopView } = this.ctx;
+    const run = (async () => {
+      this.spawn = { position: station.position.clone(), yaw: station.yaw ?? 0, view: station.view };
+      if (renderer.xr.isPresenting) {
+        await this.#fadeTo(1);
+        this.placePlayer();
+        await this.#fadeTo(0);
+      } else if (station.view) await setDesktopView(station.view, seconds);
+    })();
+    this.#busy = run.finally(() => { this.#busy = null; });
+    return this.#busy;
+  }
+
+  /** 只淡出（不換站位）：例如開金庫門後再切換到工作室，讓黑幕銜接 */
+  fadeOut() { return this.#fadeTo(1); }
 
   #fadeTo(value) {
     this.fadeTarget = value;

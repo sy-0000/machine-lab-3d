@@ -1,7 +1,6 @@
 // 工作室（穹頂工作室內部）：現有的 steampunk-workshop 場景（未修改）＋ 房間中央的一台機台。
 // 房間固定不轉，機台正面朝南（+Z，朝大門與工作桌）。
-// 第 2 階段：從大門口進來都站在工作桌前 (0, 0, 6.7) 面向北；工作桌、工安規則與工具箱在第 4 階段加入，
-// options.start（'factory' | 'safety' | 'toolbox'）先記下來，第 4 階段決定一進來顯示哪個畫面。
+// 從玄關的金庫門進來，站在工作桌前 (0, 0, 6.7) 面向北；工作桌（只放工具箱）在第 4 階段加入。
 import { Box3, BoxGeometry, Group, Mesh, MeshStandardMaterial, Scene, Vector3 } from 'three';
 import { createSky } from '../../vendor/steampunk-workshop/src/core/sky.js';
 import { createPostPipeline } from '../../vendor/steampunk-workshop/src/core/postprocessing.js';
@@ -43,10 +42,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
     view: { eye: [0, 1.65, 7.6], target: [0, 1.0, 0] },
     machine: () => machine,
 
-    async enter({ machineId = 'lathe', start = 'factory' } = {}) {
+    async enter({ machineId = 'lathe' } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點
       const alive = () => { if (disposed) throw new Error('cancelled'); };
-      this.start = start;
       // 與工作室原本的 createScene() 相同：暖色反射環境（全世界共用一份）與煙霧
       scene = new Scene();
       scene.environment = environment.texture;

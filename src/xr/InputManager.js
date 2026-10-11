@@ -32,6 +32,7 @@ function setHighlight(meshes, on) {
 
 export class InputManager {
   #targets = new Map(); // object → { onSelect, onHover, enabled, meshes }
+  #occluders = new Set(); // 牆面等：射線先打到它就不算指到後面的物件
   #sources = [];        // 指標：{ kind, ray(raycaster) , hovered, pressed }
   #hoverCount = new Map();
   #buttons = [];        // { hand, index, fn, down }
@@ -58,8 +59,10 @@ export class InputManager {
     for (const s of this.#sources) { if (s.hovered === object) this.#hover(s, null); if (s.pressed === object) s.pressed = null; }
     this.#targets.delete(object);
   }
+  /** 擋住射線的物件（牆、屋頂）：隔著牆指不到後面的面板 */
+  addOccluder(object) { this.#occluders.add(object); }
   /** 換區域時清空 */
-  clear() { for (const object of [...this.#targets.keys()]) this.remove(object); }
+  clear() { for (const object of [...this.#targets.keys()]) this.remove(object); this.#occluders.clear(); }
 
   /** 控制器按鈕（xr-standard：4 = A/X、5 = B/Y）按下的瞬間呼叫 fn。回傳移除函式。 */
   onButton(hand, index, fn) {
@@ -70,9 +73,12 @@ export class InputManager {
 
   #pick(raycaster) {
     const objects = [...this.#targets.keys()].filter(o => o.visible && this.#targets.get(o).enabled?.() !== false);
-    const hit = raycaster.intersectObjects(objects, true)[0];
+    const hit = raycaster.intersectObjects([...objects, ...this.#occluders], true)[0];
     if (!hit) return null;
-    for (let o = hit.object; o; o = o.parent) if (this.#targets.has(o)) return { object: o, distance: hit.distance, point: hit.point };
+    for (let o = hit.object; o; o = o.parent) {
+      if (this.#targets.has(o)) return { object: o, distance: hit.distance, point: hit.point };
+      if (this.#occluders.has(o)) return null;
+    }
     return null;
   }
   #hover(source, object) {
@@ -90,6 +96,8 @@ export class InputManager {
       if (n === 1) { const t = this.#targets.get(object); setHighlight(t.meshes, true); t.onHover?.(true); }
     }
   }
+  /** 測試用：等同點擊這個已登記的物件（只在開發模式存在） */
+  _debugSelect(object) { if (import.meta.env.DEV) this.#select(object); }
   #select(object) { const t = this.#targets.get(object); if (t && t.enabled?.() !== false) t.onSelect?.(); }
 
   // ---- 滑鼠（桌機直接開 #/world 時）：移動 = hover；按下放開且沒拖曳 = select（拖曳留給視角控制）

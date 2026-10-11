@@ -2,7 +2,7 @@
 // SceneManager 管理「大門口」與「工作室」兩個區域（各自建場景、離開時釋放），切換時淡出淡入；
 // InputManager 把滑鼠與控制器統一成 hover / select。XR 中一律略過後製；桌機直接開 #/world 時用滑鼠繞看。
 // 網址參數（除錯用）：?area=lobby|workshop（預設大門口）、?machine=lathe|milling|drill、?fps
-import { ACESFilmicToneMapping, Clock, Group, PCFSoftShadowMap, PerspectiveCamera, SRGBColorSpace, WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, Clock, Group, PCFSoftShadowMap, PerspectiveCamera, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { resolveQuality } from '../vendor/steampunk-workshop/src/config/quality.js';
 import { createScene } from '../vendor/steampunk-workshop/src/core/scene.js';
@@ -37,10 +37,22 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   player.add(camera);
   const orbit = new OrbitControls(camera, renderer.domElement);
   orbit.enableDamping = true;
-  const setDesktopView = ({ eye, target }) => {
-    camera.position.set(...eye);
-    orbit.target.set(...target);
-    orbit.update();
+  // 桌機視角：seconds > 0 時平滑移過去（只用在桌機 #/world；VR 一律淡出淡入）
+  let viewTween = null;
+  const setDesktopView = ({ eye, target }, seconds = 0) => {
+    if (!seconds) { viewTween = null; camera.position.set(...eye); orbit.target.set(...target); orbit.update(); return Promise.resolve(); }
+    return new Promise(resolve => {
+      viewTween = { t: 0, seconds, resolve, fromEye: camera.position.clone(), fromTarget: orbit.target.clone(), eye: new Vector3(...eye), target: new Vector3(...target) };
+    });
+  };
+  const stepViewTween = dt => {
+    const tw = viewTween;
+    if (!tw) return;
+    tw.t = Math.min(1, tw.t + dt / tw.seconds);
+    const k = tw.t * tw.t * (3 - 2 * tw.t);
+    camera.position.lerpVectors(tw.fromEye, tw.eye, k);
+    orbit.target.lerpVectors(tw.fromTarget, tw.target, k);
+    if (tw.t >= 1) { viewTween = null; tw.resolve(); }
   };
 
   // 工作室的暖色反射環境（PMREM）只建一次、各區域共用：createScene() 每次呼叫都會留下幾個沒釋放的小幾何
@@ -53,22 +65,27 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   const ctx = manager.ctx;
   ctx.status = text => manager.status(text);
   ctx.go = (name, options) => manager.go(name, options).catch(() => {});
+  ctx.moveTo = (station, options) => manager.moveTo(station, options);
+  ctx.fadeOut = () => manager.fadeOut();
+  // 回到門外：已在大門口就換站位，否則切回大門口（出生點就在門外）
+  const goOutside = () => (manager.currentName === 'lobby' && manager.current?.goOutside ? manager.current.goOutside() : ctx.go('lobby'));
   manager.register('lobby', createLobby);
   manager.register('workshop', createWorkshop);
 
   const machineId = params.get('machine') || 'lathe';
   const startArea = params.get('area') === 'workshop' ? 'workshop' : 'lobby';
+  // ?area=workshop 直接進工作室（除錯用）
   const ready = manager.go(startArea, { machineId });
   // 開發模式除錯用：檢查換區域後 GPU 資源有沒有釋放（renderer.info.memory）
   if (import.meta.env.DEV) window.__xrWorld = { renderer, manager };
 
-  // 右手 B：開關 FPS；左手 Y：暫時用來回到大門口（第 3 階段改成叫出選單）
+  // 右手 B：開關 FPS；左手 Y：暫時用來回到門外（第 3 階段改成叫出選單）
   input.onButton('right', 5, () => fps.toggle());
-  input.onButton('left', 5, () => ctx.go('lobby'));
+  input.onButton('left', 5, goOutside);
   const onKey = e => {
     if (e.target.closest?.('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'f' || e.key === 'F') fps.toggle();
-    if (e.key === 'l' || e.key === 'L') ctx.go('lobby');
+    if (e.key === 'l' || e.key === 'L') goOutside();
   };
   addEventListener('keydown', onKey);
 
@@ -82,7 +99,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       // 先套用這一格的頭盔姿勢，掛在相機上的黑幕、提示與 FPS 才不會慢一格
       renderer.xr.updateCamera(camera);
       camera.updateMatrixWorld(true);
-    } else orbit.update();
+    } else { stepViewTween(dt); orbit.update(); }
     input.update();
     manager.update(dt, elapsed);
     manager.render(xr, dt, elapsed);
