@@ -26,6 +26,7 @@
 
 /* Homepage: horizontal cards on desktop, stacked content on mobile. */
 .home-intro{padding:24px 0 30px}
+.vr-entry{margin-top:18px}.vr-entry button{font-size:16px;padding:12px 22px}.vr-entry .notice{margin-top:10px}
 .home-intro h1{font-size:clamp(30px,4vw,52px);line-height:1.3;margin:16px 0}
 .home-intro p{color:#9bafb8;font-size:14px;line-height:1.9}
 .machine-cards{display:grid;gap:20px;max-width:1120px;margin:0 auto}

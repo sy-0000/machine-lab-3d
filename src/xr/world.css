@@ -1,0 +1,10 @@
+/* #/world：畫布填滿頁首以下的視窗（頁首桌機 91px、窄螢幕 77px） */
+.world-page{position:relative;height:calc(100vh - 91px);height:calc(100dvh - 91px);min-height:360px;overflow:hidden;background:#120c08}
+@media(max-width:1024px){.world-page{height:calc(100dvh - 77px)}}
+.world-canvas{position:absolute;inset:0}
+.world-canvas canvas{display:block;width:100%;height:100%}
+.world-bar{position:absolute;left:16px;right:16px;bottom:16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-radius:10px;background:rgba(18,12,8,.78);color:#f3e3c3;font-size:13px}
+.world-bar .back-link{color:#f3e3c3}
+.world-status{color:#ffcf7a}
+.world-hint{color:#c9b796;margin-right:auto}
+.world-page + footer{display:none}

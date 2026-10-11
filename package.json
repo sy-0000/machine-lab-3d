@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:xr": "vite --host 0.0.0.0 --mode xr",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test src/lathe.test.js src/machines/runtime.test.js src/machines/v3.test.js src/machines/refinements.test.js src/machines/machineSystem.test.js src/levels/challenges.test.js src/machining/MachineSession.test.js src/machining/WorkpieceState.test.js",
@@ -24,6 +25,7 @@
     "@gltf-transform/extensions": "^4.5.0",
     "@gltf-transform/functions": "^4.5.0",
     "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "meshoptimizer": "^1.2.0",
     "sharp": "^0.35.4",

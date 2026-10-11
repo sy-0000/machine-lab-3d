@@ -5,6 +5,7 @@ import { useTheme } from './theme.js';
 import { challengeById } from './levels/challenges.js';
 import MachineCard from './components/MachineCard.jsx';
 import { prewarmInBackground } from './prewarm/prewarm.js';
+import VrEntryButton from './components/VrEntryButton.jsx';
 
 // 3D model credits (CC licences require the title, author, source and licence to be shown).
 const MODEL_CREDITS = [
@@ -16,6 +17,8 @@ const MODEL_CREDITS = [
 const SafetyPage = lazy(() => import('./pages/SafetyPage'));
 const ToolsPage = lazy(() => import('./pages/ToolsPage'));
 const LevelsPage = lazy(() => import('./pages/LevelsPage'));
+// VR 的 3D 世界（大門口、工作室）：給 Quest 用，桌機可直接輸入網址除錯；整包動態載入，不影響其他頁面
+const WorldPage = lazy(() => import('./xr/WorldPage.jsx'));
 
 export default function App() {
   const [route, setRoute] = useState(location.hash.slice(2));
@@ -87,7 +90,11 @@ export default function App() {
       </header>
       {menuOpen && <div className="menu-scrim" onClick={() => setMenuOpen(false)} />}
 
-      {route === 'safety' ? (
+      {route === 'world' ? (
+        <Suspense fallback={<main>正在載入 VR 世界…</main>}>
+          <WorldPage />
+        </Suspense>
+      ) : route === 'safety' ? (
         <Suspense fallback={<main>正在載入工安規範…</main>}>
           <SafetyPage />
         </Suspense>
@@ -115,6 +122,7 @@ export default function App() {
               選擇一台機器，探索零件構造與運動關係。<br />
               旋轉視角、操作手輪，觀察每一次進給。
             </p>
+            <VrEntryButton />
           </div>
 
           <ol className="course-route" aria-label="課程路線">
