@@ -6,6 +6,7 @@ import {
   setAxis,
   setAxisAndWheel,
   turnControl,
+  turnControlBy,
   stepMachine,
   stepReturn,
   safetyStatus,
@@ -346,6 +347,11 @@ export class MachineBase {
 
   turnHandwheel(key, direction, dt) {
     if (this.runtime) turnControl(this.runtime, key, direction, dt, this.teaching);
+  }
+
+  /** Turn a handwheel by an angle (radians), e.g. by hand in VR. Returns null or { atLimit }. */
+  turnHandwheelBy(key, deltaAngle) {
+    return this.runtime ? turnControlBy(this.runtime, key, deltaAngle, this.teaching) : null;
   }
 
   setTeachingEnabled(value) {

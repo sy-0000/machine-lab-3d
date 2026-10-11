@@ -114,13 +114,20 @@ export function setAxis(m,key,value){
  for(const def of m.config.additions||[])if(def.kind==='supportColumn'&&def.drives===key){const group=m.lookup[def.name],rest=m.restTransforms.get(group),length=def.topY-def.position[1];group.position.y=rest.position.y+next/2;group.children[0].scale.y=(length+next)/length;}
  m.scene.updateWorldMatrix(true,true);
 }
+// Held handwheel (desktop): angular speed × time, scaled by the UI-selected feed rate (holdSpeedScale).
 export function turnControl(m,key,direction,delta,teaching=false){
- const w=m.controls[key];if(!w||w.type!=='wheel'||(w.needsCalibration&&!teaching))return;
- const a=m.config.axes.find(a=>a.id===w.drives);if(!a?.enabled||!m.lookup[a.node])return;
+ const w=m.controls[key];if(!w||w.type!=='wheel')return;
+ turnControlBy(m,key,direction*w.speed*delta*(m.holdSpeedScale??1),teaching);
+}
+// Turn a handwheel by an angle (radians): angle change → travel → travel limits. VR turns wheels by hand with this.
+// Returns null when the wheel cannot turn, else { atLimit } (true when the axis or lever range stopped the turn).
+export function turnControlBy(m,key,deltaAngle,teaching=false){
+ const w=m.controls[key];if(!w||w.type!=='wheel'||(w.needsCalibration&&!teaching))return null;
+ const a=m.config.axes.find(a=>a.id===w.drives);if(!a?.enabled||!m.lookup[a.node])return null;
  // Explicit opt-in demonstration ratios are not claimed as real lead-screw pitches.
  const ratio=w.ratio??(w.angleRange?Math.abs(a.range[0]/w.angleRange[0]):(a.range[1]-a.range[0])/(m.config.lesson.teachingTurnsForFullTravel*2*Math.PI));
- // holdSpeedScale: UI-selected feed rate; feedStop: depth stop (lowest axis value) for a spring-return lever.
- let next=m.angles[key]+direction*w.speed*delta*(m.holdSpeedScale??1);
+ // feedStop: depth stop (lowest axis value) for a spring-return lever.
+ const requested=m.angles[key]+deltaAngle;let next=requested;
  if(w.angleRange)next=clamp(next,w.angleRange);
  if(w.angleRange&&m.feedStop?.axis===a.id&&next*ratio<m.feedStop.value)next=m.feedStop.value/ratio;
  if(w.angleRange){setAxis(m,a.id,next*ratio);}else{
@@ -128,6 +135,7 @@ export function turnControl(m,key,direction,delta,teaching=false){
   const actual=clamp(desired,a.range);next=m.angles[key]+(actual-m.offsets[a.id])/ratio;setAxis(m,a.id,actual);
  }
  m.angles[key]=next;rotate(m,w.node,w.axis,next);
+ return {atLimit:Math.abs(next-requested)>1e-9};
 }
 export function setAxisAndWheel(m,key,value,teaching=false){
  setAxis(m,key,value);

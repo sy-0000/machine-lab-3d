@@ -145,6 +145,21 @@ export class MachineV1Adapter {
     if (!wheel || ![1, -1].includes(direction)) throw new Error('Invalid handwheel command');
     if (wheel.needsCalibration && !this.#machine.teaching) throw new Error('Teaching ratio must be enabled');
   }
+  // Hand-turned wheel (VR): same cutting path as a held wheel in step(), but driven by an angle.
+  turnWheelBy(key, deltaAngle) {
+    this.#requireMachine();
+    const wheel = this.#machine.config.wheels.find(wheel => wheel.id === key);
+    if (!wheel || !Number.isFinite(deltaAngle)) throw new Error('Invalid handwheel command');
+    if (wheel.needsCalibration && !this.#machine.teaching) throw new Error('Teaching ratio must be enabled');
+    const headBefore = this.head.sample();
+    const before = this.#cuttingSample();
+    const result = this.#machine.turnHandwheelBy(key, deltaAngle);
+    this.#followTaper(before);
+    this.#cut(before, this.#cuttingSample());
+    this.head.cut(headBefore, this.head.sample());
+    this.#updateContactMarkers();
+    return result;
+  }
   control(type, command) {
     this.#requireMachine(); const m = this.#machine;
     switch (type) {

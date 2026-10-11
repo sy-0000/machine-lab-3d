@@ -94,6 +94,11 @@ export class MachineSession {
           this.#adapter.validateWheel(command.key, command.direction);
           this.#held = { key: command.key, direction: command.direction, input }; break;
         case 'wheel.release': if (this.#held?.input === input) this.#held = null; break;
+        // Turn by an angle (VR hand). Result carries atLimit so the caller can give limit feedback.
+        case 'wheel.turnBy': {
+          const result = this.#adapter.turnWheelBy(command.key, command.deltaAngle);
+          this.#notify(command); return { ok: !!result, atLimit: !!result?.atLimit, ...(result ? {} : { reason: 'wheel-unavailable' }) };
+        }
         case 'machine.reset': this.#held = null; this.#adapter.reset(); break;
         case 'tool.select': return this.#assetCommand(input, current => this.#adapter.selectTool(command.toolId, current));
         case 'workpiece.createHandle': return this.#assetCommand(input, current => this.#adapter.mountWorkpieceState(createHandleState(), current));

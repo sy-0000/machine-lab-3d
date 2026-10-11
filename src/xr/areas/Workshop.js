@@ -10,9 +10,11 @@ import { createLights } from '../../vendor/steampunk-workshop/src/lighting/light
 import { createEffects } from '../../vendor/steampunk-workshop/src/effects/effects.js';
 import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
+import { MachineSession } from '../../machining/MachineSession.js';
+import { attachHandwheels } from '../machine/vrHandwheels.js';
 import { disposeTree } from '../dispose.js';
 import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
-import { createTeleportDiscs } from '../workshop/teleportDiscs.js';
+import { createTeleportDiscs, discStations } from '../workshop/teleportDiscs.js';
 import { ROOM } from '../../vendor/steampunk-workshop/src/config/layout.js';
 
 // 機台在房間裡的朝向：把各模型的操作側轉到 +Z（南）。車床、鑽床的操作側原本就在 +Z，銑床在 +X。
@@ -55,6 +57,7 @@ export function canStandInWorkshop(x, z) {
 
 export function createWorkshop({ renderer, camera, quality, environment, status, input, progress, moveTo }) {
   let scene = null, post = null, room = null, machine = null, desk = null, discs = null, frame = 0, disposed = false;
+  let session = null, clock = null, sessionFrame = 0, detachWheels = null;
   let roomLights = [];
   const machineRoot = new Group();
   machineRoot.name = 'MachineSlot';
@@ -65,12 +68,19 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
     machine: () => machine,
     get machineId() { return machine?.id || null; },
     get toolbox() { return desk; },
+    get session() { return session; },
     canStand: canStandInWorkshop,
     /** 瞬移圓盤（進過工廠後才能用）；Teleport.js 的拋物線與高亮用 */
     teleportDiscs: () => (discs && progress?.factoryEntered ? discs.discs : []),
     setTeleportTarget(disc) { discs?.setTarget(disc); },
 
-    async enter({ machineId = 'lathe' } = {}) {
+    /** 換機台前記住站在哪個圓盤附近（0.6 m 內；兩側圓盤的位置依機台不同）；沒有就回傳 null */
+    discNear(x, z) {
+      const list = discStations(machine?.id || 'lathe');
+      return list.find(s => Math.hypot(s.position.x - x, s.position.z - z) < 0.6)?.name || null;
+    },
+
+    async enter({ machineId = 'lathe', disc = null } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點
       const alive = () => { if (disposed) throw new Error('cancelled'); };
       // 與工作室原本的 createScene() 相同：暖色反射環境（全世界共用一份）與煙霧
@@ -119,7 +129,12 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       await warmUpGpu(renderer, machineRoot, camera, scene);
       alive();
       scene.add(machineRoot);
-      machine = { id: machineId, instance, runtime: m }; // 第 6 階段起接上 MachineSession
+      // 機台操作：和桌機同一個 MachineSession（指令、切削、行程上下限）；時間由 VR 迴圈提供
+      session = new MachineSession(instance);
+      clock = session.claimClock();
+      sessionFrame = 0;
+      machine = { id: machineId, instance, runtime: m, session };
+      detachWheels = attachHandwheels({ session, runtime: m, input, machineId });
 
       // 瞬移圓盤（打開金庫門、進入工廠後解鎖）：拋物線或射線點圓盤都可以移過去；桌機點圓盤平滑移鏡頭
       progress?.enterFactory();
@@ -133,6 +148,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       // 工作室靜態，陰影每兩格更新一次（與桌機版相同）
       renderer.shadowMap.autoUpdate = false;
       renderer.shadowMap.needsUpdate = true;
+      // 從選單換機台：站回同一個圓盤（新機台的位置）；否則（從金庫門進來）站在工作桌前
+      const at = disc && discStations(machineId).find(s => s.name === disc);
+      if (at) return { spawn: at.position.clone(), yaw: at.yaw, view: at.view };
       return { spawn: DESK_SPOT.clone(), yaw: 0 };
     },
 
@@ -141,6 +159,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       if (frame++ % 2 === 0) renderer.shadowMap.needsUpdate = true;
       room.world.update(dt, elapsed, camera);
       room.lights.update(elapsed);
+      session?.update(dt, { clock, frameId: sessionFrame++ });
       desk?.update(dt);
       discs?.update(elapsed);
       // 展示工具時其他燈光漸暗
@@ -163,6 +182,8 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       renderer.shadowMap.autoUpdate = true;
       post?.dispose();
       machineRoot.removeFromParent();
+      detachWheels?.(); detachWheels = null;
+      session?.dispose(); session = null; clock = null;
       MachineRegistry.unload(); // 也會取消還在下載的機台
       for (const child of machineRoot.children) if (child.name === 'MachinePedestal') disposeTree(child);
       desk?.dispose();

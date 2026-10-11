@@ -122,7 +122,10 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     } else if (['lathe', 'milling', 'drill'].includes(key)) {
       // 暫時：淡出淡入重建工作室；第 7 階段改成蒸汽遮住視線的快速切換
       lastMachine = key;
-      ctx.go('workshop', { machineId: key });
+      // 站在圓盤上換機台時，換好後站回同一個圓盤（不跑回工作桌前）
+      const head = camera.getWorldPosition(new Vector3());
+      const disc = manager.currentName === 'workshop' ? manager.current.discNear?.(head.x, head.z) : null;
+      ctx.go('workshop', { machineId: key, disc });
     } else if (key === 'exit') {
       if (renderer.xr.isPresenting) renderer.xr.getSession()?.end();
       else location.hash = '#/';
