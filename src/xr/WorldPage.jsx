@@ -41,9 +41,22 @@ export default function WorldPage() {
   }, []);
 
   // 桌機選單（M 鍵或角落按鈕）：項目與 VR 翻牌板選單相同
-  const [menu, setMenu] = useState(null), [menuNote, setMenuNote] = useState('');
-  const openMenu = () => { if (world.current) { setMenu(world.current.menuItems()); setMenuNote(''); } };
+  const [menu, setMenu] = useState(null), [menuNote, setMenuNote] = useState(''), [menuTab, setMenuTab] = useState('main');
+  const machineHost = useRef(null);
+  const openMenu = () => { if (world.current) { setMenu(world.current.menuItems()); setMenuNote(''); setMenuTab('main'); } };
   const toggleMenu = () => (menu ? setMenu(null) : openMenu());
+  // 「機台」分頁：直接顯示 VR 選單的 canvas（與頭盔裡的機台頁相同），滑鼠座標換算成 canvas 像素
+  const machineOpen = !!menu && menuTab === 'machine';
+  useEffect(() => {
+    const mm = world.current?.machineMenu, host = machineHost.current;
+    if (!machineOpen || !mm || !host) return undefined;
+    mm.open(true);
+    host.appendChild(mm.canvas);
+    const at = (e, type) => { const r = mm.canvas.getBoundingClientRect(); mm.pointer((e.clientX - r.left) / r.width * mm.canvas.width, (e.clientY - r.top) / r.height * mm.canvas.height, type); };
+    const events = { pointermove: e => at(e, 'move'), pointerdown: e => at(e, 'down'), pointerup: e => at(e, 'up'), pointerleave: e => at(e, 'leave') };
+    Object.entries(events).forEach(([type, fn]) => mm.canvas.addEventListener(type, fn));
+    return () => { Object.entries(events).forEach(([type, fn]) => mm.canvas.removeEventListener(type, fn)); mm.canvas.remove(); mm.open(false); };
+  }, [machineOpen]);
   useEffect(() => {
     const onKey = e => {
       if (e.target.closest?.('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -79,7 +92,11 @@ export default function WorldPage() {
     </div>
     {menu && <nav className="world-menu" aria-label="VR 世界選單">
       <strong>選單 · Machine Yard</strong>
-      {menu.map(item => <button key={item.key} type="button" aria-disabled={!item.enabled} className={item.enabled ? '' : 'is-disabled'} title={item.enabled ? undefined : item.reason} onClick={() => pick(item)}>{item.label}{item.current ? '（目前）' : ''}</button>)}
+      <div className="world-menu-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={menuTab === 'main'} onClick={() => setMenuTab('main')}>主選單</button>
+        <button type="button" role="tab" aria-selected={menuTab === 'machine'} disabled={!world.current?.machineMenu.available()} title={world.current?.machineMenu.available() ? undefined : '到工作室才能操作機台'} onClick={() => setMenuTab('machine')}>機台</button>
+      </div>
+      {menuTab === 'machine' ? <div className="world-machine-page" ref={machineHost} /> : menu.map(item => <button key={item.key} type="button" aria-disabled={!item.enabled} className={item.enabled ? '' : 'is-disabled'} title={item.enabled ? undefined : item.reason} onClick={() => pick(item)}>{item.label}{item.current ? '（目前）' : ''}</button>)}
       <small role="status">{menuNote || 'M 或 Esc 關閉'}</small>
     </nav>}
   </main>;

@@ -12,7 +12,7 @@ import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
 import { MachineSession } from '../../machining/MachineSession.js';
 import { attachMachineControls } from '../machine/vrMachineControls.js';
-import { createDashboard } from '../machine/Dashboard.js';
+import { MachineSounds } from '../../audio/MachineSounds.js';
 import { disposeTree } from '../dispose.js';
 import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
 import { createTeleportDiscs, discStations } from '../workshop/teleportDiscs.js';
@@ -56,14 +56,41 @@ export function canStandInWorkshop(x, z) {
   return !BLOCKS.some(b => x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1);
 }
 
-export function createWorkshop({ renderer, camera, quality, environment, status, input, progress, moveTo }) {
+// 操作位附近（按 Y 預設打開「機台」頁）：離機台鋼板（2.2 × 1.6）1.2 m 以內
+export const nearMachine = (x, z) => Math.abs(x) < 1.1 + 1.2 && Math.abs(z) < 0.8 + 1.2;
+
+export function createWorkshop({ renderer, camera, quality, environment, status, input, progress, moveTo, audio }) {
   let scene = null, post = null, room = null, machine = null, desk = null, discs = null, frame = 0, disposed = false;
-  let session = null, clock = null, sessionFrame = 0, detachControls = null, dashboard = null;
+  let session = null, clock = null, sessionFrame = 0, detachControls = null, sounds = null, unobserve = null;
+  // 切削回饋：上一格的切削次數、接觸狀態，震動節流
+  let lastCut = 0, lastLevel = 'none', buzzT = 0, cutRate = 0;
   // 手輪每格（10°）的進給量（mm），儀表板切換；換機台時保留
   const feed = { mm: 0.1 };
   let roomLights = [];
   const machineRoot = new Group();
   machineRoot.name = 'MachineSlot';
+
+  // 切削回饋：切削中握著手輪的控制器持續輕震（強度隨切削量增加）；刀尖壓入或撞到夾頭：較強震動＋警告聲
+  function cuttingFeedback(dt) {
+    const st = session.getState();
+    const cuts = st.cutCount || 0, delta = cuts - lastCut;
+    lastCut = cuts;
+    cutRate = cutRate * Math.exp(-dt * 6) + delta; // 近似「最近每秒的切削次數」
+    const hands = input.grabbingHands();
+    if ((buzzT -= dt) <= 0 && st.rpm > 0 && cutRate > 0.05 && hands.length) {
+      buzzT = 0.09;
+      const strength = Math.min(0.6, 0.12 + cutRate * 0.08);
+      for (const hand of hands) input.pulse(hand, strength, 80);
+    }
+    const head = st.headMachining, mm = st.machining;
+    const overshoot = !!head?.contact && st.rpm === 0 && head.embedMm > 0.05;
+    const level = mm?.unsafe ? 'unsafe' : overshoot ? 'overshoot' : 'ok';
+    if (level !== 'ok' && level !== lastLevel) {
+      for (const hand of hands.length ? hands : ['left', 'right']) input.pulse(hand, 0.9, 140);
+      audio?.warn();
+    }
+    lastLevel = level;
+  }
 
   return {
     get scene() { return scene; },
@@ -71,6 +98,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
     machine: () => machine,
     get machineId() { return machine?.id || null; },
     get toolbox() { return desk; },
+    /** 選單「機台」頁用：目前機台的 session、每格進給量 */
+    machineContext: () => (session ? { session, machineId: machine.id, feed, maxRpm: machine.runtime.config.maxRpm } : null),
+    nearMachine,
     get session() { return session; },
     canStand: canStandInWorkshop,
     /** 瞬移圓盤（進過工廠後才能用）；Teleport.js 的拋物線與高亮用 */
@@ -140,8 +170,13 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       // 銑床手輪沒有提供真實比例（需要教學比例）：VR 用每格進給量，直接開啟教學比例
       if (m.config.wheels.some(w => w.needsCalibration)) session.command({ type: 'teaching.set', enabled: true });
       detachControls = attachMachineControls({ session, runtime: m, input, feed });
-      dashboard = createDashboard({ session, machineId, input, feed, maxRpm: m.config.maxRpm });
-      scene.add(dashboard.object);
+      // 加工音效：沿用桌機的 MachineSounds，聲音從機台位置發出（3D）
+      if (audio?.context) {
+        sounds = new MachineSounds({ context: audio.context, output: audio.machineOutput(new Vector3(0, 1.0, 0)) });
+        sounds.setMachine(machineId);
+        sounds.unlock();
+        unobserve = session.observe(() => sounds.update(session.getState()));
+      }
 
       // 瞬移圓盤（打開金庫門、進入工廠後解鎖）：拋物線或射線點圓盤都可以移過去；桌機點圓盤平滑移鏡頭
       progress?.enterFactory();
@@ -167,7 +202,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       room.world.update(dt, elapsed, camera);
       room.lights.update(elapsed);
       session?.update(dt, { clock, frameId: sessionFrame++ });
-      dashboard?.update(dt);
+      if (session) cuttingFeedback(dt);
       desk?.update(dt);
       discs?.update(elapsed);
       // 展示工具時其他燈光漸暗
@@ -191,7 +226,8 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       post?.dispose();
       machineRoot.removeFromParent();
       detachControls?.(); detachControls = null;
-      dashboard?.dispose(); dashboard = null;
+      unobserve?.(); unobserve = null;
+      sounds?.dispose(); sounds = null;
       session?.dispose(); session = null; clock = null;
       MachineRegistry.unload(); // 也會取消還在下載的機台
       for (const child of machineRoot.children) if (child.name === 'MachinePedestal') disposeTree(child);

@@ -89,7 +89,7 @@ export function drawTiles(ctx, text, x, y, { count = 4, tileW, tileH, gap, color
     const tx = x + i * (tileW + gap);
     ctx.fillStyle = COLORS.tile;
     ctx.beginPath(); ctx.roundRect(tx, y, tileW, tileH, Math.max(3, tileW * 0.05)); ctx.fill();
-    if (chars[i]) { ctx.fillStyle = color; ctx.fillText(chars[i], tx + tileW / 2, y + tileH / 2 + tileH * 0.04); }
+    if (chars[i]?.trim()) { ctx.fillStyle = color; ctx.fillText(chars[i], tx + tileW / 2, y + tileH / 2 + tileH * 0.04); }
     // 翻牌縫：黑線＋下方一條很淡的亮線，看得出上下兩半
     const seam = Math.max(2, Math.round(tileH * 0.035));
     ctx.fillStyle = '#000'; ctx.fillRect(tx, y + tileH / 2 - seam / 2, tileW, seam);
@@ -112,4 +112,22 @@ export function drawNotice(ctx, w, h, text, { color = COLORS.cream, size = Math.
   ctx.fillStyle = color; ctx.font = `700 ${size}px ${FONT_SERIF_TC}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(text, w / 2, inner.y + inner.h / 2 + size * 0.05);
+}
+
+/** 面板上的按鈕：深色字牌底、黃銅細框；active＝選中（琥珀框）、hover 微亮、pressed 往下 2px 變深 */
+export function drawButtonBox(ctx, b, { hover = false, pressed = false, enabled = true, active = false, size = 30 } = {}) {
+  ctx.fillStyle = pressed ? COLORS.rowPressed : active ? '#3a2a14' : hover && enabled ? COLORS.rowHover : COLORS.tile;
+  ctx.beginPath(); ctx.roundRect(b.x, b.y + (pressed ? 2 : 0), b.w, b.h, 8); ctx.fill();
+  ctx.strokeStyle = active ? COLORS.amber : COLORS.brassLine; ctx.lineWidth = active ? 3 : 2; ctx.stroke();
+  ctx.fillStyle = !enabled ? COLORS.dim : active ? COLORS.amberText : COLORS.cream;
+  ctx.font = `700 ${size}px ${FONT_SERIF_TC}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(b.label, b.x + b.w / 2, b.y + b.h / 2 + (pressed ? 3 : 1));
+}
+
+/** 翻牌數字：每個字一片字牌（靠右對齊、不足補空白片），用來顯示 DRO 與轉速 */
+export function drawNumberTiles(ctx, text, right, y, { count, tileW = 36, tileH = 50, gap = 4, color = COLORS.amberText, font } = {}) {
+  const chars = [...String(text)].slice(-count);
+  const padded = ' '.repeat(count - chars.length) + chars.join('');
+  const x = right - count * tileW - (count - 1) * gap;
+  drawTiles(ctx, padded, x, y, { count, tileW, tileH, gap, color, font: font || `700 ${Math.round(tileH * 0.72)}px "XR Sans TC", sans-serif` });
 }

@@ -7,6 +7,7 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 // 兩手控制器都有射線；指到可互動物件時物件高亮（同一物件被兩手同時指到也只亮一次）。
 // 回呼收到的 info：{ kind: 'mouse' | 'controller', hand, ray（世界座標）, position（控制器位置；滑鼠為 null）, uv（射線命中點的貼圖座標）, pulse(強度, 毫秒) }
 // onMove(info)：指著物件期間每次更新命中點都會呼叫（例如選單用 uv 判斷指到哪一列）
+// onPress(info) / onPressEnd(info)：trigger（滑鼠左鍵）按下與放開的瞬間（按住連續加減用）；放開時不論是否還指著都會呼叫
 // 手部追蹤目前不支援：指標都包成「來源（source）」，日後加入 hand 只要多一種來源、產生同樣的 info。
 
 const RAY_LENGTH = 4;
@@ -52,7 +53,7 @@ export class InputManager {
   /**
    * 登記可互動物件。回傳移除函式。persistent: true 的物件（例如選單）換區域時不會被清掉。
    * @param {import('three').Object3D} object
-   * @param {{ onSelect?, onHover?, onMove?, onGrab?, onDrag?, onRelease?, enabled?: () => boolean, highlight?: boolean, persistent?: boolean }} handlers
+   * @param {{ onSelect?, onHover?, onMove?, onPress?, onPressEnd?, onGrab?, onDrag?, onRelease?, enabled?: () => boolean, highlight?: boolean, persistent?: boolean }} handlers
    */
   add(object, handlers = {}) {
     const meshes = handlers.highlight === false ? [] : prepareHighlight(object);
@@ -84,6 +85,19 @@ export class InputManager {
   /** 有東西被抓住／放開時呼叫 fn(grabbing)（桌機用來暫停滑鼠繞看） */
   onGrabChange(fn) { this.#grabListeners.add(fn); return () => this.#grabListeners.delete(fn); }
   get grabbing() { return this.#sources.some(s => s.grabbed); }
+  /** 正在抓東西的控制器（'left' / 'right'），切削震動用 */
+  grabbingHands() { return this.controllers.filter(c => c.grabbed && c.inputSource).map(c => c.inputSource.handedness); }
+  #press(source, object) {
+    const t = object && this.#targets.get(object);
+    if (!t?.onPress || t.enabled?.() === false) return;
+    source.pressTarget = object;
+    t.onPress(this.#info(source));
+  }
+  #pressEnd(source) {
+    const object = source.pressTarget;
+    source.pressTarget = null;
+    if (object) this.#targets.get(object)?.onPressEnd?.(this.#info(source));
+  }
 
   /** 控制器震動；source 可以是 info 或 'left' / 'right' */
   pulse(source, intensity = 0.3, ms = 20) {
@@ -208,9 +222,11 @@ export class InputManager {
         return;
       }
       source.at = [e.clientX, e.clientY]; source.pressed = hit?.object || null;
+      this.#press(source, source.pressed);
     };
     const up = e => {
       if (e.button !== 0) return;
+      this.#pressEnd(source);
       if (source.grabbed) { this.#release(source); dom.style.cursor = ''; return; }
       if (!source.at) return;
       const pressed = source.pressed; source.at = null; source.pressed = null;
@@ -243,8 +259,8 @@ export class InputManager {
       const source = { kind: 'controller', index: i, controller, grip, line, dot, inputSource: null, hovered: null, pressed: null, grabbed: null, grabDistance: 0, active: false };
       controller.addEventListener('connected', e => { source.inputSource = e.data; source.active = !e.data.hand; controller.visible = source.active; });
       controller.addEventListener('disconnected', () => { this.#release(source); this.#hover(source, null); source.inputSource = null; source.active = false; });
-      controller.addEventListener('selectstart', () => { source.pressed = source.hovered; });
-      controller.addEventListener('selectend', () => { const p = source.pressed; source.pressed = null; if (p && p === source.hovered) this.#select(p, source); });
+      controller.addEventListener('selectstart', () => { source.pressed = source.hovered; this.#press(source, source.hovered); });
+      controller.addEventListener('selectend', () => { const p = source.pressed; source.pressed = null; this.#pressEnd(source); if (p && p === source.hovered) this.#select(p, source); });
       controller.addEventListener('squeezestart', () => {
         if (source.hovered && this.#grab(source, source.hovered)) source.grabDistance = source.line.scale.z;
       });

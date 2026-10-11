@@ -13,4 +13,8 @@
 .world-menu strong{font-size:14px;color:#f3dca2;margin-bottom:4px}
 .world-menu button{text-align:left;padding:8px 12px;background:#4a3620;border-color:#8a6a36;color:#f6e7c8}
 .world-menu button.is-disabled{opacity:.45}
+.world-menu-tabs{display:flex;gap:6px}
+.world-menu-tabs button{flex:1;text-align:center}
+.world-menu-tabs button[aria-selected=true]{background:#6a4a22;border-color:#ffb347;color:#ffcf7a}
+.world-machine-page canvas{display:block;width:min(400px,80vw);height:auto;border-radius:8px;touch-action:none}
 .world-menu small{font-size:12px;color:#ffcf8a;min-height:1.4em}

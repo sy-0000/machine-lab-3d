@@ -12,19 +12,20 @@ const MAX_RPM = { lathe: 2000, milling: 2000, drill: 3000 };
 const CLICK_MM = .25, CLICK_GAP = .035, SLOW_CLICK = .12; // a click per 0.25 mm of travel, ~28/s at most
 
 export class MachineSounds {
-  constructor() { this.ctx = null; this.muted = false; this.last = null; this.kind = 'lathe'; this.travel = 0; this.lastClick = 0; }
+  // Optional (VR): context = a shared AudioContext; output = (ctx) => AudioNode the master feeds (e.g. a 3D panner).
+  constructor({ context = null, output = null } = {}) { this.ctx = null; this.muted = false; this.last = null; this.kind = 'lathe'; this.travel = 0; this.lastClick = 0; this.sharedContext = context; this.output = output; }
   /** Browsers only allow audio after a user gesture; call this from a pointer/keyboard handler. */
   unlock() {
     if (!this.ctx) {
       const Context = window.AudioContext || window.webkitAudioContext;
-      if (!Context) return;
-      this.#build(new Context());
+      if (!this.sharedContext && !Context) return;
+      this.#build(this.sharedContext || new Context());
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
   }
   #build(ctx) {
     this.ctx = ctx;
-    const master = this.master = ctx.createGain(); master.gain.value = this.muted ? 0 : .8; master.connect(ctx.destination);
+    const master = this.master = ctx.createGain(); master.gain.value = this.muted ? 0 : .8; master.connect(this.output ? this.output(ctx) : ctx.destination);
     // Motor: mains hum plus a whine that rises with RPM, softened by a low-pass.
     const motorGain = this.motorGain = ctx.createGain(); motorGain.gain.value = 0;
     const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = 900; tone.connect(motorGain); motorGain.connect(master);
@@ -44,7 +45,8 @@ export class MachineSounds {
     this.lfoDepth = ctx.createGain(); this.lfoDepth.gain.value = 0; this.lfo.connect(this.lfoDepth).connect(this.teethGain.gain);
     this.cutGain = ctx.createGain(); this.cutGain.gain.value = 0;
     noise.connect(this.cutFilter).connect(this.teethGain).connect(this.cutGain).connect(master);
-    for (const node of [this.hum, this.whine, noise, this.lfo]) node.start();
+    this.sources = [this.hum, this.whine, noise, this.lfo];
+    for (const node of this.sources) node.start();
     this.#applyKind();
   }
   #applyKind() {
@@ -114,5 +116,10 @@ export class MachineSounds {
     [1319, 1568, 2093].slice(0, stars).forEach((f, i) => bell(f, t0 + i * step));
     if (stars === 3) [2093, 2637, 3136, 4186].forEach((f, i) => bell(f, t0 + 2 * step + .9 + i * .08, .9, .09));
   }
-  dispose() { this.ctx?.close(); this.ctx = null; }
+  dispose() {
+    // A shared context (VR) stays open: stop this machine's sources and unplug them.
+    if (this.sharedContext) { for (const node of this.sources || []) { try { node.stop(); } catch { /* not started */ } } this.master?.disconnect(); }
+    else this.ctx?.close();
+    this.ctx = null;
+  }
 }

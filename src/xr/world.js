@@ -15,6 +15,7 @@ import { createProgress } from './progress.js';
 import { createMenu } from './ui/Menu.js';
 import { createLocomotion } from './Locomotion.js';
 import { createTeleport } from './Teleport.js';
+import { createXrAudio } from './xrAudio.js';
 
 /**
  * @param {HTMLElement} container
@@ -71,6 +72,9 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   ctx.go = (name, options) => manager.go(name, options).catch(() => {});
   ctx.moveTo = (station, options) => manager.moveTo(station, options);
   ctx.fadeOut = () => manager.fadeOut();
+  // 聲音（機台 3D 音效、選單喀聲、警告聲）：整個世界共用一個 AudioContext
+  const audio = createXrAudio({ camera });
+  ctx.audio = audio;
   // 玄關的進度（大門口與選單共用同一份）
   const progress = createProgress();
   ctx.progress = progress;
@@ -106,7 +110,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       { key: 'vestibule', label: '玄關', platform: 'II', group: 0, current: !!where && where !== 'outside', enabled: where !== 'center', reason: '目前就在玄關' },
       unlock({ key: 'toolbox', label: '工具箱', platform: 'III', group: 1 }),
       machine('lathe', '車床', 'IV'), machine('milling', '銑床', 'V'), machine('drill', '鑽床', 'VI'),
-      { key: 'save', label: '存檔', group: 2, enabled: false, reason: '存檔在第 8 階段加入' },
+      { key: 'save', label: '存檔', group: 2, enabled: false, reason: '存檔在第 9 階段加入' },
       { key: 'exit', label: '返回首頁', group: 2, enabled: true },
     ];
   };
@@ -120,7 +124,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       if (manager.currentName === 'workshop') manager.moveTo({ position: DESK_SPOT, yaw: 0, view: manager.current.view });
       else ctx.go('workshop', { machineId: lastMachine });
     } else if (['lathe', 'milling', 'drill'].includes(key)) {
-      // 暫時：淡出淡入重建工作室；第 7 階段改成蒸汽遮住視線的快速切換
+      // 暫時：淡出淡入重建工作室；第 8 階段改成蒸汽遮住視線的快速切換
       lastMachine = key;
       // 站在圓盤上換機台時，換好後站回同一個圓盤（不跑回工作桌前）。先看站的位置（瞬移／搖桿移動的是 player），
       // 再看頭的位置：模擬器用 WASD 移動頭盔、或在房間裡實際走動時，頭會離開 player 原點
@@ -133,7 +137,14 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     }
     return '';
   };
-  const menu = createMenu({ input, player, camera, items: menuItems, run: runMenu });
+  // 選單「機台」頁：目前工作室的機台；在操作位附近時按 Y 預設打開它
+  const machineContext = () => (manager.currentName === 'workshop' ? manager.current?.machineContext?.() : null);
+  const nearMachine = () => {
+    if (manager.currentName !== 'workshop' || !manager.current?.nearMachine) return false;
+    const head = camera.getWorldPosition(new Vector3());
+    return manager.current.nearMachine(player.position.x, player.position.z) || manager.current.nearMachine(head.x, head.z);
+  };
+  const menu = createMenu({ input, player, camera, items: menuItems, run: runMenu, machine: machineContext, nearMachine, audio });
   if (import.meta.env.DEV) window.__xrWorld.menu = menu;
 
   // 搖桿走動（左手移動、右手快速轉向）；換區域或淡出淡入中不動
@@ -153,12 +164,13 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   };
   addEventListener('keydown', onKey);
 
+  const lastPlayer = new Vector3();
+  let lastArea = null;
   const clock = new Clock();
   let elapsed = 0;
   renderer.setAnimationLoop(() => {
     const dt = Math.min(clock.getDelta(), 0.05), xr = renderer.xr.isPresenting;
     elapsed += dt;
-    fps.update(dt);
     if (xr) {
       // 先套用這一格的頭盔姿勢，掛在相機上的黑幕、提示與 FPS 才不會慢一格
       renderer.xr.updateCamera(camera);
@@ -167,9 +179,14 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     teleport.update(!manager.busy);
     locomotion.update(dt);
     input.update();
+    // 瞬移、換區域（玩家一格內移動超過 0.4 m）：釘選的選單跟到使用者左前方
+    if (player.position.distanceTo(lastPlayer) > 0.4 || manager.current !== lastArea) menu.followUser();
+    lastPlayer.copy(player.position); lastArea = manager.current;
     menu.update(dt);
     manager.update(dt, elapsed);
+    audio.update();
     manager.render(xr, dt, elapsed);
+    fps.update(dt, renderer, manager.current?.scene);
   });
 
   const resize = () => {
@@ -182,7 +199,8 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   const observer = new ResizeObserver(resize);
   observer.observe(container);
 
-  const onSessionStart = () => { orbit.enabled = false; manager.placePlayer(); };
+  // XR 中控制器的 trigger 也算使用者手勢：第一次按下時讓聲音可以播放
+  const onSessionStart = () => { orbit.enabled = false; manager.placePlayer(); audio.unlock(); renderer.xr.getSession()?.addEventListener('selectstart', audio.unlock); };
   const onSessionEnd = () => { menu.hide(); orbit.enabled = true; manager.placePlayer(); resize(); onExitVR(); };
   renderer.xr.addEventListener('sessionstart', onSessionStart);
   renderer.xr.addEventListener('sessionend', onSessionEnd);
@@ -195,6 +213,13 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
     progress,
     /** 接手一個已開啟的 immersive-vr session（首頁按鈕或本頁按鈕開的） */
     enterVR: session => renderer.xr.setSession(session),
+    /** 桌機 HTML 選單的「機台」分頁：直接顯示 VR 選單的 canvas */
+    machineMenu: {
+      canvas: menu.canvas,
+      available: () => !!machineContext(),
+      open: (on, page) => menu.setDesktop(on, page),
+      pointer: (x, y, type) => menu.pointerAt(x, y, type),
+    },
     exitVR: () => renderer.xr.getSession()?.end(),
     dispose() {
       renderer.xr.removeEventListener('sessionstart', onSessionStart);
@@ -208,6 +233,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       input.dispose();
       orbit.dispose();
       fps.dispose();
+      audio.dispose();
       environment.texture.dispose();
       renderer.dispose();
       renderer.domElement.remove();
