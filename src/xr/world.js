@@ -14,6 +14,7 @@ import { createWorkshop, DESK_SPOT } from './areas/Workshop.js';
 import { createProgress } from './progress.js';
 import { createMenu } from './ui/Menu.js';
 import { createLocomotion } from './Locomotion.js';
+import { createTeleport } from './Teleport.js';
 
 /**
  * @param {HTMLElement} container
@@ -132,7 +133,9 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   if (import.meta.env.DEV) window.__xrWorld.menu = menu;
 
   // 搖桿走動（左手移動、右手快速轉向）；換區域或淡出淡入中不動
-  const locomotion = createLocomotion({ renderer, player, camera, input, canMove: () => !manager.busy, area: () => manager.current });
+  // 瞬移：右手搖桿往前推出現拋物線，放開移到指到的圓盤（只在工作室，進過工廠後）
+  const teleport = createTeleport({ renderer, player, input, area: () => manager.current, moveTo: station => manager.moveTo(station), onAim: disc => manager.current?.setTeleportTarget?.(disc) });
+  const locomotion = createLocomotion({ renderer, player, camera, input, canMove: () => !manager.busy && !teleport.aiming, area: () => manager.current });
 
   // 右手 B：開關 FPS；左手 Y：叫出／關閉選單
   input.onButton('right', 5, () => fps.toggle());
@@ -157,6 +160,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       renderer.xr.updateCamera(camera);
       camera.updateMatrixWorld(true);
     } else { stepViewTween(dt); orbit.update(); }
+    teleport.update(!manager.busy);
     locomotion.update(dt);
     input.update();
     menu.update(dt);

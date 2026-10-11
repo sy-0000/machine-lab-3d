@@ -12,6 +12,7 @@ import { prewarmWorkshop, warmUpGpu } from '../../prewarm/prewarm.js';
 import { MachineRegistry } from '../../machines/core/MachineRegistry.js';
 import { disposeTree } from '../dispose.js';
 import { createDeskToolbox } from '../toolbox/DeskToolbox.js';
+import { createTeleportDiscs } from '../workshop/teleportDiscs.js';
 import { ROOM } from '../../vendor/steampunk-workshop/src/config/layout.js';
 
 // 機台在房間裡的朝向：把各模型的操作側轉到 +Z（南）。車床、鑽床的操作側原本就在 +Z，銑床在 +X。
@@ -37,10 +38,11 @@ function createPedestal(object, height) {
 
 // 展示工具時其他燈光剩下的比例
 const DIM_TO = 0.15;
-// 搖桿走動的範圍：八角牆內縮 0.6 m；機台鋼板（2.2 × 1.6，外加 0.3）與工作桌（外加 0.3）不能穿過。其他擺設暫不擋。
+// 搖桿走動的範圍：八角牆內縮 0.6 m；機台鋼板（2.2 × 1.6，外加 0.1）與工作桌（外加 0.3）不能穿過。其他擺設暫不擋。
+// 瞬移圓盤都在鋼板外（正面 z 1.05、兩側 x ±1.35），所以鋼板只留 0.1 m 餘量。
 const WALL_LIMIT = ROOM.apothem - 0.6;
 const BLOCKS = [
-  { x0: -1.4, x1: 1.4, z0: -1.1, z1: 1.1 },
+  { x0: -1.2, x1: 1.2, z0: -0.9, z1: 0.9 },
   { x0: -1.2, x1: 1.2, z0: 5.1, z1: 6.45 },
 ];
 export function canStandInWorkshop(x, z) {
@@ -51,8 +53,8 @@ export function canStandInWorkshop(x, z) {
   return !BLOCKS.some(b => x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1);
 }
 
-export function createWorkshop({ renderer, camera, quality, environment, status, input }) {
-  let scene = null, post = null, room = null, machine = null, desk = null, frame = 0, disposed = false;
+export function createWorkshop({ renderer, camera, quality, environment, status, input, progress, moveTo }) {
+  let scene = null, post = null, room = null, machine = null, desk = null, discs = null, frame = 0, disposed = false;
   let roomLights = [];
   const machineRoot = new Group();
   machineRoot.name = 'MachineSlot';
@@ -64,6 +66,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
     get machineId() { return machine?.id || null; },
     get toolbox() { return desk; },
     canStand: canStandInWorkshop,
+    /** 瞬移圓盤（進過工廠後才能用）；Teleport.js 的拋物線與高亮用 */
+    teleportDiscs: () => (discs && progress?.factoryEntered ? discs.discs : []),
+    setTeleportTarget(disc) { discs?.setTarget(disc); },
 
     async enter({ machineId = 'lathe' } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點
@@ -116,6 +121,15 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       scene.add(machineRoot);
       machine = { id: machineId, instance, runtime: m }; // 第 6 階段起接上 MachineSession
 
+      // 瞬移圓盤（打開金庫門、進入工廠後解鎖）：拋物線或射線點圓盤都可以移過去；桌機點圓盤平滑移鏡頭
+      progress?.enterFactory();
+      discs = createTeleportDiscs(machineId);
+      scene.add(discs.object);
+      for (const d of discs.discs) input.add(d.group, {
+        enabled: () => !!progress?.factoryEntered,
+        onSelect: info => { info?.pulse?.(0.2, 15); moveTo(d.station); },
+      });
+
       // 工作室靜態，陰影每兩格更新一次（與桌機版相同）
       renderer.shadowMap.autoUpdate = false;
       renderer.shadowMap.needsUpdate = true;
@@ -128,6 +142,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       room.world.update(dt, elapsed, camera);
       room.lights.update(elapsed);
       desk?.update(dt);
+      discs?.update(elapsed);
       // 展示工具時其他燈光漸暗
       const k = 1 - (1 - DIM_TO) * (desk?.dim || 0);
       for (const l of roomLights) l.light.intensity = (l.animated ? l.light.intensity : l.base) * k;
@@ -151,8 +166,9 @@ export function createWorkshop({ renderer, camera, quality, environment, status,
       MachineRegistry.unload(); // 也會取消還在下載的機台
       for (const child of machineRoot.children) if (child.name === 'MachinePedestal') disposeTree(child);
       desk?.dispose();
+      discs?.dispose();
       if (scene) disposeTree(scene); // 共用的反射環境不在這裡釋放
-      scene = null; room = null; machine = null; desk = null; roomLights = [];
+      scene = null; room = null; machine = null; desk = null; discs = null; roomLights = [];
     },
   };
 }
