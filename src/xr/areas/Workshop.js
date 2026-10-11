@@ -41,6 +41,7 @@ export function createWorkshop({ renderer, camera, quality, environment, status 
     get scene() { return scene; },
     view: { eye: [0, 1.65, 7.6], target: [0, 1.0, 0] },
     machine: () => machine,
+    get machineId() { return machine?.id || null; },
 
     async enter({ machineId = 'lathe' } = {}) {
       // 建到一半就離開（例如關掉頁面）：停在下一個等待點

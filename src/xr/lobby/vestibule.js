@@ -2,7 +2,7 @@
 // 銅管（合併幾何）與三個偶爾噴蒸汽的閥門、兩盞籠罩式吊燈（各一盞點光源，不開陰影）。
 // 「可選」的裝飾（衣架、鞋櫃、洗手槽、儲氣罐、傳動軸皮帶…）等 Quest 實機 FPS 確認後再加，見 docs/xr-plan.md。
 // 蒸汽沿用工作室的 SteamSystem（未修改）：閥門照它原本的隨機間隔噴發；burst() 讓壓力錶與門栓單次噴發。
-import { CylinderGeometry, InstancedMesh, MeshBasicMaterial, Object3D, PlaneGeometry, PointLight, SphereGeometry, TorusGeometry, Vector3, BoxGeometry } from 'three';
+import { CylinderGeometry, InstancedMesh, Matrix4, MeshBasicMaterial, Mesh, Object3D, PlaneGeometry, PointLight, SphereGeometry, TorusGeometry, Vector3, BoxGeometry } from 'three';
 import { createGearGeometry } from '../../vendor/steampunk-workshop/src/utils/gear.js';
 import { createPipe } from '../../vendor/steampunk-workshop/src/utils/pipe.js';
 import { createValve } from '../../vendor/steampunk-workshop/src/utils/fixtures.js';
@@ -10,6 +10,7 @@ import { RivetSet } from '../../vendor/steampunk-workshop/src/utils/rivets.js';
 import { add, group } from '../../vendor/steampunk-workshop/src/utils/geometry.js';
 import { SteamSystem } from '../../vendor/steampunk-workshop/src/effects/steam.js';
 import { VEST } from './exterior.js';
+import { createDecor } from './decor.js';
 
 const { x: X, z0: Z0, z1: Z1, height: CEIL } = VEST;
 const v = (x, y, z) => new Vector3(x, y, z);
@@ -70,17 +71,22 @@ function createPipes(M, root) {
     [v(-X + 0.12, 3.95, 11.1), v(-X + 0.12, 3.95, Z1 - 0.3)],
   ];
   runs.forEach((points, i) => root.add(createPipe(points, { radius: 0.045, material: M.copper, fittingMaterial: M.brass, name: `CopperPipe_${i}` }).object));
-  // 三個閥門（偶爾噴蒸汽）
+  // 三個閥門（偶爾噴蒸汽）：flow = 管線方向（閥體的 X），wheel = 手輪朝向（閥體的 Y，朝室內）
   const valves = [
-    { at: v(-X + 0.12, 2.6, 11.1), rot: [0, 0, Math.PI / 2], steam: v(-X + 0.3, 2.75, 11.1), dir: v(1, 0.4, 0) },
-    { at: v(X - 0.12, 3.95, 14.4), rot: [0, Math.PI / 2, 0], steam: v(X - 0.3, 3.85, 14.4), dir: v(-1, -0.1, 0) },
-    { at: v(0.9, 3.95, Z0 + 0.15), rot: [0, 0, 0], steam: v(0.9, 3.85, Z0 + 0.35), dir: v(0, -0.2, 1) },
+    { at: v(-X + 0.12, 2.6, 11.1), flow: v(0, 1, 0), wheel: v(1, 0, 0), steam: v(-X + 0.3, 2.45, 11.25), dir: v(1, 0.3, 0.4) },
+    { at: v(X - 0.12, 3.95, 14.4), flow: v(0, 0, 1), wheel: v(-1, 0, 0), steam: v(X - 0.3, 3.8, 14.6), dir: v(-1, -0.1, 0.3) },
+    { at: v(0.9, 3.95, Z0 + 0.15), flow: v(1, 0, 0), wheel: v(0, 0, 1), steam: v(1.1, 3.8, Z0 + 0.35), dir: v(0.3, -0.2, 1) },
   ];
   for (const valve of valves) {
-    const { object } = createValve(M, { size: 1.6 });
+    const { object, wheel } = createValve(M, { size: 1.6 });
     object.position.copy(valve.at);
-    object.rotation.set(...valve.rot);
+    object.quaternion.setFromRotationMatrix(new Matrix4().makeBasis(valve.flow, valve.wheel, new Vector3().crossVectors(valve.flow, valve.wheel)));
     root.add(object);
+    // 閥門手輪可以用 grip 抓住畫圈轉（第 3 階段的抓取測試對象）；加一圈看不見的感應區，比較好指到
+    const hit = new Mesh(new CylinderGeometry(0.17, 0.17, 0.07, 16), new MeshBasicMaterial({ visible: false }));
+    hit.userData.noHighlight = true;
+    wheel.add(hit);
+    valve.wheel = wheel;
   }
   return valves;
 }
@@ -132,6 +138,7 @@ export function createVestibule(M) {
   const gears = createGears(M, root);
   const valves = createPipes(M, root);
   const lights = createLamps(M, root);
+  const decor = createDecor(M, root);
 
   const steam = new SteamSystem(220);
   for (const valve of valves) steam.addEmitter({ position: valve.steam, direction: valve.dir, strength: 0.35 });
@@ -141,6 +148,8 @@ export function createVestibule(M) {
   return {
     object: root,
     lights,
+    textures: decor.textures,
+    valveWheels: valves.map(v => v.wheel),
     /** 單次噴蒸汽（壓力錶打滿、門栓收回） */
     burst(position, direction = v(0, 1, 0), seconds = 0.8, strength = 0.5) {
       steam.addEmitter({ position, direction, strength });
@@ -151,6 +160,7 @@ export function createVestibule(M) {
     setSteamScale(s) { steam.setScale(s); },
     update(dt, elapsed, boost = 1) {
       gears.update(dt, boost);
+      decor.update();
       steam.update(dt, elapsed);
       // 單次噴發結束後不再自動噴（SteamSystem 原本會隨機重噴）
       for (let i = oneShots.length - 1; i >= 0; i--) {

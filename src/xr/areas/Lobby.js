@@ -11,12 +11,12 @@ import { loadGlyphs } from '../ui/canvasText.js';
 import rules from '../../data/safety-rules.json';
 import { brassButton, buttonFace } from '../ui/buttons.js';
 import { disposeTree } from '../dispose.js';
-import { createProgress } from '../progress.js';
 import { createExterior, FACADE_Z, VEST } from '../lobby/exterior.js';
 import { createVestibule } from '../lobby/vestibule.js';
 import { createVaultDoor, DOOR_CENTER_Y } from '../lobby/vaultDoor.js';
 import { createSafetyBoard } from '../lobby/SafetyBoard.js';
 import { createProjectionScreen } from '../lobby/ProjectionScreen.js';
+import { createWheelGrab } from '../interaction/wheelGrab.js';
 
 const v = (x, y, z) => new Vector3(x, y, z);
 const BOARD_AT = v(-VEST.x + 0.03, 1.62, 13.1);
@@ -30,20 +30,22 @@ export const STATIONS = {
   vault: { position: v(0, 0, 12.1), yaw: 0, view: { eye: [0, 1.6, 12.6], target: [0, 1.4, VEST.z0] } },
 };
 
-export function createLobby({ renderer, camera, quality, environment, input, go, status, moveTo, fadeOut }) {
+export function createLobby({ renderer, camera, quality, environment, input, go, status, moveTo, fadeOut, progress }) {
   let scene = null, sky = null, exterior = null, vestibule = null, vault = null, board = null, screen = null, disposed = false;
   let where = 'outside';
-  const progress = createProgress(), offs = [], textures = [], bufferSize = new Vector2();
+  const offs = [], textures = [], bufferSize = new Vector2();
 
   const station = name => { where = name; return moveTo(STATIONS[name]); };
 
   return {
     get scene() { return scene; },
     view: STATIONS.outside.view,
-    /** 左手 Y／L 鍵：回到門外 */
+    /** 選單／L 鍵：回到門外 */
     goOutside() { return station('outside'); },
+    /** 選單：換到某個站位（玄關裡的站位會先把大門打開） */
+    goStation(name) { if (name !== 'outside') exterior?.setDoorsOpen(); return station(name); },
 
-    async enter() {
+    async enter({ station: startAt = 'outside' } = {}) {
       const alive = () => { if (disposed) throw new Error('cancelled'); };
       status('正在前往 Machine Yard…');
       scene = new Scene();
@@ -83,6 +85,7 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       textures.push(...exterior.textures);
       vestibule = createVestibule(M);
       root.add(vestibule.object);
+      textures.push(...vestibule.textures);
 
       // 金庫圓門與兩支壓力錶
       vault = createVaultDoor(M);
@@ -121,9 +124,23 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       input.add(screen.buttons.next, { onSelect: () => screen.screen.next() });
       input.add(screen.buttons.back, { onSelect: () => station('center') });
       offs.push(screen.screen.onComplete(id => progress.clipWatched(id)));
+      // 閥門手輪：grip 抓住畫圈轉，每 30° 輕震一次
+      for (const wheel of vestibule.valveWheels) {
+        input.add(wheel, {
+          enabled: inside,
+          ...createWheelGrab({
+            center: () => wheel.getWorldPosition(new Vector3()),
+            axis: () => new Vector3(0, 1, 0).transformDirection(wheel.matrixWorld),
+            onTurn: delta => wheel.rotateY(delta),
+            tick: Math.PI / 6,
+          }),
+        });
+      }
       input.add(vault.wheelTarget, {
         enabled: () => !vault.opening && where !== 'outside',
         onSelect: async () => {
+          // 和兩個面板一樣：第一次點先走到門前，站在門前再點才會抖動（未解鎖）或開門
+          if (where !== 'vault') return station('vault');
           if (!progress.unlocked) return vault.rattle();
           await vault.open({ onBolts: () => {
             for (let i = 0; i < 6; i++) {
@@ -157,7 +174,7 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
         textures.push(...faces.map(f => f.texture));
         faces.forEach((face, i) => {
           const b = brassButton(face, { width: 0.34, height: 0.11 });
-          b.object.position.set(2.55, 0.62 - i * 0.16, VEST.z0 + 0.04);
+          b.object.position.set(1.95, 0.85 - i * 0.16, VEST.z0 + 0.04);
           b.object.name = i === 0 ? 'DevUnlock' : 'DevReset';
           root.add(b.object);
           input.add(b.object, { onSelect: () => (i === 0 ? progress.unlockAll() : progress.reset()) });
@@ -167,8 +184,11 @@ export function createLobby({ renderer, camera, quality, environment, input, go,
       await warmUpGpu(renderer, root, camera, scene);
       alive();
       scene.add(root);
-      where = 'outside';
-      return { spawn: STATIONS.outside.position.clone(), yaw: STATIONS.outside.yaw, view: STATIONS.outside.view };
+      // 從選單「回到玄關」進來：出生在玄關中央、大門已打開
+      where = STATIONS[startAt] ? startAt : 'outside';
+      if (where !== 'outside') exterior.setDoorsOpen();
+      const s = STATIONS[where];
+      return { spawn: s.position.clone(), yaw: s.yaw, view: s.view };
     },
 
     update(dt, elapsed) {

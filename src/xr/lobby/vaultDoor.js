@@ -1,7 +1,8 @@
 // 玄關北牆的金庫圓門：圓形厚鋼門（邊緣齒輪環、中央手輪、周圍門栓插入門框）、兩側壓力錶（工安／動畫進度）、
 // 門上方指示燈（未解鎖紅、解鎖綠）。原點在牆面中央的地面，+Z 朝玄關。
-// 門向內（−Z，朝工作室）轉開，不會掃到站在門前的玩家。
-import { BoxGeometry, CylinderGeometry, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, TorusGeometry, Vector3 } from 'three';
+// 門向內（−Z，朝工作室）轉開，不會掃到站在門前的玩家。門洞裡是一條 2.4 m 深、內面全黑的隧道（含黑色底蓋），
+// 門轉進隧道裡，看不到後面另一個場景的邊緣；之後淡出切到工作室。
+import { BackSide, BoxGeometry, CircleGeometry, CylinderGeometry, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { createGauge, setGaugeValue, createHandwheel } from '../../vendor/steampunk-workshop/src/utils/fixtures.js';
 import { add, group } from '../../vendor/steampunk-workshop/src/utils/geometry.js';
 import { brassPlate } from '../ui/buttons.js';
@@ -77,9 +78,11 @@ export function createVaultDoor(M) {
   lamp.userData.noHighlight = true;
   for (let i = 0; i < 4; i++) add(root, new TorusGeometry(0.13, 0.008, 4, 16), M.ironDark, 'LampCage', [0, DOOR_CENTER_Y + R_FRAME + 0.42, 0.14], [0, i * Math.PI / 4, 0]);
 
-  // 門後的暖光（門轉開時看得到）：洞口內側的發光圓盤
-  const glow = add(root, new CylinderGeometry(R_DOOR + 0.02, R_DOOR + 0.02, 0.02, 40), new MeshBasicMaterial({ color: 0xffd9a0, toneMapped: false, transparent: true, opacity: 0 }), 'WorkshopGlow', [0, DOOR_CENTER_Y, -0.55], [Math.PI / 2, 0, 0]);
-  glow.userData.noHighlight = true;
+  // 門洞裡的黑色隧道：內襯半徑比門洞大一點、深 2.4 m，底部封黑蓋（不受霧與燈光影響，永遠全黑）
+  const black = new MeshBasicMaterial({ color: 0x000000, side: BackSide, fog: false, toneMapped: false });
+  const tunnel = add(root, new CylinderGeometry(R_FRAME - 0.12, R_FRAME - 0.12, 2.4, 48, 1, true), black, 'VaultTunnel', [0, DOOR_CENTER_Y, -1.18], [Math.PI / 2, 0, 0]);
+  const cap = add(root, new CircleGeometry(R_FRAME + 0.2, 48), new MeshBasicMaterial({ color: 0x000000, fog: false, toneMapped: false }), 'VaultTunnelEnd', [0, DOOR_CENTER_Y, -2.36]);
+  tunnel.userData.noHighlight = cap.userData.noHighlight = true;
 
   // 未解鎖提示（浮在手輪上方）
   const hint = canvasTexture(1400, 180);
@@ -130,7 +133,7 @@ export function createVaultDoor(M) {
       hintMesh.material.opacity = Math.min(1, hintTime * 2);
       hintMesh.visible = hintTime > 0;
       if (!opening) return;
-      // 0–1.5 s 手輪轉；1.5–2.1 s 門栓收回（噴蒸汽）；2.1–4.0 s 門轉開、門後亮起
+      // 0–1.5 s 手輪轉；1.5–2.1 s 門栓收回（噴蒸汽）；2.1–4.0 s 門轉開（後面是黑色隧道）
       const o = opening;
       o.t += dt;
       wheelPivot.rotation.z -= dt * Math.min(1, o.t / 0.6) * 5;
@@ -139,7 +142,6 @@ export function createVaultDoor(M) {
       if (o.t > 2.1) {
         const k = ease(Math.min(1, (o.t - 2.1) / 1.9));
         hinge.rotation.y = k * 1.75;
-        glow.material.opacity = k;
       }
       if (o.t > 4.0 && o.resolve) { const r = o.resolve; o.resolve = null; r(); }
     },

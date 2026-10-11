@@ -40,6 +40,25 @@ export default function WorldPage() {
     };
   }, []);
 
+  // 桌機選單（M 鍵或角落按鈕）：項目與 VR 左手腕選單相同
+  const [menu, setMenu] = useState(null), [menuNote, setMenuNote] = useState('');
+  const openMenu = () => { if (world.current) { setMenu(world.current.menuItems()); setMenuNote(''); } };
+  const toggleMenu = () => (menu ? setMenu(null) : openMenu());
+  useEffect(() => {
+    const onKey = e => {
+      if (e.target.closest?.('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleMenu(); }
+      else if (e.key === 'Escape' && menu) setMenu(null);
+    };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  });
+  const pick = item => {
+    if (!item.enabled) { setMenuNote(item.reason || '目前不能使用'); return; }
+    setMenu(null);
+    world.current?.runMenu(item.key);
+  };
+
   const enter = async () => {
     try {
       const session = await navigator.xr.requestSession('immersive-vr', XR_SESSION_INIT);
@@ -54,8 +73,14 @@ export default function WorldPage() {
     <div className="world-bar">
       <a className="back-link" href="#/">← 返回首頁</a>
       {status && <span className="world-status" role="status">{status}</span>}
-      <span className="world-hint">拖曳繞看 · 點選物件 · F 開關 FPS · L 回大門口</span>
+      <span className="world-hint">拖曳繞看 · 點選物件 · 按住拖曳轉手輪 · F 開關 FPS · M 選單</span>
+      <button type="button" className="world-menu-toggle" aria-expanded={!!menu} disabled={!ready} onClick={toggleMenu}>☰ 選單（M）</button>
       {xrSupported && <button type="button" className="primary" disabled={!ready} onClick={enter}>🥽 進入 VR</button>}
     </div>
+    {menu && <nav className="world-menu" aria-label="VR 世界選單">
+      <strong>選單 · Machine Yard</strong>
+      {menu.map(item => <button key={item.key} type="button" aria-disabled={!item.enabled} className={item.enabled ? '' : 'is-disabled'} title={item.enabled ? undefined : item.reason} onClick={() => pick(item)}>{item.label}</button>)}
+      <small role="status">{menuNote || 'M 或 Esc 關閉'}</small>
+    </nav>}
   </main>;
 }

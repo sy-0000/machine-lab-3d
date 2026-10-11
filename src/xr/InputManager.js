@@ -1,10 +1,12 @@
-import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Raycaster, SphereGeometry, Vector2, Matrix4 } from 'three';
+import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Raycaster, Ray, SphereGeometry, Vector2, Vector3, Matrix4 } from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-// 輸入抽象層：滑鼠點擊與控制器 trigger 統一成 hover / select；各區域只登記「可互動物件」與它的回呼，
-// 不直接處理滑鼠或控制器。第 3 階段會再加上 grip 的 grab / drag / release 與震動。
+// 輸入抽象層：各區域只登記「可互動物件」與它的回呼，不直接處理滑鼠或控制器。
+//   hover / select：滑鼠移過與點一下（沒拖曳）、控制器射線指著與 trigger（按下與放開都指著同一物件才算）
+//   grab / drag / release：控制器 grip 按住、移動、放開；滑鼠在可抓物件上按住拖曳也走同一組事件
 // 兩手控制器都有射線；指到可互動物件時物件高亮（同一物件被兩手同時指到也只亮一次）。
-// 手部追蹤目前不支援：來源都以 XRInputSource 處理，日後加入 hand 只需在 #sources 增加一種指標。
+// 回呼收到的 info：{ kind: 'mouse' | 'controller', hand, ray（世界座標）, position（控制器位置；滑鼠為 null）, pulse(強度, 毫秒) }
+// 手部追蹤目前不支援：指標都包成「來源（source）」，日後加入 hand 只要多一種來源、產生同樣的 info。
 
 const RAY_LENGTH = 4;
 const HIGHLIGHT = 0x5a3c10;
@@ -31,11 +33,12 @@ function setHighlight(meshes, on) {
 }
 
 export class InputManager {
-  #targets = new Map(); // object → { onSelect, onHover, enabled, meshes }
+  #targets = new Map();   // object → { onSelect, onHover, onGrab, onDrag, onRelease, enabled, persistent, meshes }
   #occluders = new Set(); // 牆面等：射線先打到它就不算指到後面的物件
-  #sources = [];        // 指標：{ kind, ray(raycaster) , hovered, pressed }
+  #sources = [];          // 指標：滑鼠與兩支控制器
   #hoverCount = new Map();
-  #buttons = [];        // { hand, index, fn, down }
+  #buttons = [];          // { hand, index, fn, down }
+  #grabListeners = new Set();
   #raycaster = new Raycaster();
   #matrix = new Matrix4();
 
@@ -46,9 +49,9 @@ export class InputManager {
   }
 
   /**
-   * 登記可互動物件。回傳移除函式。
+   * 登記可互動物件。回傳移除函式。persistent: true 的物件（例如選單）換區域時不會被清掉。
    * @param {import('three').Object3D} object
-   * @param {{ onSelect?: Function, onHover?: (on: boolean) => void, enabled?: () => boolean, highlight?: boolean }} handlers
+   * @param {{ onSelect?, onHover?, onGrab?, onDrag?, onRelease?, enabled?: () => boolean, highlight?: boolean, persistent?: boolean }} handlers
    */
   add(object, handlers = {}) {
     const meshes = handlers.highlight === false ? [] : prepareHighlight(object);
@@ -56,13 +59,20 @@ export class InputManager {
     return () => this.remove(object);
   }
   remove(object) {
-    for (const s of this.#sources) { if (s.hovered === object) this.#hover(s, null); if (s.pressed === object) s.pressed = null; }
+    for (const s of this.#sources) {
+      if (s.grabbed === object) this.#release(s);
+      if (s.hovered === object) this.#hover(s, null);
+      if (s.pressed === object) s.pressed = null;
+    }
     this.#targets.delete(object);
   }
   /** 擋住射線的物件（牆、屋頂）：隔著牆指不到後面的面板 */
   addOccluder(object) { this.#occluders.add(object); }
-  /** 換區域時清空 */
-  clear() { for (const object of [...this.#targets.keys()]) this.remove(object); this.#occluders.clear(); }
+  /** 換區域時清空（persistent 的物件保留） */
+  clear() {
+    for (const [object, t] of [...this.#targets]) if (!t.persistent) this.remove(object);
+    this.#occluders.clear();
+  }
 
   /** 控制器按鈕（xr-standard：4 = A/X、5 = B/Y）按下的瞬間呼叫 fn。回傳移除函式。 */
   onButton(hand, index, fn) {
@@ -70,9 +80,25 @@ export class InputManager {
     this.#buttons.push(entry);
     return () => { this.#buttons = this.#buttons.filter(b => b !== entry); };
   }
+  /** 有東西被抓住／放開時呼叫 fn(grabbing)（桌機用來暫停滑鼠繞看） */
+  onGrabChange(fn) { this.#grabListeners.add(fn); return () => this.#grabListeners.delete(fn); }
+  get grabbing() { return this.#sources.some(s => s.grabbed); }
+
+  /** 控制器震動；source 可以是 info 或 'left' / 'right' */
+  pulse(source, intensity = 0.3, ms = 20) {
+    const s = typeof source === 'string' ? this.controllers.find(c => c.inputSource?.handedness === source) : source;
+    const gamepad = s?.inputSource?.gamepad;
+    try {
+      const actuator = gamepad?.hapticActuators?.[0];
+      if (actuator?.pulse) actuator.pulse(intensity, ms);
+      else gamepad?.vibrationActuator?.playEffect?.('dual-rumble', { duration: ms, strongMagnitude: intensity, weakMagnitude: intensity });
+    } catch { /* 不支援震動 */ }
+  }
+  /** 左／右手控制器的 grip 空間（選單掛在左手腕上） */
+  grip(hand) { return this.controllers.find(c => c.inputSource?.handedness === hand && c.active)?.grip || null; }
 
   #pick(raycaster) {
-    const objects = [...this.#targets.keys()].filter(o => o.visible && this.#targets.get(o).enabled?.() !== false);
+    const objects = [...this.#targets.keys()].filter(o => this.#isVisible(o) && this.#targets.get(o).enabled?.() !== false);
     const hit = raycaster.intersectObjects([...objects, ...this.#occluders], true)[0];
     if (!hit) return null;
     for (let o = hit.object; o; o = o.parent) {
@@ -81,6 +107,7 @@ export class InputManager {
     }
     return null;
   }
+  #isVisible(object) { for (let o = object; o; o = o.parent) if (!o.visible) return false; return true; }
   #hover(source, object) {
     if (source.hovered === object) return;
     const leave = source.hovered;
@@ -96,43 +123,92 @@ export class InputManager {
       if (n === 1) { const t = this.#targets.get(object); setHighlight(t.meshes, true); t.onHover?.(true); }
     }
   }
-  /** 測試用：等同點擊這個已登記的物件（只在開發模式存在） */
-  _debugSelect(object) { if (import.meta.env.DEV) this.#select(object); }
-  #select(object) { const t = this.#targets.get(object); if (t && t.enabled?.() !== false) t.onSelect?.(); }
+  #select(object, source) {
+    const t = this.#targets.get(object);
+    if (t && t.enabled?.() !== false) t.onSelect?.(this.#info(source));
+  }
+  /** 測試用：等同點擊這個已登記的物件（只在開發模式有作用） */
+  _debugSelect(object) { if (import.meta.env.DEV) this.#select(object, this.mouse); }
 
-  // ---- 滑鼠（桌機直接開 #/world 時）：移動 = hover；按下放開且沒拖曳 = select（拖曳留給視角控制）
+  #info(source) {
+    const info = source.info ??= { kind: source.kind, hand: null, ray: new Ray(), position: null, pulse: (i, ms) => this.pulse(source, i, ms) };
+    info.hand = source.inputSource?.handedness || null;
+    if (source.kind === 'controller') {
+      source.controller.updateMatrixWorld(true);
+      info.position ??= new Vector3();
+      info.position.setFromMatrixPosition(source.controller.matrixWorld);
+      this.#matrix.identity().extractRotation(source.controller.matrixWorld);
+      info.ray.origin.copy(info.position);
+      info.ray.direction.set(0, 0, -1).applyMatrix4(this.#matrix);
+    } else {
+      info.ray.copy(source.ray || this.#raycaster.ray);
+    }
+    return info;
+  }
+  #grab(source, object) {
+    const t = this.#targets.get(object);
+    if (!t?.onGrab || t.enabled?.() === false) return false;
+    if (t.onGrab(this.#info(source)) === false) return false;
+    source.grabbed = object;
+    this.#grabListeners.forEach(fn => fn(true));
+    return true;
+  }
+  #release(source) {
+    const object = source.grabbed;
+    if (!object) return;
+    source.grabbed = null;
+    this.#targets.get(object)?.onRelease?.(this.#info(source));
+    if (!this.grabbing) this.#grabListeners.forEach(fn => fn(false));
+  }
+
+  // ---- 滑鼠（桌機直接開 #/world 時）：移動 = hover；點一下且沒拖曳 = select；在可抓物件上按住拖曳 = grab / drag / release
   #setupMouse() {
     const dom = this.renderer.domElement, ndc = new Vector2();
-    const source = { kind: 'mouse', hovered: null, pressed: null, at: null, active: false };
+    const source = { kind: 'mouse', hovered: null, pressed: null, grabbed: null, at: null, ray: new Ray() };
     this.#sources.push(source);
     this.mouse = source;
     const cast = e => {
       const r = dom.getBoundingClientRect();
       ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
       this.#raycaster.setFromCamera(ndc, this.camera);
+      source.ray.copy(this.#raycaster.ray);
       return this.#pick(this.#raycaster);
     };
     const move = e => {
       if (this.renderer.xr.isPresenting) return;
+      if (source.grabbed) { cast(e); this.#targets.get(source.grabbed)?.onDrag?.(this.#info(source)); return; }
       if (source.at && Math.hypot(e.clientX - source.at[0], e.clientY - source.at[1]) > 6) source.pressed = null;
       const hit = cast(e);
       this.#hover(source, hit?.object || null);
-      dom.style.cursor = hit ? 'pointer' : '';
+      dom.style.cursor = hit ? (this.#targets.get(hit.object)?.onGrab ? 'grab' : 'pointer') : '';
     };
-    const down = e => { if (e.button !== 0 || this.renderer.xr.isPresenting) return; source.at = [e.clientX, e.clientY]; source.pressed = cast(e)?.object || null; };
+    // 捕獲階段：抓住物件時攔下事件，滑鼠繞看（OrbitControls）就不會一起轉
+    const down = e => {
+      if (e.button !== 0 || this.renderer.xr.isPresenting) return;
+      const hit = cast(e);
+      if (hit && this.#targets.get(hit.object)?.onGrab && this.#grab(source, hit.object)) {
+        e.stopImmediatePropagation();
+        dom.setPointerCapture?.(e.pointerId);
+        dom.style.cursor = 'grabbing';
+        return;
+      }
+      source.at = [e.clientX, e.clientY]; source.pressed = hit?.object || null;
+    };
     const up = e => {
-      if (e.button !== 0 || !source.at) return;
+      if (e.button !== 0) return;
+      if (source.grabbed) { this.#release(source); dom.style.cursor = ''; return; }
+      if (!source.at) return;
       const pressed = source.pressed; source.at = null; source.pressed = null;
-      if (pressed && cast(e)?.object === pressed) this.#select(pressed);
+      if (pressed && cast(e)?.object === pressed) this.#select(pressed, source);
     };
-    const leave = () => { this.#hover(source, null); dom.style.cursor = ''; };
-    const listeners = [['pointermove', move], ['pointerdown', down], ['pointerup', up], ['pointerleave', leave]];
-    for (const [type, fn] of listeners) dom.addEventListener(type, fn);
-    this.#disposeMouse = () => { for (const [type, fn] of listeners) dom.removeEventListener(type, fn); };
+    const leave = () => { if (!source.grabbed) { this.#hover(source, null); dom.style.cursor = ''; } };
+    const listeners = [['pointermove', move], ['pointerdown', down, true], ['pointerup', up], ['pointerleave', leave]];
+    for (const [type, fn, capture] of listeners) dom.addEventListener(type, fn, !!capture);
+    this.#disposeMouse = () => { for (const [type, fn, capture] of listeners) dom.removeEventListener(type, fn, !!capture); };
   }
   #disposeMouse = () => {};
 
-  // ---- 控制器：每手一條射線；trigger 按下記住指到的物件，放開時仍指著同一個才算 select（避免誤觸）
+  // ---- 控制器：每手一條射線；trigger 按下記住指到的物件，放開時仍指著同一個才算 select；grip 抓住指到的物件
   #setupControllers() {
     const xr = this.renderer.xr, factory = new XRControllerModelFactory();
     this.controllers = [];
@@ -148,22 +224,32 @@ export class InputManager {
       controller.add(line, dot);
       grip.add(factory.createControllerModel(grip));
       this.player.add(controller, grip);
-      const source = { kind: 'controller', index: i, controller, grip, line, dot, inputSource: null, hovered: null, pressed: null, active: false };
+      const source = { kind: 'controller', index: i, controller, grip, line, dot, inputSource: null, hovered: null, pressed: null, grabbed: null, grabDistance: 0, active: false };
       controller.addEventListener('connected', e => { source.inputSource = e.data; source.active = !e.data.hand; controller.visible = source.active; });
-      controller.addEventListener('disconnected', () => { this.#hover(source, null); source.inputSource = null; source.active = false; });
+      controller.addEventListener('disconnected', () => { this.#release(source); this.#hover(source, null); source.inputSource = null; source.active = false; });
       controller.addEventListener('selectstart', () => { source.pressed = source.hovered; });
-      controller.addEventListener('selectend', () => { const p = source.pressed; source.pressed = null; if (p && p === source.hovered) this.#select(p); });
+      controller.addEventListener('selectend', () => { const p = source.pressed; source.pressed = null; if (p && p === source.hovered) this.#select(p, source); });
+      controller.addEventListener('squeezestart', () => {
+        if (source.hovered && this.#grab(source, source.hovered)) source.grabDistance = source.line.scale.z;
+      });
+      controller.addEventListener('squeezeend', () => this.#release(source));
       this.#sources.push(source);
       this.controllers.push(source);
     }
   }
 
-  /** 每格呼叫一次（XR 中） */
+  /** 每格呼叫一次 */
   update() {
     const presenting = this.renderer.xr.isPresenting;
     if (presenting && this.mouse.hovered) this.#hover(this.mouse, null);
     for (const s of this.controllers) {
-      if (!presenting || !s.active) { if (s.hovered) this.#hover(s, null); continue; }
+      if (!presenting || !s.active) { if (s.hovered) this.#hover(s, null); this.#release(s); continue; }
+      if (s.grabbed) {
+        // 抓住時射線固定長度，持續送出 drag
+        this.#targets.get(s.grabbed)?.onDrag?.(this.#info(s));
+        s.line.scale.z = s.grabDistance;
+        continue;
+      }
       s.controller.updateMatrixWorld(true);
       this.#matrix.identity().extractRotation(s.controller.matrixWorld);
       this.#raycaster.ray.origin.setFromMatrixPosition(s.controller.matrixWorld);
@@ -184,7 +270,8 @@ export class InputManager {
   }
 
   dispose() {
-    this.clear();
+    for (const object of [...this.#targets.keys()]) this.remove(object);
+    this.#occluders.clear();
     this.#disposeMouse();
     for (const s of this.controllers) {
       s.controller.removeFromParent(); s.grip.removeFromParent();

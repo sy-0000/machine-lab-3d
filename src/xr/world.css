@@ -8,3 +8,9 @@
 .world-status{color:#ffcf7a}
 .world-hint{color:#c9b796;margin-right:auto}
 .world-page + footer{display:none}
+.world-menu-toggle{padding:6px 12px;font-size:13px;background:#3a2a18;border-color:#8a6a36;color:#f3e3c3}
+.world-menu{position:absolute;right:16px;bottom:76px;display:grid;gap:6px;min-width:220px;padding:12px;border:1px solid #8a6a36;border-radius:10px;background:rgba(24,17,10,.92);color:#f3e3c3}
+.world-menu strong{font-size:14px;color:#f3dca2;margin-bottom:4px}
+.world-menu button{text-align:left;padding:8px 12px;background:#4a3620;border-color:#8a6a36;color:#f6e7c8}
+.world-menu button.is-disabled{opacity:.45}
+.world-menu small{font-size:12px;color:#ffcf8a;min-height:1.4em}

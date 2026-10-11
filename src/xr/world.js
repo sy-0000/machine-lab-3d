@@ -10,7 +10,9 @@ import { FpsMeter } from './FpsMeter.js';
 import { InputManager } from './InputManager.js';
 import { SceneManager } from './SceneManager.js';
 import { createLobby } from './areas/Lobby.js';
-import { createWorkshop } from './areas/Workshop.js';
+import { createWorkshop, DESK_SPOT } from './areas/Workshop.js';
+import { createProgress } from './progress.js';
+import { createMenu } from './ui/Menu.js';
 
 /**
  * @param {HTMLElement} container
@@ -67,8 +69,14 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   ctx.go = (name, options) => manager.go(name, options).catch(() => {});
   ctx.moveTo = (station, options) => manager.moveTo(station, options);
   ctx.fadeOut = () => manager.fadeOut();
-  // 回到門外：已在大門口就換站位，否則切回大門口（出生點就在門外）
-  const goOutside = () => (manager.currentName === 'lobby' && manager.current?.goOutside ? manager.current.goOutside() : ctx.go('lobby'));
+  // 玄關的進度（大門口與選單共用同一份）
+  const progress = createProgress();
+  ctx.progress = progress;
+  // 回到門外／玄關：已在大門口就換站位，否則切回大門口並出現在那個站位
+  const goLobby = station => (manager.currentName === 'lobby' && manager.current?.goStation ? manager.current.goStation(station) : ctx.go('lobby', { station }));
+  const goOutside = () => goLobby('outside');
+  let lastMachine = params.get('machine') || 'lathe';
+  const currentMachine = () => (manager.currentName === 'workshop' ? manager.current?.machineId : null);
   manager.register('lobby', createLobby);
   manager.register('workshop', createWorkshop);
 
@@ -79,9 +87,47 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   // 開發模式除錯用：檢查換區域後 GPU 資源有沒有釋放（renderer.info.memory）
   if (import.meta.env.DEV) window.__xrWorld = { renderer, manager };
 
-  // 右手 B：開關 FPS；左手 Y：暫時用來回到門外（第 3 階段改成叫出選單）
+  // ---- 選單（VR：左手腕面板；桌機：WorldPage 的 HTML 選單，用同一份項目）
+  const LOCKED = '需先在玄關讀完工安規則並看完切削動畫';
+  const menuItems = () => {
+    const xr = renderer.xr.isPresenting, here = currentMachine();
+    const unlock = item => ({ ...item, enabled: progress.unlocked, reason: LOCKED });
+    const machine = (key, label) => here === key ? { key, label, enabled: false, reason: `目前就在${label}` } : unlock({ key, label });
+    return [
+      { key: 'outside', label: '回到門外', enabled: true },
+      { key: 'vestibule', label: '回到玄關', enabled: true },
+      unlock({ key: 'toolbox', label: '工具箱' }),
+      machine('lathe', '車床'), machine('milling', '銑床'), machine('drill', '鑽床'),
+      { key: 'save', label: '存檔／讀取', enabled: false, reason: '存檔／讀取在第 8 階段加入' },
+      { key: 'exit', label: xr ? '離開 VR' : '返回首頁', enabled: true },
+    ];
+  };
+  const runMenu = key => {
+    const item = menuItems().find(i => i.key === key);
+    if (!item?.enabled) return item?.reason || '';
+    if (key === 'outside') goOutside();
+    else if (key === 'vestibule') goLobby('center');
+    else if (key === 'toolbox') {
+      // 已在工作室：回到工作桌前（第 4 階段工具箱放在桌上）
+      if (manager.currentName === 'workshop') manager.moveTo({ position: DESK_SPOT, yaw: 0, view: manager.current.view });
+      else ctx.go('workshop', { machineId: lastMachine });
+    } else if (['lathe', 'milling', 'drill'].includes(key)) {
+      // 暫時：淡出淡入重建工作室；第 7 階段改成蒸汽遮住視線的快速切換
+      lastMachine = key;
+      ctx.go('workshop', { machineId: key });
+    } else if (key === 'exit') {
+      if (renderer.xr.isPresenting) renderer.xr.getSession()?.end();
+      else location.hash = '#/';
+    }
+    return '';
+  };
+  const menu = createMenu({ input, player, camera, items: menuItems, run: runMenu });
+
+  // 右手 B：開關 FPS；左手 Y：叫出／關閉選單
   input.onButton('right', 5, () => fps.toggle());
-  input.onButton('left', 5, goOutside);
+  input.onButton('left', 5, () => menu.toggle());
+  // 桌機：抓住東西時暫停滑鼠繞看
+  input.onGrabChange(grabbing => { orbit.enabled = !grabbing && !renderer.xr.isPresenting; });
   const onKey = e => {
     if (e.target.closest?.('input, textarea, select') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'f' || e.key === 'F') fps.toggle();
@@ -101,6 +147,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       camera.updateMatrixWorld(true);
     } else { stepViewTween(dt); orbit.update(); }
     input.update();
+    menu.update();
     manager.update(dt, elapsed);
     manager.render(xr, dt, elapsed);
   });
@@ -116,13 +163,16 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   observer.observe(container);
 
   const onSessionStart = () => { orbit.enabled = false; manager.placePlayer(); };
-  const onSessionEnd = () => { orbit.enabled = true; manager.placePlayer(); resize(); onExitVR(); };
+  const onSessionEnd = () => { menu.hide(); orbit.enabled = true; manager.placePlayer(); resize(); onExitVR(); };
   renderer.xr.addEventListener('sessionstart', onSessionStart);
   renderer.xr.addEventListener('sessionend', onSessionEnd);
 
   return {
     ready,
     manager,
+    menuItems,
+    runMenu,
+    progress,
     /** 接手一個已開啟的 immersive-vr session（首頁按鈕或本頁按鈕開的） */
     enterVR: session => renderer.xr.setSession(session),
     exitVR: () => renderer.xr.getSession()?.end(),
@@ -133,6 +183,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       renderer.setAnimationLoop(null);
       observer.disconnect();
       removeEventListener('keydown', onKey);
+      menu.dispose();
       manager.dispose();
       input.dispose();
       orbit.dispose();
