@@ -42,3 +42,7 @@ reports/
 
 # glb export output (src/dev/exportTool.js)
 exports/
+
+# dotnet 測試專案產物
+unity/MachineYard.CoreTests/bin/
+unity/MachineYard.CoreTests/obj/

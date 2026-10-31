@@ -1,0 +1,10 @@
+{
+  "name": "MachineYard.Core",
+  "rootNamespace": "MachineYard.Core",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "noEngineReferences": true,
+  "autoReferenced": true
+}

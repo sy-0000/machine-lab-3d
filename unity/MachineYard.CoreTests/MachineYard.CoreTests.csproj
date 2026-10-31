@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 編譯 Unity 專案的純 C# 核心（Assets/Scripts/Core），並用網站 JS 產生的標準答案（golden.json）逐項比對。
+       執行：dotnet run（在本資料夾）（需先 node scripts/unity-golden.mjs 產生 golden.json） -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>MachineYard.CoreTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../MachineYard/Assets/Scripts/Core/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="golden.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
