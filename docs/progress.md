@@ -30,5 +30,5 @@
 - [x] Core 純數學 + dotnet 測試（79,022 項比對 JS 標準答案、突變測試）
 - [x] 匯出工具修正：略過隱藏節點、userData 巢狀、machine_*_runtime.json
 - [x] LatheMachine／切削／工件網格／手輪抓握／面板／WorkshopBuilder（型別檢查通過，未在 Unity 執行）
-- [ ] 完整重新匯出與 export-report 更新（背景執行中）
+- [x] 完整重新匯出（27 glb、1,689,921 三角形、約 32 分鐘）與 export-report 更新
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）

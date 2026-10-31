@@ -1,6 +1,6 @@
 {
  "_note": "由 scripts/export-report.mjs 從實際匯出的 exports/manifest.json 產生；files 保留全部檔案，其他較長的清單只留前 5 筆。",
- "generatedAt": "2026-10-31T09:30:25.369Z",
+ "generatedAt": "2026-10-31T14:23:06.882Z",
  "tool": "src/dev/exportTool.js",
  "three": "180",
  "files": [
@@ -7000,7 +7000,7 @@
      ]
     }
    ],
-   "encodeSeconds": 41.6,
+   "encodeSeconds": 49.2,
    "written": "exports"
   },
   {
@@ -7401,7 +7401,7 @@
      "reason": "InputManager 登記的可互動物件"
     }
    ],
-   "encodeSeconds": 45.2,
+   "encodeSeconds": 48.4,
    "written": "exports"
   },
   {
@@ -7409,7 +7409,7 @@
    "kind": "static",
    "source": "vestibule",
    "status": "ok",
-   "bytes": 11446844,
+   "bytes": 11446836,
    "triangles": 13068,
    "meshes": 183,
    "nodes": 210,
@@ -9025,7 +9025,7 @@
      ]
     }
    ],
-   "encodeSeconds": 38.6,
+   "encodeSeconds": 50,
    "written": "exports"
   },
   {
@@ -9033,10 +9033,10 @@
    "kind": "interactive",
    "source": "vestibule",
    "status": "ok",
-   "bytes": 8058988,
-   "triangles": 61040,
-   "meshes": 162,
-   "nodes": 196,
+   "bytes": 8019564,
+   "triangles": 61038,
+   "meshes": 161,
+   "nodes": 195,
    "objects": [
     {
      "path": "Vestibule",
@@ -9247,8 +9247,8 @@
      "path": "VaultDoor",
      "type": "Group",
      "depth": 1,
-     "meshes": 100,
-     "triangles": 9330
+     "meshes": 99,
+     "triangles": 9328
     },
     {
      "path": "VaultDoor/Frame",
@@ -9501,16 +9501,6 @@
      "depth": 2,
      "meshes": 1,
      "triangles": 48,
-     "userData": {
-      "noHighlight": true
-     }
-    },
-    {
-     "path": "VaultDoor/LockedHint",
-     "type": "Mesh",
-     "depth": 2,
-     "meshes": 1,
-     "triangles": 2,
      "userData": {
       "noHighlight": true
      }
@@ -9986,17 +9976,6 @@
      "slot": "map",
      "name": "",
      "source": "CanvasTexture（已烘成 PNG）",
-     "width": 1400,
-     "height": 180,
-     "clamped": false,
-     "usedBy": [
-      "LockedHint"
-     ]
-    },
-    {
-     "slot": "map",
-     "name": "",
-     "source": "CanvasTexture（已烘成 PNG）",
      "width": 2048,
      "height": 1434,
      "clamped": false,
@@ -10168,7 +10147,7 @@
      "reason": "玄關／工作室可互動或會開關的物件"
     }
    ],
-   "encodeSeconds": 36.5,
+   "encodeSeconds": 37.2,
    "written": "exports"
   },
   {
@@ -10176,7 +10155,7 @@
    "kind": "static",
    "source": "workshop",
    "status": "ok",
-   "bytes": 38926068,
+   "bytes": 38926076,
    "triangles": 555304,
    "meshes": 6984,
    "nodes": 7294,
@@ -11103,7 +11082,7 @@
      ]
     }
    ],
-   "encodeSeconds": 175.3,
+   "encodeSeconds": 183.7,
    "written": "exports"
   },
   {
@@ -11111,7 +11090,7 @@
    "kind": "interactive",
    "source": "workshop",
    "status": "ok",
-   "bytes": 10816528,
+   "bytes": 10816572,
    "triangles": 50558,
    "meshes": 156,
    "nodes": 221,
@@ -11723,7 +11702,7 @@
      "reason": "玄關／工作室可互動或會開關的物件"
     }
    ],
-   "encodeSeconds": 71.7,
+   "encodeSeconds": 76.5,
    "written": "exports"
   },
   {
@@ -12002,7 +11981,7 @@
      ]
     }
    ],
-   "encodeSeconds": 49.6,
+   "encodeSeconds": 52.9,
    "written": "exports"
   },
   {
@@ -12010,7 +11989,7 @@
    "kind": "interactive",
    "source": "toolbox",
    "status": "ok",
-   "bytes": 5155724,
+   "bytes": 5155752,
    "triangles": 75386,
    "meshes": 793,
    "nodes": 841,
@@ -12466,7 +12445,7 @@
      "reason": "工具 Tool_safety-glasses（userData.toolIndex=12）"
     }
    ],
-   "encodeSeconds": 39.7,
+   "encodeSeconds": 46.4,
    "written": "exports"
   },
   {
@@ -13059,7 +13038,7 @@
    "kind": "tool",
    "source": "Tool_paint-brush",
    "status": "ok",
-   "bytes": 818436,
+   "bytes": 818496,
    "triangles": 13864,
    "meshes": 579,
    "nodes": 584,
@@ -13140,7 +13119,7 @@
    "kind": "tool",
    "source": "Tool_brass-brush",
    "status": "ok",
-   "bytes": 820120,
+   "bytes": 820088,
    "triangles": 4380,
    "meshes": 98,
    "nodes": 104,
@@ -13485,36 +13464,26 @@
    "kind": "static",
    "source": "public/models/machines/lathe/lathe.glb（經 MachineBase 預處理後的 runtime.scene）",
    "status": "ok",
-   "bytes": 14092776,
-   "triangles": 196254,
-   "meshes": 127,
-   "nodes": 136,
+   "bytes": 11941032,
+   "triangles": 85272,
+   "meshes": 101,
+   "nodes": 107,
    "objects": [
     {
      "path": "Scene",
      "type": "Group",
      "depth": 1,
-     "meshes": 127,
-     "triangles": 196254
+     "meshes": 101,
+     "triangles": 85272
     },
     {
      "path": "Scene/Lathe_Machine",
      "type": "Group",
      "depth": 2,
-     "meshes": 127,
-     "triangles": 196254,
+     "meshes": 101,
+     "triangles": 85272,
      "userData": {
       "name": "Lathe Machine"
-     }
-    },
-    {
-     "path": "Scene/Lathe_Machine/DetailItem_Air_Blower",
-     "type": "Group",
-     "depth": 3,
-     "meshes": 7,
-     "triangles": 4160,
-     "userData": {
-      "name": "DetailItem Air Blower"
      }
     },
     {
@@ -13528,31 +13497,11 @@
      }
     },
     {
-     "path": "Scene/Lathe_Machine/DetailItem_Infomatin_Board",
-     "type": "Group",
-     "depth": 3,
-     "meshes": 5,
-     "triangles": 584,
-     "userData": {
-      "name": "DetailItem Infomatin Board"
-     }
-    },
-    {
-     "path": "Scene/Lathe_Machine/DetailItem_Lamp",
-     "type": "Group",
-     "depth": 3,
-     "meshes": 4,
-     "triangles": 2810,
-     "userData": {
-      "name": "DetailItem Lamp"
-     }
-    },
-    {
      "path": "Scene/Lathe_Machine/DetailItem_Machine_Box",
      "type": "Group",
      "depth": 3,
-     "meshes": 38,
-     "triangles": 155977,
+     "meshes": 28,
+     "triangles": 52549,
      "userData": {
       "name": "DetailItem Machine Box"
      }
@@ -13648,7 +13597,7 @@
      ]
     }
    ],
-   "encodeSeconds": 79.7,
+   "encodeSeconds": 78.6,
    "written": "exports"
   },
   {
@@ -13656,7 +13605,7 @@
    "kind": "interactive",
    "source": "public/models/machines/lathe/lathe.glb（經 MachineBase 預處理後的 runtime.scene）",
    "status": "ok",
-   "bytes": 5889576,
+   "bytes": 5889848,
    "triangles": 306815,
    "meshes": 86,
    "nodes": 125,
@@ -14076,7 +14025,13 @@
      "type": "Group",
      "depth": 2,
      "meshes": 1,
-     "triangles": 2
+     "triangles": 2,
+     "userData": {
+      "scale": {
+       "panel": "rpm",
+       "signature": "[1,0]"
+      }
+     }
     },
     {
      "path": "Scene/LeftSelectorPivotScale/<Mesh>",
@@ -14090,7 +14045,13 @@
      "type": "Group",
      "depth": 2,
      "meshes": 1,
-     "triangles": 2
+     "triangles": 2,
+     "userData": {
+      "scale": {
+       "panel": "mode",
+       "signature": "[1,0]"
+      }
+     }
     },
     {
      "path": "Scene/RightSelectorPivotScale/<Mesh>",
@@ -14104,7 +14065,13 @@
      "type": "Group",
      "depth": 2,
      "meshes": 1,
-     "triangles": 2
+     "triangles": 2,
+     "userData": {
+      "scale": {
+       "panel": "table",
+       "signature": "[1,0]"
+      }
+     }
     },
     {
      "path": "Scene/SpindleSpeedTable/<Mesh>",
@@ -14187,7 +14154,7 @@
      "reason": "機台設定：addition:selectorScale"
     }
    ],
-   "encodeSeconds": 47,
+   "encodeSeconds": 50.6,
    "written": "exports"
   },
   {
@@ -14195,17 +14162,17 @@
    "kind": "static",
    "source": "public/models/machines/milling/milling.glb（經 MachineBase 預處理後的 runtime.scene）",
    "status": "ok",
-   "bytes": 62691392,
-   "triangles": 275312,
-   "meshes": 366,
-   "nodes": 398,
+   "bytes": 62658124,
+   "triangles": 274054,
+   "meshes": 365,
+   "nodes": 396,
    "objects": [
     {
      "path": "<Group>",
      "type": "Group",
      "depth": 1,
-     "meshes": 366,
-     "triangles": 275312
+     "meshes": 365,
+     "triangles": 274054
     },
     {
      "path": "<Group>/Bach_Top_Part_000",
@@ -16939,8 +16906,8 @@
      "path": "<Group>/Head_Assembly",
      "type": "Group",
      "depth": 2,
-     "meshes": 89,
-     "triangles": 79520
+     "meshes": 88,
+     "triangles": 78262
     },
     {
      "path": "<Group>/Head_Assembly/Head_Part_000",
@@ -17761,13 +17728,6 @@
      "userData": {
       "name": "Head_Part_085"
      }
-    },
-    {
-     "path": "<Group>/Head_Assembly/MillingStartLever",
-     "type": "Group",
-     "depth": 3,
-     "meshes": 1,
-     "triangles": 1258
     },
     {
      "path": "<Group>/MillingYControlsFixed",
@@ -19173,7 +19133,7 @@
      ]
     }
    ],
-   "encodeSeconds": 230.6,
+   "encodeSeconds": 286,
    "written": "exports"
   },
   {
@@ -19602,7 +19562,7 @@
      "reason": "機台設定：axis:Knee_Z_Slide（Z 軸／工作臺升降）"
     }
    ],
-   "encodeSeconds": 99.6,
+   "encodeSeconds": 113.3,
    "written": "exports"
   },
   {
@@ -19714,7 +19674,7 @@
      ]
     }
    ],
-   "encodeSeconds": 45.5,
+   "encodeSeconds": 48.6,
    "written": "exports"
   },
   {
@@ -19722,24 +19682,24 @@
    "kind": "interactive",
    "source": "public/models/machines/drill/drill.glb（經 MachineBase 預處理後的 runtime.scene）",
    "status": "ok",
-   "bytes": 6616544,
-   "triangles": 32948,
-   "meshes": 25,
-   "nodes": 49,
+   "bytes": 6600736,
+   "triangles": 32462,
+   "meshes": 24,
+   "nodes": 48,
    "objects": [
     {
      "path": "<Group>",
      "type": "Group",
      "depth": 1,
-     "meshes": 25,
-     "triangles": 32948
+     "meshes": 24,
+     "triangles": 32462
     },
     {
      "path": "<Group>/DrillPress",
      "type": "Group",
      "depth": 2,
-     "meshes": 24,
-     "triangles": 32820,
+     "meshes": 23,
+     "triangles": 32334,
      "userData": {
       "name": "DrillPress"
      }
@@ -19748,8 +19708,8 @@
      "path": "<Group>/DrillPress/HeadHousing",
      "type": "Group",
      "depth": 3,
-     "meshes": 20,
-     "triangles": 30348,
+     "meshes": 19,
+     "triangles": 29862,
      "userData": {
       "name": "HeadHousing"
      }
@@ -19769,7 +19729,22 @@
      "type": "Group",
      "depth": 2,
      "meshes": 1,
-     "triangles": 128
+     "triangles": 128,
+     "userData": {
+      "sleeve": {
+       "name": "QuillExtension",
+       "kind": "sleeve",
+       "top": [
+        0,
+        0.592,
+        0.1421577
+       ],
+       "bottomY": 0.55,
+       "radius": 0.021,
+       "drives": "quill",
+       "color": "#aeb9bd"
+      }
+     }
     },
     {
      "path": "<Group>/QuillExtension/<Mesh>",
@@ -19842,7 +19817,7 @@
      "reason": "機台設定：addition:sleeve"
     }
    ],
-   "encodeSeconds": 46.2,
+   "encodeSeconds": 47,
    "written": "exports"
   }
  ],
@@ -20390,7 +20365,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffb468",
-     "intensity": 4.127139898900441,
+     "intensity": 4.0600697553601695,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -20403,7 +20378,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffb468",
-     "intensity": 4.087279714437962,
+     "intensity": 3.9815314297525637,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -20466,6 +20441,13 @@
      "type": "Mesh",
      "reason": "隱形碰撞盒／點擊範圍（Unity 端用 Collider 取代，bbox 記錄於 manifest.colliders）",
      "triangles": 96
+    },
+    {
+     "path": "<Scene>/Lobby/VaultDoor/LockedHint",
+     "name": "LockedHint",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 2
     },
     {
      "path": "<Scene>/Lobby/SafetyBoard/PaperHit",
@@ -21569,21 +21551,6 @@
      "message": "材質「MeshBasicMaterial」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/Lobby/VaultDoor/LockedHint",
-     "name": "LockedHint",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0）"
-    },
-    {
-     "path": "<Scene>/Lobby/VaultDoor/LockedHint",
-     "name": "LockedHint",
-     "message": "材質「MeshBasicMaterial」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/Lobby/VaultDoor/LockedHint",
-     "name": "LockedHint",
-     "message": "CanvasTexture 動態貼圖（面板／螢幕）：只烘下匯出當下那一格；Unity 端需用 RenderTexture 或 UI 重做"
-    },
-    {
      "path": "<Scene>/Lobby/SafetyBoard/Frame",
      "name": "Frame",
      "message": "材質「BrassAged」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -21800,7 +21767,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffc27a",
-     "intensity": 6.795588891955002,
+     "intensity": 6.826111855266301,
      "distance": 9,
      "castShadow": false,
      "position": [
@@ -21813,7 +21780,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffc27a",
-     "intensity": 7.128825761420183,
+     "intensity": 7.179424473987616,
      "distance": 9,
      "castShadow": false,
      "position": [
@@ -30550,7 +30517,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.4752659536732871）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3851145073801651）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
@@ -30560,7 +30527,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.4752659536732871）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3851145073801651）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
@@ -30575,7 +30542,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.36202129884392353）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.29176070827804756）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
@@ -30585,7 +30552,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.36202129884392353）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.29176070827804756）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
@@ -30600,7 +30567,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28369408670970275）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.2979216148140246）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
@@ -30610,7 +30577,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28369408670970275）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.2979216148140246）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
@@ -30625,7 +30592,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3122979948823814）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3979329179313951）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
@@ -30635,7 +30602,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3122979948823814）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3979329179313951）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
@@ -31059,7 +31026,7 @@
      "name": "BoilerFire",
      "type": "PointLight",
      "color": "#ff6a24",
-     "intensity": 7.838673725287132,
+     "intensity": 7.906141695508078,
      "distance": 11,
      "castShadow": false,
      "position": [
@@ -31072,7 +31039,7 @@
      "name": "EdisonLamp_0",
      "type": "PointLight",
      "color": "#ffc07a",
-     "intensity": 13.519323335853837,
+     "intensity": 12.919055328258182,
      "distance": 10,
      "castShadow": false,
      "position": [
@@ -31085,7 +31052,7 @@
      "name": "EdisonLamp_1",
      "type": "PointLight",
      "color": "#ffa352",
-     "intensity": 3.1487454480854433,
+     "intensity": 3.1449053635085824,
      "distance": 5,
      "castShadow": false,
      "position": [
@@ -31098,7 +31065,7 @@
      "name": "EdisonLamp_2",
      "type": "PointLight",
      "color": "#ffb466",
-     "intensity": 20.669648359670735,
+     "intensity": 20.882088189234686,
      "distance": 14,
      "castShadow": false,
      "position": [
@@ -31111,7 +31078,7 @@
      "name": "EdisonLamp_3",
      "type": "PointLight",
      "color": "#ffa24e",
-     "intensity": 6.6437336305738555,
+     "intensity": 6.615680417010108,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -31124,7 +31091,7 @@
      "name": "EdisonLamp_4",
      "type": "PointLight",
      "color": "#ffab5c",
-     "intensity": 5.938511296630811,
+     "intensity": 5.983108449186832,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -31220,7 +31187,7 @@
      "path": "<Scene>/DeskToolbox/ToolInfoPanel",
      "name": "ToolInfoPanel",
      "type": "Group",
-     "reason": "3D UI 面板（CanvasTexture 動態文字，Unity 重做）"
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）"
     },
     {
      "path": "<Scene>/DeskToolbox/<Mesh>",
@@ -33275,6 +33242,94 @@
    },
    "skipped": [
     {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower",
+     "name": "DetailItem_Air_Blower",
+     "type": "Object3D",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）"
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board",
+     "name": "DetailItem_Infomatin_Board",
+     "type": "Object3D",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）"
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Lamp",
+     "name": "DetailItem_Lamp",
+     "type": "Object3D",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）"
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_162",
+     "name": "Object_162",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 20
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_193",
+     "name": "Object_193",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 132
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_195",
+     "name": "Object_195",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 21384
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_24",
+     "name": "Object_24",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 4570
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_28",
+     "name": "Object_28",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 124
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_30",
+     "name": "Object_30",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 63488
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_34",
+     "name": "Object_34",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 248
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_36",
+     "name": "Object_36",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 13378
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_40",
+     "name": "Object_40",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 72
+    },
+    {
+     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_42",
+     "name": "Object_42",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 12
+    },
+    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/CarriageAssembly/CrossSlideAssembly/HeightHandwheelPivot/VRWheelHit_heightHandwheel",
      "name": "VRWheelHit_heightHandwheel",
      "type": "Mesh",
@@ -33311,41 +33366,6 @@
     }
    ],
    "warnings": [
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_179",
-     "name": "Object_179",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_181",
-     "name": "Object_181",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_183",
-     "name": "Object_183",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_185",
-     "name": "Object_185",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_187",
-     "name": "Object_187",
-     "message": "材質「Material.001」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_207",
-     "name": "Object_207",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Air_Blower/Object_209",
-     "name": "Object_209",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
     {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Engine/cable007_low__0",
      "name": "cable007_low__0",
@@ -34007,51 +34027,6 @@
      "message": "材質「Bulnkostroj-mat」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board/Object_166",
-     "name": "Object_166",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board/Object_168",
-     "name": "Object_168",
-     "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board/Object_170",
-     "name": "Object_170",
-     "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board/Object_171",
-     "name": "Object_171",
-     "message": "材質「Material.004」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Infomatin_Board/Object_173",
-     "name": "Object_173",
-     "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Lamp/Object_164",
-     "name": "Object_164",
-     "message": "材質「Material.001」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Lamp/Object_175",
-     "name": "Object_175",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Lamp/Object_177",
-     "name": "Object_177",
-     "message": "材質「Material.005」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Lamp/Object_205",
-     "name": "Object_205",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_10",
      "name": "Object_10",
      "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -34072,11 +34047,6 @@
      "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_162",
-     "name": "Object_162",
-     "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_18",
      "name": "Object_18",
      "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -34087,16 +34057,6 @@
      "message": "材質「Material.001」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_193",
-     "name": "Object_193",
-     "message": "材質「material_6」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_195",
-     "name": "Object_195",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_20",
      "name": "Object_20",
      "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -34105,11 +34065,6 @@
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_22",
      "name": "Object_22",
      "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_24",
-     "name": "Object_24",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_26",
@@ -34127,16 +34082,6 @@
      "message": "材質「MeshBasicMaterial」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_28",
-     "name": "Object_28",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_30",
-     "name": "Object_30",
-     "message": "材質「material_4」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_32",
      "name": "Object_32",
      "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -34152,16 +34097,6 @@
      "message": "材質「MeshBasicMaterial」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_34",
-     "name": "Object_34",
-     "message": "材質「material_3」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_36",
-     "name": "Object_36",
-     "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_38",
      "name": "Object_38",
      "message": "材質「material_2」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -34170,16 +34105,6 @@
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_4",
      "name": "Object_4",
      "message": "材質「Dark Industrial Green」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_40",
-     "name": "Object_40",
-     "message": "材質「material_1」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_42",
-     "name": "Object_42",
-     "message": "材質「material_1」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
      "path": "<Scene>/MachineSlot/<Group>/Scene/Lathe_Machine/DetailItem_Machine_Box/Object_44",
@@ -34868,6 +34793,13 @@
     "FaceMill": "addition:cuttingTool"
    },
    "skipped": [
+    {
+     "path": "<Scene>/MachineSlot/<Group>/<Group>/Head_Assembly/MillingStartLever/Head_Part_023",
+     "name": "Head_Part_023",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 1258
+    },
     {
      "path": "<Scene>/MachineSlot/<Group>/<Group>/MillingYControlsFixed/ZLiftWheel/VRWheelHit_zLift",
      "name": "VRWheelHit_zLift",
@@ -36669,11 +36601,6 @@
      "message": "材質「Head_1028」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
-     "path": "<Scene>/MachineSlot/<Group>/<Group>/Head_Assembly/MillingStartLever/Head_Part_023",
-     "name": "Head_Part_023",
-     "message": "材質「Head_1028」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
      "path": "<Scene>/MachineSlot/<Group>/<Group>/Head_Assembly/MillingRightLever/Head_Part_009",
      "name": "Head_Part_009",
      "message": "材質「Head_1024」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
@@ -37437,6 +37364,13 @@
    },
    "skipped": [
     {
+     "path": "<Scene>/MachineSlot/<Group>/<Group>/DrillPress/HeadHousing/Quill/InteractionPivot_SpindleAssembly/SpindleAssembly/DrillBit",
+     "name": "DrillBit",
+     "type": "Mesh",
+     "reason": "隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）",
+     "triangles": 486
+    },
+    {
      "path": "<Scene>/MachineSlot/<Group>/<Group>/DrillPress/HeadHousing/InteractionPivot_FeedHandlePivot/VRWheelHit_feed",
      "name": "VRWheelHit_feed",
      "type": "Mesh",
@@ -37563,11 +37497,6 @@
     {
      "path": "<Scene>/MachineSlot/<Group>/<Group>/DrillPress/HeadHousing/Quill/InteractionPivot_SpindleAssembly/SpindleAssembly/Chuck",
      "name": "Chuck",
-     "message": "材質「DrillPress_M」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
-    },
-    {
-     "path": "<Scene>/MachineSlot/<Group>/<Group>/DrillPress/HeadHousing/Quill/InteractionPivot_SpindleAssembly/SpindleAssembly/DrillBit",
-     "name": "DrillBit",
      "message": "材質「DrillPress_M」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數"
     },
     {
@@ -37706,5 +37635,16 @@
     }
    ]
   }
- ]
+ ],
+ "runtime": {
+  "lathe": {
+   "file": "machine_lathe_runtime.json"
+  },
+  "milling": {
+   "file": "machine_milling_runtime.json"
+  },
+  "drill": {
+   "file": "machine_drill_runtime.json"
+  }
+ }
 }

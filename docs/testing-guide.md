@@ -92,7 +92,7 @@ http://localhost:5173/?area=workshop&machine=milling&nobatch#/world
 
 5. **檔案位置**：專案根目錄的 `exports/` 資料夾（不會被 commit）。
 
-**預期會產生的檔案**（全部匯出後，共 27 個 glb（14 個場景／機台檔＋13 個單件工具）＋1 個 manifest.json）：
+**預期會產生的檔案**（全部匯出後，共 27 個 glb（14 個場景／機台檔＋13 個單件工具）＋ 3 個 `machine_<id>_runtime.json`（機台控制設定，Unity 階段 4 用）＋ 1 個 manifest.json）：
 
 | 檔案 | 內容 |
 |---|---|
@@ -104,6 +104,7 @@ http://localhost:5173/?area=workshop&machine=milling&nobatch#/world
 | `machine_lathe_static.glb` / `machine_lathe_interactive.glb` | 車床：固定機身／會動的溜板、手輪、主軸、拉桿 |
 | `machine_milling_static.glb` / `machine_milling_interactive.glb` | 銑床 |
 | `machine_drill_static.glb` / `machine_drill_interactive.glb` | 鑽床 |
+| `machine_lathe_runtime.json`、`machine_milling_runtime.json`、`machine_drill_runtime.json` | 機台軸／手輪／主軸／拉桿／段位／掛點／刀片尖端的設定 |
 | `manifest.json` | 每個檔案的物件清單、被略過的物件與原因 |
 
 （實際清單、大小與三角形數見 `docs/export-report.md`。）

@@ -1,6 +1,6 @@
 # 匯出報告（無頭瀏覽器實際執行）
 
-- 產生時間：2026-10-31T09:30:25.369Z；three r180；工具 `src/dev/exportTool.js`
+- 產生時間：2026-10-31T14:23:06.882Z；three r180；工具 `src/dev/exportTool.js`
 - 執行方式：`npm run dev` 後 `node scripts/export-headless.mjs`（等同在 `?area=lobby&nobatch#/world` 按 Shift+A），再用 `node scripts/export-report.mjs` 產生本報告。
 - 三角形與節點數是**重新讀檔**（gltf-transform）計算，不是匯出端自報；兩者不一致會標 ⚠。
 - glb 未壓縮（GLTFExporter 不做 meshopt/Draco），大小主要是 PNG 貼圖；同一張程序貼圖在不同檔案各存一份。
@@ -10,7 +10,7 @@
 | exterior_static.glb | 13356 | 26,706 | 958 | 64 | 16 | 23 | ok |
 | exterior_interactive.glb | 11165 | 2,192 | 22 | 18 | 18 | 16 | ok |
 | vestibule_static.glb | 11179 | 13,068 | 210 | 129 | 22 | 31 | ok |
-| vestibule_interactive.glb | 7870 | 61,040 | 196 | 102 | 64 | 28 | ok |
+| vestibule_interactive.glb | 7832 | 61,038 | 195 | 101 | 63 | 27 | ok |
 | workshop_static.glb | 38014 | 555,304 | 7294 | 1381 | 95 | 61 | ok |
 | workshop_interactive.glb | 10563 | 50,558 | 221 | 121 | 27 | 23 | ok |
 | toolbox_static.glb | 5262 | 22,716 | 139 | 70 | 11 | 14 | ok |
@@ -28,13 +28,13 @@
 | tools/tool_jaw-covers.glb | 499 | 520 | 11 | 6 | 2 | 2 | ok |
 | tools/tool_shims.glb | 836 | 7,188 | 21 | 12 | 8 | 7 | ok |
 | tools/tool_safety-glasses.glb | 430 | 13,856 | 51 | 46 | 5 | 0 | ok |
-| machine_lathe_static.glb | 13762 | 196,254 | 136 | 127 | 16 | 6 | ok |
+| machine_lathe_static.glb | 11661 | 85,272 | 107 | 101 | 13 | 6 | ok |
 | machine_lathe_interactive.glb | 5752 | 306,815 | 125 | 84 | 30 | 3 | ok |
-| machine_milling_static.glb | 61222 | 275,312 | 398 | 366 | 38 | 103 | ok |
+| machine_milling_static.glb | 61190 | 274,054 | 396 | 365 | 38 | 103 | ok |
 | machine_milling_interactive.glb | 20152 | 87,050 | 154 | 121 | 17 | 24 | ok |
 | machine_drill_static.glb | 6497 | 21,914 | 32 | 23 | 1 | 3 | ok |
-| machine_drill_interactive.glb | 6461 | 32,948 | 49 | 25 | 4 | 3 | ok |
-| **合計** | **222782** | **1,802,649** | | | | | 27 個檔案 |
+| machine_drill_interactive.glb | 6446 | 32,462 | 48 | 24 | 4 | 3 | ok |
+| **合計** | **220595** | **1,689,921** | | | | | 27 個檔案 |
 
 ## 未產生的預期檔案
 
@@ -51,9 +51,9 @@
 | 開發用按鈕（正式版不存在） | 2 |  | exterior | DevUnlock, DevReset |
 | 隱形碰撞盒／點擊範圍（Unity 端用 Collider 取代，bbox 記錄於 manifest.colliders） | 21 | 1656 | vestibule, workshop, toolbox, machine_lathe, machine_milling, machine_drill | <Mesh>, WheelHit, PaperHit, PictureHit, VRWheelHit_heightHandwheel, VRWheelHit_carriageHandwheel |
 | 粒子／點精靈（THREE.Points + 自訂 shader），Unity 改用 VFX/Particle System 重做 | 5 |  | vestibule, workshop, toolbox | SteamPuffs, DustMotes, FireboxSparks, LiftPuff |
+| 隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過） | 17 | 105174 | vestibule, toolbox, machine_lathe, machine_milling, machine_drill | LockedHint, ToolInfoPanel, DetailItem_Air_Blower, DetailItem_Infomatin_Board, DetailItem_Lamp, Object_162 |
 | 自訂 ShaderMaterial（Unity 需用 Shader Graph 重寫） | 7 | 392 | workshop | SunBeam_0, SunBeam_1, SunBeam_2, SunBeam_3, SunBeam_4, SunBeam_5 |
 | 燈光（SpotLight）：glb 不帶光源，Unity 端改用烘焙／重設光源；參數記錄於 manifest.lights | 1 |  | toolbox | <SpotLight> |
-| 3D UI 面板（CanvasTexture 動態文字，Unity 重做） | 1 |  | toolbox | ToolInfoPanel |
 
 ## 展開的 InstancedMesh
 
@@ -135,9 +135,9 @@
 
 ## 警告（依類型彙總）
 
-- 材質「…」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數 — 2959 處（例：exterior:Ground、exterior:Apron、exterior:OuterWall_0、exterior:Plinth_0、exterior:Cornice_0、exterior:Pilaster_0）
-- 透明材質「…」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定 — 254 處（例：exterior:Glazing_clean、exterior:Glazing_dusty、exterior:Glazing_cracked、exterior:LanternGlass、exterior:Glass、vestibule:Lens）
-- CanvasTexture 動態貼圖（面板／螢幕）：只烘下匯出當下那一格；Unity 端需用 RenderTexture 或 UI 重做 — 18 處（例：exterior:Face、vestibule:Face、vestibule:Sheet、vestibule:GaugeLabel、vestibule:LockedHint、vestibule:Paper）
+- 材質「…」用 onBeforeCompile 改過 shader，只匯出基底 PBR 參數 — 2930 處（例：exterior:Ground、exterior:Apron、exterior:OuterWall_0、exterior:Plinth_0、exterior:Cornice_0、exterior:Pilaster_0）
+- 透明材質「…」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定 — 253 處（例：exterior:Glazing_clean、exterior:Glazing_dusty、exterior:Glazing_cracked、exterior:LanternGlass、exterior:Glass、vestibule:Lens）
+- CanvasTexture 動態貼圖（面板／螢幕）：只烘下匯出當下那一格；Unity 端需用 RenderTexture 或 UI 重做 — 17 處（例：exterior:Face、vestibule:Face、vestibule:Sheet、vestibule:GaugeLabel、vestibule:Paper、vestibule:<Mesh>）
 
 ## 燈光（未匯出，參數在 manifest `groups[].lights`）
 
