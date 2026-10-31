@@ -19,7 +19,7 @@ namespace MachineYard.Editor
         // 玄關的兩盞吊燈（vestibule.js createLamps：PointLight 0xffc27a、強度 7、距離 9，z = 12.1 / 14.55，高度約 天花板 − 1.05）
         static readonly float[] LampZ = { 12.1f, 14.55f };
 
-        [MenuItem("Machine Yard/4. Build Lobby + Workshop Scene (stage 3-4)")]
+        [MenuItem("Machine Yard/4. Build Lobby + Workshop Scene (stage 3-5)")]
         public static void Build()
         {
             var ext = Load("exterior_static.glb"); var extI = Load("exterior_interactive.glb");
@@ -87,6 +87,8 @@ namespace MachineYard.Editor
 
             var menu = sys.AddComponent<DebugMenu>();
             menu.head = cam; menu.mover = mover; menu.flow = flow; menu.doors = doors;
+            menu.switcher = WorkshopBuilder.LastSwitcher; if (WorkshopBuilder.LastSwitcher != null) WorkshopBuilder.LastSwitcher.mover = mover;
+            if (flow.vault != null) flow.vault.fx = WorkshopBuilder.LastFx;
 
             var path = "Assets/Scenes/Lobby.unity";
             EditorSceneManager.SaveScene(scene, path);

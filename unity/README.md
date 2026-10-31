@@ -112,8 +112,8 @@
 
 ## 步驟（接在階段 3 之後）
 1. 重新匯出（修正了隱藏零件與新增 `machine_lathe_runtime.json`）：照 `docs/testing-guide.md` 第 2 節再跑一次 Shift+A。
-2. 選單 **2. Import glb exports (lobby)**（若匯出有更新）→ **2b. Import glb exports (workshop + lathe)**（約 60 MB，匯入要等幾分鐘）。
-3. 選單 **4. Build Lobby + Workshop Scene (stage 3-4)**。Console 會印出停用的小零件數與光源數。
+2. 選單 **2. Import glb exports (lobby)**（若匯出有更新）→ **2b. Import glb exports (workshop + machines)**（階段 5 起含銑床、鑽床，共約 200 MB，匯入要等幾分鐘）。
+3. 選單 **4. Build Lobby + Workshop Scene (stage 3-5)**。Console 會印出停用的小零件數與光源數。
 4. Build And Run。流程：門外 → 玄關 → 解鎖金庫門（或左手 Y 選單 [DEV] 直接解鎖）→ 進入工作室（工作桌前）→ 瞬移圓盤到「機台正面」。
 
 ## 車床操作（實機驗收，完成定義見 `docs/unity-migration-plan.md`）
@@ -131,6 +131,64 @@
 - **三角形預算**：工作室靜態 555,304、車床靜態 85,272 + 互動 306,815、工具箱 ~98,000，合計約 **105 萬**。Quest 3 在 72 fps 通常撐不住這個量（雙眼）。已預設停用 5 cm 以下的小零件（約省十餘萬），但很可能仍需要：LOD／簡化網格、遮擋剔除（Occlusion Culling 烘焙）、把工作室遠處擺設換成低面數。**階段 4 的主要工作其實是用實機 fps 驅動這些取捨**——請把 fps 數字與 OVR Metrics 的 draw call／三角形回報給我。
 - **車床互動節點 307k 三角形偏重**：會動的整組溜板／刀架。需要時可在 Unity 用 mesh 簡化（Mesh Simplifier）處理，或請我把匯出分得更細（例如把大溜板的鑄件拆成靜態）。
 - **光源強度**是目測初值（`WorkshopBuilder.PointScale/SunScale`）；沒有烘焙，即時光源數量多會吃 fps。
-- **尚未做**：切屑、接觸環標記、鑽銑床、工具箱拿起展示流程、特效、音訊（階段 5）；工件存檔實際寫入（`SaveSlots` 已備好，等車床工件狀態序列化）。
+- 階段 4 當時未做的項目（銑床／鑽床、切屑、工具箱、特效、音訊、工件存檔）已在階段 5 補上，見下一節。
 - **工件取下／重新裝夾、調頭**不在本階段（網站規劃的第 10 階段）。
 - 手輪抓握的角度方向、拉桿方向等「手性」相關行為，若實機方向相反：先試 `ThreeCoords.Mode`；個別旋轉符號集中在 `ThreeCoords.AxisAngle`。
+
+---
+
+# 階段 5：銑床、鑽床、工具箱、特效、音訊、存檔
+
+## 新增內容
+| 檔案 | 作用（對應網站） |
+|---|---|
+| `Core/HeadWorkpiece.cs` | 槌頭毛胚（`HeadWorkpieceState.js`）與銑削／鑽孔／攻牙（`HeadCuttingSimulation.js cutHead`）：高度場 0.5 mm 一格，刀路線段與每格圓盤的精確交點；孔入口隨後續銑削降低、牙深縮短；`SurfaceUnder`／`Contact`（接觸光圈） |
+| `Core/AxisModel.cs`（擴充） | `StepReturn`：鑽床進給手柄放開後彈簧回位（`runtime.js stepReturn`） |
+| `Core/MachineSynth.cs` | 程序化聲音（`MachineSounds.js`＋`xrAudio.warn`）：馬達嗡嗡聲隨轉速、切削帶通雜訊（銑床／鑽床依刀刃通過率調幅）、手輪喀聲（節流）、警告兩短聲。純 C#，沒有音檔 |
+| `Core/WorkpieceDto.cs` | 存檔格式（槌頭高度場、車床半徑剖面）與嚴格驗證 |
+| `Runtime/HeadMachining.cs` | 銑床／鑽床的加工：裝刀、掛毛胚、量刀尖（毛胚座標 mm）、切削、接觸光圈、切屑事件、裝夾（`Place`／`Slide`／`DefaultSetup`）、簡化虎鉗、DRO |
+| `Runtime/HeadTools.cs` | 5 支槌頭刀具（Ø58 面銑刀、Ø8 立銑刀、Ø8.5／Ø10 鑽頭、M10 絲攻）的定義與程序化模型 |
+| `Runtime/HeadWorkpieceView.cs` | 毛胚網格（`headGeometry`）；同高度的連續格子合併成長方形，面銑後只剩幾十個四邊形 |
+| `Runtime/HeadMachinePanel.cs` | 銑床／鑽床面板（左手 **X**）：DRO、刀具、刀尖位置、接觸、孔資料、換刀、新工件、歸零、鑽床滑動虎鉗、存檔／讀檔 |
+| `Runtime/LatheMachine.cs`（擴充） | 銑床開關（toggle）、鑽床彈簧手柄（握住不回彈、放開回彈）、套筒延伸（sleeve）隨套筒伸縮、教學比例自動開啟 |
+| `Runtime/MachineControlWiring.cs`（擴充） | 鑽床進給手柄：照真實比例跟手轉（−115°～0°）；銑床開關 trigger＝正轉、grip＝反轉 |
+| `Runtime/Effects.cs` | 粒子特效：切屑、火花、蒸汽（`ParticleBurst`，固定粒子上限）、灰塵（`DustMotes`）；`MachineEffects` 把車床／銑鑽床事件接到特效 |
+| `Runtime/MachineAudio.cs` | 機台聲音：串流 AudioClip 播放 `MachineSynth`，3D 音源在機台中央上方 1 m |
+| `Runtime/MachineSwitcher.cs` | 換機台：蒸汽遮擋 → 切換 → 蒸汽散去；兩側瞬移圓盤依各機台移動 |
+| `Runtime/ToolboxFlow.cs` | 工具箱流程：點工具 → 升起到展示點（放大 1.8 倍）→ 聚光、其他燈光降到 15% → 說明面板 → 上一項／下一項／放回；展示中 grip 抓住轉動 |
+| `Runtime/WorkpieceSaves.cs`、`SlotConfirm.cs` | 3 格存檔的寫入／讀回（車床工件只能讀回車床；銑床與鑽床可互讀），覆蓋已有工件要 3 秒內連按兩次 |
+| `Resources/tools.json` | 13 件工具的名稱、說明、展示角度（`scripts/export-tools-json.mjs` 從網站資料產生） |
+
+## 步驟（接在階段 4 之後）
+1. 照 `docs/testing-guide.md` 第 2 節的匯出若有更新就重跑；否則用現有 `exports/`（已含三台機台的 glb 與 `machine_*_runtime.json`）。
+2. 選單 **2b. Import glb exports (workshop + machines)** → **4. Build Lobby + Workshop Scene (stage 3-5)**。
+3. 進工作室後：左手 **Y** 選單有「車床／銑床／鑽床」三顆按鈕（需已進過工廠）；左手 **X** 叫出目前機台的面板。
+
+## 銑床驗收
+- [ ] 選單切到銑床：蒸汽遮住畫面後換成銑床（朝向與網站相同，操作側朝 +Z）
+- [ ] 面板「新工件」：虎鉗夾著 20 × 20 × 90 mm 方料，刀（Ø58 面銑刀）在工件左側外面
+- [ ] 右上方握桿、開關：trigger＝正轉；轉速上升到 500 rpm、刀具跟著轉
+- [ ] X／Y／Z 手輪（grip 畫圈）：X 左右、Y 前後、Z 升降；DRO 跟著變；碰行程限制強震動
+- [ ] Z 上升到刀尖碰工件：光圈亮黃（接觸）；轉動中切削變橘；面板「上表面最高／最低」下降；有切屑飛出、有切削聲
+- [ ] 切過的地方是平的（面銑 1.5 mm 後上表面最高＝最低＝18.5）；換立銑刀可以切溝
+- [ ] 停止的刀壓進工件：警告聲＋面板紅字＋火花
+## 鑽床驗收
+- [ ] 切到鑽床：機台在鐵座上；進給手柄（grip 抓住）往下拉，套筒下降，**放開後彈簧回位**
+- [ ] 鑽頭（Ø10）在 X=45 的位置上方；「工件 −5／−1／+1／+5」滑動虎鉗對準兩條劃線（X=25、X=65）
+- [ ] 啟動後拉手柄往下：孔出現、面板列出「孔 X=… Ø… 深 …」；鑽穿標示（鑽穿）
+- [ ] 換 Ø8.5 鑽頭鑽底孔，再換 M10 絲攻攻牙：面板顯示「M10 攻牙 …」；沒有底孔時攻牙無效；反轉不能攻牙
+## 工具箱、特效、音訊、存檔
+- [ ] 工作桌上點任一工具：蒸汽一團、工具升起放大、其他燈光變暗、說明面板出現在視線前方；上一項／下一項／放回盒中；grip 抓住轉動
+- [ ] 灰塵在工作室漂浮；金庫門門栓收回與壓力錶滿格時噴蒸汽
+- [ ] 機台聲音從機台方向傳來，轉速越高越高音；手輪每格有喀聲；切削有嘶嘶聲；撞夾頭／壓刀有警告聲
+- [ ] 面板「存檔 1/2/3」：空格直接存；已有工件的格子要連按兩次才覆蓋；「讀檔」讀回；車床工件讀不進銑床／鑽床，銑床與鑽床可互讀
+- [ ] 重啟 App 後存檔還在；三台機台操作中 **≥ 72 fps**；連續遊玩 20 分鐘無明顯發熱降頻
+
+## 階段 5 的取捨與已知限制
+- **翻牌板風格的 3D 選單／機台頁沒有重做**（決策 D26）：仍是簡易面板，功能齊全但外觀不是網站的翻牌板。
+- **光束（SunBeam × 7）沒有重做**：匯出時它們是自訂 shader 被略過，manifest 沒有記錄位置；需要時要擴充匯出工具記錄位置再用加法混合的長錐體重建。爐火火星（FireboxSparks）、玄關蒸汽噴口位置同理，目前只有門栓與壓力錶、機台過場、工具升起會噴蒸汽。
+- **接觸光圈**用 LineRenderer，不會「穿透」遮擋（網站是 depthTest 關閉的圓環）。
+- **虎鉗**是簡化的方塊組合（沒有鎖緊螺桿與手把），高度依毛胚離工作臺的距離。
+- **關卡（星星評分、挑戰步驟）沒有移植**——VR 版沒有這個功能（網站桌機版才有）。
+- **槌頭毛胚的鑽孔／攻牙在 Unity 端的容許值**：float 量到的橫向漂移 < 0.01 mm 視為純軸向（Core 本身與網站一致，容許 1e-7 mm），見 D27。
+- 銑床／鑽床的原始教學刀具（FaceMill、TwistDrill 節點）會在裝上程序化刀具時隱藏，避免重疊。

@@ -17,7 +17,7 @@ namespace MachineYard.CoreTests
         static int Main()
         {
             var golden = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "golden.json"))).RootElement;
-            Cutting_(golden); Facing(golden); Chuck(golden); Spindle(golden); Axes(golden); Head(golden); SpringReturn(golden); Synth();
+            Cutting_(golden); Facing(golden); Chuck(golden); Spindle(golden); Axes(golden); Head(golden); SpringReturn(golden); Synth(); Dto();
             Console.WriteLine($"{checks} checks, {failures} failures");
             return failures == 0 ? 0 : 1;
         }
@@ -279,6 +279,51 @@ namespace MachineYard.CoreTests
             // 靜音
             s.SetMuted(true); s.Warn(); Check(s.Render(buf, 1) < 1e-9f, "synth 靜音");
             Console.WriteLine("synth: 停機靜音、轉速音、切削包絡、喀聲節流、警告音、靜音");
+        }
+
+        static void Dto()
+        {
+            // 槌頭：用黃金情境的最終狀態（有孔、有牙、有劃線）來回序列化
+            var g = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "golden.json"))).RootElement;
+            var tools = new System.Collections.Generic.Dictionary<string, HeadTool>
+            {
+                ["a"] = new HeadTool { Id = "a", Type = HeadToolType.Drilling, DiameterMm = 8.5, CuttingLengthMm = 49 },
+                ["t"] = new HeadTool { Id = "t", Type = HeadToolType.Tapping, DiameterMm = 10, CuttingLengthMm = 49, Designation = "M10", PilotDiameterMm = 8.5 },
+                ["m"] = new HeadTool { Id = "m", Type = HeadToolType.Milling, DiameterMm = 8, CuttingLengthMm = 35 },
+            };
+            var s = HeadState.CreateDrillStock();
+            for (int i = 0; i <= 10; i++) HeadCutting.Cut(s, new HeadPoint(25, 10, i == 0 ? 25 : 25 - (i - 1) * 1.5), new HeadPoint(25, 10, 25 - i * 1.5), tools["a"], true, 500);
+            for (int i = 0; i <= 8; i++) HeadCutting.Cut(s, new HeadPoint(25, 10, i == 0 ? 25 : 25 - (i - 1) * 1.5), new HeadPoint(25, 10, 25 - i * 1.5), tools["t"], true, 300);
+            for (int x = 40; x < 80; x += 2) HeadCutting.Cut(s, new HeadPoint(x, 10, 17), new HeadPoint(x + 2, 10, 17), tools["m"], true, 800);
+            Check(s.Features.Count == 1 && s.Features[0].Thread != null, "DTO 測試前置：應有一個帶牙的孔");
+            var opt = new JsonSerializerOptions { IncludeFields = true };
+            var json = JsonSerializer.Serialize(WorkpieceDto.ToDto(s), opt);
+            var back = WorkpieceDto.FromDto(JsonSerializer.Deserialize<HeadDto>(json, opt));
+            Check(back.TopMm.SequenceEqual(s.TopMm), "DTO 高度場來回一致");
+            Check(back.Features.Count == 1 && back.Features[0].DepthMm == s.Features[0].DepthMm && back.Features[0].Thread.TappedDepthMm == s.Features[0].Thread.TappedDepthMm, "DTO 孔與牙來回一致");
+            Check(back.Scribes.Count == 2 && back.OperationCount == s.OperationCount, "DTO 劃線與操作數");
+            // 載入後繼續切削與原本完全一致
+            HeadCutting.Cut(s, new HeadPoint(80, 10, 16), new HeadPoint(80, 10, 15), tools["m"], true, 800); HeadCutting.Cut(back, new HeadPoint(80, 10, 16), new HeadPoint(80, 10, 15), tools["m"], true, 800);
+            Check(back.TopMm.SequenceEqual(s.TopMm), "DTO 載入後繼續切削與原狀態一致");
+            // 壞檔必須被拒絕
+            void Bad(Action<HeadDto> mutate, string what)
+            {
+                var d = JsonSerializer.Deserialize<HeadDto>(json, opt); mutate(d);
+                bool threw = false; try { WorkpieceDto.FromDto(d); } catch (FormatException) { threw = true; }
+                Check(threw, "DTO 應拒絕壞檔：" + what);
+            }
+            Bad(d => d.version = 2, "版本"); Bad(d => d.topMm = d.topMm.Take(10).ToArray(), "格數"); Bad(d => d.topMm[5] = -1, "負高度"); Bad(d => d.topMm[5] = 999, "超高");
+            Bad(d => d.topMm[5] = double.NaN, "NaN"); Bad(d => d.features[0].depthMm = 99, "孔深超過入口"); Bad(d => d.features[0].thread.tappedDepthMm = 99, "牙深超過孔深");
+            Bad(d => d.features[0].thread.sourceHole = "x", "牙來源"); Bad(d => d.lengthMm = -1, "尺寸");
+            // 車床
+            var l = RevolvedState.CreateHandle();
+            Cutting.CutRevolvedProfile(l, new TipMm(100, 0, 15), new TipMm(100, 0, 8), 500); for (double z = 100; z <= 250; z += 3.7) Cutting.CutRevolvedProfile(l, new TipMm(z - 3.7, 0, 8), new TipMm(z, 0, 8), 500);
+            var lj = JsonSerializer.Serialize(WorkpieceDto.ToDto(l), opt);
+            var lb = WorkpieceDto.FromDto(JsonSerializer.Deserialize<LatheDto>(lj, opt));
+            Check(lb.Count == l.Count && lb.Radii.Take(l.Count).SequenceEqual(l.Radii.Take(l.Count)), "DTO 車床來回一致");
+            var ld = JsonSerializer.Deserialize<LatheDto>(lj, opt); ld.radii[3] = 99; bool lthrew = false; try { WorkpieceDto.FromDto(ld); } catch (FormatException) { lthrew = true; }
+            Check(lthrew, "DTO 車床應拒絕過大半徑");
+            Console.WriteLine("dto: 槌頭與車床存檔來回一致、載入後續切削一致、9 種壞檔被拒絕");
         }
     }
 }

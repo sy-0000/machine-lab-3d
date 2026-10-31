@@ -251,7 +251,7 @@ npm test
 npm run test:unity-core
 ```
 
-**預期結果**：最後一行 `79022 checks, 0 failures`（數字可能因標準答案更新而略有不同，但失敗必須是 0）。這是車床切削、主軸、手輪行程的數學，與網站 JS 逐項比對。
+**預期結果**：最後一行 `約 1153966 checks, 0 failures`（數字可能因標準答案更新而略有不同，但失敗必須是 0）。這是車床切削、主軸、手輪行程的數學，與網站 JS 逐項比對。
 
 ### 9-2 重新匯出（修正了隱藏零件）
 照第 2 節再跑一次 `Shift+A`（`?area=lobby&nobatch#/world`）。**預期結果**：`exports/` 多了 `machine_lathe_runtime.json`；`machine_lathe_static.glb` 的三角形比上次少（約 8.5 萬，原本 19.6 萬含被隱藏的舊零件）。
@@ -263,3 +263,28 @@ npm run test:unity-core
 4. 回報：①工作室靜止 fps、車床操作中 fps（OVR Metrics 的 draw call／三角形也貼上）；②拉桿、手輪、段位旋鈕的方向與手感是否正確；③工件被車削的樣子；④DRO 數值是否與桌機一致；⑤任何粉紅材質或穿幫。
 
 常見問題：fps 很低 → 預期內，貼數字給我決定要簡化什麼；手輪抓不到 → 射線要指到手輪再按 grip；面板叫不出來 → 左手 **X**（不是 Y，Y 是階段 3 的簡易選單）。
+
+
+## 10. 階段 5（銑床、鑽床、工具箱、特效、音訊、存檔）測試 — 與前面一起測
+
+> 完整說明與驗收清單在 `unity/README.md` 的「階段 5」。以下是最短路徑。
+
+### 10-1 不需要 Unity 的檢查（約 1 分鐘）
+```bash
+npm run test:unity-core
+```
+**預期結果**：輸出裡有 `head: 257 步（…步有改動），含面銑／立銑／鑽孔／攻牙／孔邊再銑`、`springReturn: 193 步`、`synth: …`、`dto: …`，最後一行 `約 1153966 checks, 0 failures`。這包含槌頭銑削／鑽孔／攻牙與網站 JS 逐步比對、鑽床彈簧手柄回位、存檔格式來回與壞檔拒絕、合成音的基本性質。
+
+### 10-2 工具資料（已附在專案裡，只有網站資料更新時才需要）
+```bash
+node scripts/export-tools-json.mjs
+```
+**預期結果**：`tools.json: 13 件`，寫到 `unity/MachineYard/Assets/Resources/tools.json`。
+
+### 10-3 Unity
+1. 選單 `2b. Import glb exports (workshop + machines)`（會多匯入銑床、鑽床，約 200 MB）。
+2. 選單 `4. Build Lobby + Workshop Scene (stage 3-5)`。**預期結果**：Console 沒有「略過這台機台」的警告；有「工作室與車床已建立」。
+3. Build And Run 到 Quest 3，照 `unity/README.md` 階段 5 的銑床／鑽床／工具箱／存檔清單逐項操作。
+4. 回報：①三台機台操作中的 fps（OVR Metrics 的 draw call／三角形也貼上）；②銑床三個手輪方向與 DRO 是否和桌機一致；③鑽床手柄放開是否回彈、孔的位置與深度；④刀具是否隨主軸轉動且不偏心（刀尖在主軸中心）；⑤切屑、火花、蒸汽、聲音的感覺；⑥工具箱升起的位置與說明面板是否在視線前方；⑦存檔／讀檔；⑧任何粉紅材質、穿幫或編譯錯誤。
+
+常見問題：換機台沒反應 → 要先進過工廠（打開金庫門）；刀具不見 → 看 Console 是否有「機台節點不存在於匯入模型」；鑽孔沒有孔 → 鑽頭要先停在工件上方、對準劃線，主軸轉動中往下拉手柄（反轉不會鑽）；攻牙無效 → 要先有 Ø8.5 底孔、用 M10 絲攻正轉。

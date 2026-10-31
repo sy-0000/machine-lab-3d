@@ -32,3 +32,11 @@
 - [x] LatheMachine／切削／工件網格／手輪抓握／面板／WorkshopBuilder（型別檢查通過，未在 Unity 執行）
 - [x] 完整重新匯出（27 glb、1,689,921 三角形、約 32 分鐘）與 export-report 更新
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）
+
+# 階段 5（銑床、鑽床、工具箱、特效、音訊、存檔）
+- [x] Core：槌頭毛胚與銑削／鑽孔／攻牙（對 JS 逐步比對）、彈簧回位、機台合成音、存檔 DTO 與驗證（總計 115 萬項比對／檢查、突變測試）
+- [x] LatheMachine 擴充（toggle、彈簧手柄、套筒延伸）、HeadMachining、刀具、毛胚網格、面板、MachineSwitcher
+- [x] 特效（切屑、火花、蒸汽、灰塵）、機台音訊、工具箱流程、3 格存檔 UI、WorkshopBuilder 三台機台＋鐵座
+- [x] 型別檢查通過（手寫 Unity API 替身）
+- [ ] 光束／爐火火星／翻牌板 3D UI（見 D26、D28，留待實機後決定）
+- [ ] Unity 編譯與 Quest 實機驗收（需使用者）

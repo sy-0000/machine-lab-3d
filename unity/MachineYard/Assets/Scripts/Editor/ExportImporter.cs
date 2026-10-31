@@ -15,9 +15,9 @@ namespace MachineYard.Editor
         [MenuItem("Machine Yard/2. Import glb exports (lobby)")]
         public static void Import() => ImportMatching("exterior_", "vestibule_");
 
-        /// <summary>工作室（約 38 MB）、工具箱、車床與其 runtime.json。檔案大，需要時再匯入。</summary>
-        [MenuItem("Machine Yard/2b. Import glb exports (workshop + lathe)")]
-        public static void ImportWorkshop() => ImportMatching("workshop_", "toolbox_", "machine_lathe_");
+        /// <summary>工作室（約 38 MB）、工具箱、三台機台（車床、銑床、鑽床）與其 runtime.json。檔案大（約 200 MB），需要時再匯入。</summary>
+        [MenuItem("Machine Yard/2b. Import glb exports (workshop + machines)")]
+        public static void ImportWorkshop() => ImportMatching("workshop_", "toolbox_", "machine_");
 
         static void ImportMatching(params string[] prefixes)
         {

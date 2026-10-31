@@ -44,7 +44,7 @@ namespace MachineYard
             var main = b.ps.main;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.playOnAwake = false; main.loop = false;
-            main.maxParticles = kind == Kind.Chips ? 240 : kind == Kind.Sparks ? 120 : 80;
+            main.maxParticles = kind == Kind.Chips ? 240 : kind == Kind.Sparks ? 120 : 160;
             main.gravityModifier = kind == Kind.Chips ? 1f : kind == Kind.Sparks ? 0.7f : -0.03f;
             var em = b.ps.emission; em.enabled = false;
             var shape = b.ps.shape; shape.enabled = false;
@@ -130,9 +130,12 @@ namespace MachineYard
     public class MachineEffects : MonoBehaviour
     {
         public ParticleBurst chips, sparks, steam;
+        public LatheCuttingController[] lathes = new LatheCuttingController[0];
+        public HeadMachining[] heads = new HeadMachining[0];
         float sparkGap;
 
         void Awake() { EnsureFx(); }
+        void Start() { foreach (var l in lathes) Attach(l); foreach (var h in heads) Attach(h); }
         void EnsureFx()
         {
             if (chips == null) chips = ParticleBurst.Create(transform, ParticleBurst.Kind.Chips);
@@ -148,13 +151,14 @@ namespace MachineYard
                 if (!running || !lathe.Sample(out _, out var tip)) return;
                 chips.Emit(tip, (Vector3.up * 0.8f + Vector3.back * 0.2f).normalized, 2);
             };
+            lathe.machine.Notice += msg => { if (msg != null && msg.StartsWith("危險") && lathe.Sample(out _, out var tip)) Sparks(tip); };
         }
 
         public void Attach(HeadMachining head)
         {
             EnsureFx();
             head.Chips += (pos, dir, n) => chips.Emit(pos, dir, n);
-            head.Warn += _ => { if (head.TipOnStock()) sparks.Emit(head.TipWorld(), Vector3.up, 6, 0.6f); };
+            head.Plunged += () => sparks.Emit(head.TipWorld(), Vector3.up, 6, 0.6f);
         }
 
         /// <summary>撞夾頭的火花（車床）；限制頻率。</summary>

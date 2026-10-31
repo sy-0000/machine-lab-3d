@@ -13,7 +13,7 @@ namespace MachineYard
     /// </summary>
     public class DebugMenu : MonoBehaviour
     {
-        public Camera head; public StationMover mover; public LobbyFlow flow; public ExteriorDoors doors;
+        public Camera head; public StationMover mover; public LobbyFlow flow; public ExteriorDoors doors; public MachineSwitcher switcher;
         GameObject panel; InputAction toggle; TextMeshPro slotsText; readonly List<GameObject> built = new List<GameObject>();
 
         void OnEnable()
@@ -42,11 +42,23 @@ namespace MachineYard
         void Build()
         {
             panel = new GameObject("DebugMenu");
-            AddBox(panel.transform, "bg", new Vector3(0, 0, 0.01f), new Vector2(0.5f, 0.52f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
-            AddLabel(panel.transform, "Machine Yard（階段 3 簡易選單）", new Vector3(0, 0.22f, 0), 0.05f, new Color(0.91f, 0.76f, 0.48f));
+            AddBox(panel.transform, "bg", new Vector3(0, -0.02f, 0.01f), new Vector2(0.5f, 0.6f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
+            AddLabel(panel.transform, "Machine Yard（簡易選單）", new Vector3(0, 0.22f, 0), 0.05f, new Color(0.91f, 0.76f, 0.48f));
             float y = 0.14f;
             AddButton("回門外", y, () => Go(Stations.Outside, true)); y -= 0.07f;
             AddButton("回玄關", y, () => Go(Stations.Center, false)); y -= 0.07f;
+            if (switcher != null)
+            {
+                // 換機台（進工廠後才有意義；蒸汽過場）
+                string[] ids = { "lathe", "milling", "drill" }, names = { "車床", "銑床", "鑽床" };
+                for (int i = 0; i < 3; i++)
+                {
+                    string id = ids[i]; var go = AddBox(panel.transform, names[i], new Vector3((i - 1) * 0.135f, y, 0), new Vector2(0.125f, 0.055f), new Color(0.3f, 0.34f, 0.22f));
+                    AddLabel(go.transform, names[i], new Vector3(0, 0, -0.002f), 0.034f, Color.white, true, new Vector2(0.12f, 0.05f));
+                    XrUtil.MakeClickable(go, () => { if (ProgressStore.Instance.FactoryEntered) switcher.Switch(id); }, 0.01f);
+                }
+                y -= 0.07f;
+            }
             if (Debug.isDebugBuild || Application.isEditor)
             {
                 AddButton("[DEV] 直接解鎖", y, () => ProgressStore.Instance.UnlockAll()); y -= 0.07f;

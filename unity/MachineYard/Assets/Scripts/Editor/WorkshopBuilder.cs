@@ -54,8 +54,76 @@ namespace MachineYard.Editor
             return saved;
         }
 
+        public static MachineEffects LastFx; public static MachineSwitcher LastSwitcher;
+
+        static bool HasMachine(string id) =>
+            Load($"machine_{id}_static.glb") && Load($"machine_{id}_interactive.glb") && AssetDatabase.LoadAssetAtPath<TextAsset>($"{Dir}machine_{id}_runtime.json") != null;
+
+        /// <summary>建一台機台（含必要的腳本）。鐵座（drill）照 Workshop.js 的 createPedestal：箱形底座＋黃銅頂板，高度 = placement 的抬高量。</summary>
+        static MachineSwitcher.Entry BuildMachine(Transform root, Camera head, string id, MachineEffects fx, List<LatheCuttingController> lathes, List<HeadMachining> heads)
+        {
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>($"{Dir}machine_{id}_runtime.json");
+            var cfg = MachineRuntimeConfig.Parse(json.text);
+            var slot = new GameObject("MachineSlot_" + id).transform; slot.SetParent(root, false);
+            slot.localRotation = ThreeCoords.AxisAngle(Vector3.up, cfg.placement.machineSlotRotationY);
+            var off = new GameObject("MachineOffset").transform; off.SetParent(slot, false);
+            var o = cfg.placement.offset; off.localPosition = ThreeCoords.Position(o[0], o[1], o[2]);
+            var scene = new GameObject("MachineScene").transform; scene.SetParent(off, false);
+            var ms = Inst($"machine_{id}_static.glb", scene, $"machine_{id}_static"); MarkStatic(ms);
+            Inst($"machine_{id}_interactive.glb", scene, $"machine_{id}_interactive");
+
+            var machine = scene.gameObject.AddComponent<LatheMachine>();
+            machine.runtimeJson = json; machine.machineRoot = scene;
+            var wiring = scene.gameObject.AddComponent<MachineControlWiring>(); wiring.machine = machine;
+            var audio = scene.gameObject.AddComponent<MachineAudio>(); audio.machine = machine;
+            if (id == "lathe")
+            {
+                var cutting = scene.gameObject.AddComponent<LatheCuttingController>(); cutting.machine = machine;
+                wiring.cutting = cutting; audio.lathe = cutting; lathes.Add(cutting);
+                var panel = scene.gameObject.AddComponent<MachinePanel>(); panel.head = head; panel.machine = machine; panel.cutting = cutting; panel.wiring = wiring;
+            }
+            else
+            {
+                var work = scene.gameObject.AddComponent<HeadMachining>(); work.machine = machine;
+                wiring.head = work; audio.head = work; heads.Add(work);
+                var panel = scene.gameObject.AddComponent<HeadMachinePanel>(); panel.head = head; panel.machine = machine; panel.work = work; panel.wiring = wiring;
+            }
+            if (cfg.placement.pedestal) BuildPedestal(slot, scene, id == "drill" ? 0.72f : o[1]);
+            return new MachineSwitcher.Entry { id = id, root = slot.gameObject };
+        }
+
+        static void BuildPedestal(Transform slot, Transform machineScene, float height)
+        {
+            // 以機台渲染範圍在 slot 局部座標的外框決定底座大小（+0.12 × +0.1，Workshop.js createPedestal）
+            Vector3 min = new Vector3(1e9f, 1e9f, 1e9f), max = -min;
+            foreach (var r in machineScene.GetComponentsInChildren<Renderer>(false))
+            {
+                var b = r.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    var c = b.center + new Vector3((i & 1) == 0 ? -b.extents.x : b.extents.x, (i & 2) == 0 ? -b.extents.y : b.extents.y, (i & 4) == 0 ? -b.extents.z : b.extents.z);
+                    var l = slot.InverseTransformPoint(c); min = Vector3.Min(min, l); max = Vector3.Max(max, l);
+                }
+            }
+            float w = max.x - min.x + 0.12f, d = max.z - min.z + 0.1f;
+            var iron = SimpleMat.Lit(new Color(0.18f, 0.16f, 0.15f), 0.65f, 0.45f); var brass = SimpleMat.Lit(new Color(0.7f, 0.55f, 0.3f), 0.9f, 0.65f);
+            var g = new GameObject("MachinePedestal").transform; g.SetParent(slot, false);
+            g.localPosition = new Vector3((min.x + max.x) / 2, 0, (min.z + max.z) / 2);
+            PedestalBox(g, iron, w + 0.08f, 0.06f, d + 0.08f, 0.03f);
+            PedestalBox(g, iron, w - 0.04f, height - 0.08f, d - 0.04f, height / 2);
+            PedestalBox(g, brass, w, 0.05f, d, height - 0.025f);
+        }
+
+        static void PedestalBox(Transform parent, Material m, float sx, float sy, float sz, float y)
+        {
+            var c = GameObject.CreatePrimitive(PrimitiveType.Cube); Object.DestroyImmediate(c.GetComponent<Collider>());
+            c.transform.SetParent(parent, false); c.transform.localPosition = new Vector3(0, y, 0); c.transform.localScale = new Vector3(sx, sy, sz);
+            c.GetComponent<MeshRenderer>().sharedMaterial = m; GameObjectUtility.SetStaticEditorFlags(c, StaticEditorFlags.BatchingStatic);
+        }
+
         public static Transform Build(Transform parent, Camera head)
         {
+            GameObject toolboxInteractive = null;
             var root = new GameObject("Workshop").transform;
             root.SetParent(parent);
             root.position = ThreeCoords.Position(Stations.WorkshopOffsetThree.x, 0, Stations.WorkshopOffsetThree.z);
@@ -68,7 +136,7 @@ namespace MachineYard.Editor
 
             // ---- 工作桌與工具箱（階段 5 才做拿起展示流程；這裡只當擺設，13 件工具在箱內位置）
             var tb = Inst("toolbox_static.glb", root, "toolbox_static"); if (tb != null) MarkStatic(tb);
-            Inst("toolbox_interactive.glb", root, "toolbox_interactive");
+            toolboxInteractive = Inst("toolbox_interactive.glb", root, "toolbox_interactive");
 
             // ---- 瞬移圓盤：優先用匯出的 TeleportDisc_* 外觀，找不到就做簡單的圓盤
             foreach (var st in Stations.WorkshopDiscs())
@@ -87,22 +155,33 @@ namespace MachineYard.Editor
                 target.AddComponent<TeleportDisc>().station = st;
             }
 
-            // ---- 機台：MachineSlot(旋轉) → MachineOffset(位置) → MachineScene(static+interactive)
-            var cfg = MachineRuntimeConfig.Parse(AssetDatabase.LoadAssetAtPath<TextAsset>(Dir + "machine_lathe_runtime.json").text);
-            var slot = new GameObject("MachineSlot").transform; slot.SetParent(root, false);
-            slot.localRotation = ThreeCoords.AxisAngle(Vector3.up, cfg.placement.machineSlotRotationY);
-            var off = new GameObject("MachineOffset").transform; off.SetParent(slot, false);
-            var o = cfg.placement.offset; off.localPosition = ThreeCoords.Position(o[0], o[1], o[2]);
-            var scene = new GameObject("MachineScene").transform; scene.SetParent(off, false);
-            var ms = Inst("machine_lathe_static.glb", scene, "machine_lathe_static"); MarkStatic(ms);
-            Inst("machine_lathe_interactive.glb", scene, "machine_lathe_interactive");
+            // ---- 特效與灰塵（粒子上限固定，見 Effects.cs）
+            var fx = root.gameObject.AddComponent<MachineEffects>();
+            DustMotes.Create(root, ThreeCoords.Position(0, 2.6f, 0), new Vector3(9f, 4.5f, 9f));
+            LastFx = fx;
 
-            var machine = scene.gameObject.AddComponent<LatheMachine>();
-            machine.runtimeJson = AssetDatabase.LoadAssetAtPath<TextAsset>(Dir + "machine_lathe_runtime.json");
-            machine.machineRoot = scene;
-            var cutting = scene.gameObject.AddComponent<LatheCuttingController>(); cutting.machine = machine;
-            var wiring = scene.gameObject.AddComponent<MachineControlWiring>(); wiring.machine = machine; wiring.cutting = cutting;
-            var panel = scene.gameObject.AddComponent<MachinePanel>(); panel.head = head; panel.machine = machine; panel.cutting = cutting; panel.wiring = wiring;
+            // ---- 機台：每台各一組 MachineSlot(旋轉) → MachineOffset(位置) → MachineScene(static+interactive)；同一時間只啟用一台
+            var switcher = root.gameObject.AddComponent<MachineSwitcher>();
+            switcher.fx = fx; switcher.workshopRoot = root; switcher.head = head;
+            var lathes = new List<LatheCuttingController>(); var heads = new List<HeadMachining>();
+            foreach (var id in new[] { "lathe", "milling", "drill" })
+            {
+                if (!HasMachine(id)) { Debug.LogWarning($"[Machine Yard] 沒有 machine_{id} 的 glb／runtime.json，略過這台機台（請執行 2b 匯入）。"); continue; }
+                var entry = BuildMachine(root, head, id, fx, lathes, heads);
+                switcher.entries.Add(entry);
+            }
+            foreach (var e in switcher.entries) e.root.SetActive(e.id == "lathe");
+            switcher.Current = "lathe";
+            fx.lathes = lathes.ToArray(); fx.heads = heads.ToArray();
+
+            // ---- 工作桌上的工具箱：點工具 → 升起展示（階段 5）
+            var tray = toolboxInteractive != null ? XrUtil.FindDeep(toolboxInteractive.transform, "ToolTray") : null;
+            if (tray != null)
+            {
+                var flow = root.gameObject.AddComponent<ToolboxFlow>();
+                flow.workshopRoot = root; flow.tray = tray; flow.head = head; flow.fx = fx;
+            }
+            LastSwitcher = switcher;
 
             AddLights(root);
             Debug.Log("[Machine Yard] 工作室與車床已建立（階段 4）。");

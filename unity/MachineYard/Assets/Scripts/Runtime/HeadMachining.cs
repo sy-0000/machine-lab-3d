@@ -27,6 +27,7 @@ namespace MachineYard
         public event Action<Vector3, Vector3, int> Chips;   // 世界座標位置、飛出方向、數量
         public event Action<string> Warn;
         public event Action Cut;                              // 每次實際改動工件
+        public event Action Plunged;                          // 停止的刀尖壓入工件（火花與警告）
 
         Transform toolMount, workMount, toolRoot, vise; HeadPoint? before; double beforeRpm; bool beforeRunning; LineRenderer ring; float lastDepthSignal;
         public readonly System.Collections.Generic.Dictionary<string, double> Zero = new System.Collections.Generic.Dictionary<string, double>();
@@ -98,6 +99,14 @@ namespace MachineYard
             DefaultSetup();
         }
 
+        /// <summary>載入存檔的毛胚（來自 WorkpieceSaves）；重新定位裝夾（需停機）。</summary>
+        public void LoadState(HeadState s)
+        {
+            if (s == null || workMount == null) return;
+            State = s; View.SetState(s); View.transform.localPosition = Vector3.zero; CutCount = 0; before = null; Zero.Clear();
+            DefaultSetup();
+        }
+
         public void DefaultSetup()
         {
             if (!Sample(out var p)) return;
@@ -113,7 +122,7 @@ namespace MachineYard
             var root = machine.machineRoot;
             var inMachine = LocalSpace.ToAncestor(toolRoot, root, ThreeCoords.Position(0, ToolDef.TipY, 0));
             var local = ThreeCoords.ToThree(LocalSpace.FromAncestor(View.transform, root, inMachine));
-            double R(double v) => Math.Round(v, 9) + 0.0;
+            double R(double v) => Math.Round(v, 3) + 0.0;   // float 的局部座標鏈約有 1e-3 mm 雜訊，量化到 1 µm
             p = new HeadPoint(R(local.x * 1000.0 + State.LengthMm / 2), R(local.z * 1000.0 + State.WidthMm / 2), R(local.y * 1000.0));
             return true;
         }
@@ -129,6 +138,8 @@ namespace MachineYard
             LastTip = after;
             if (before == null || State == null) return;
             var from = beforeRunning && beforeRpm > 0 ? before.Value : after;
+            // 鑽孔／攻牙只接受純軸向進給（Core 的容許是 1e-7 mm，JS 的 double 能做到）；float 量到的橫向漂移 < 0.01 mm 視為 0
+            if (ToolDef.Type != HeadToolType.Milling && Math.Sqrt(Sq(after.XMm - from.XMm) + Sq(after.YMm - from.YMm)) < 0.01) { after.XMm = from.XMm; after.YMm = from.YMm; }
             bool changed = HeadCutting.Cut(State, from, after, ToolDef.ToCore(), machine.SpindleRunning, machine.Spindle.Rpm, machine.DirectionRequested);
             if (!changed) return;
             CutCount++; Cut?.Invoke();
@@ -163,7 +174,7 @@ namespace MachineYard
             int level = contact ? (machine.SpindleRunning && machine.Spindle.Rpm > 0 ? 2 : 1) : 0;
             EmbedMm = contact ? Math.Max(0, top - tip.ZMm) : 0;
             bool nowUnsafe = contact && EmbedMm > 0.1 && !(machine.SpindleRunning && machine.Spindle.Rpm > 0);
-            if (nowUnsafe && !Unsafe) Warn?.Invoke("刀尖壓入工件：退回再重新對刀");
+            if (nowUnsafe && !Unsafe) { Warn?.Invoke("刀尖壓入工件：退回再重新對刀"); Plunged?.Invoke(); }
             Unsafe = nowUnsafe;
             ContactLevel = level;
             UpdateRing(level, tip);

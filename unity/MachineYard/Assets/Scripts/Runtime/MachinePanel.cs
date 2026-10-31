@@ -14,6 +14,7 @@ namespace MachineYard
     public class MachinePanel : MonoBehaviour
     {
         public Camera head; public LatheMachine machine; public LatheCuttingController cutting; public MachineControlWiring wiring;
+        readonly SlotConfirm confirm = new SlotConfirm(); string notice; float noticeTime;
         GameObject panel; TextMeshPro status; InputAction toggle; float refresh; TextMeshPro feedLabel, modeLabel, workLabel;
 
         void OnEnable()
@@ -41,7 +42,7 @@ namespace MachineYard
         void Build()
         {
             panel = new GameObject("MachinePanel");
-            DebugMenu.AddBox(panel.transform, "bg", new Vector3(0, 0, 0.01f), new Vector2(0.62f, 0.7f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
+            DebugMenu.AddBox(panel.transform, "bg", new Vector3(0, -0.06f, 0.01f), new Vector2(0.62f, 0.83f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
             DebugMenu.AddLabel(panel.transform, "車床", new Vector3(0, 0.31f, 0), 0.05f, new Color(0.91f, 0.76f, 0.48f));
             status = DebugMenu.AddLabel(panel.transform, "", new Vector3(0, 0.12f, 0), 0.03f, new Color(0.9f, 0.86f, 0.75f), false, new Vector2(0.56f, 0.3f));
             status.alignment = TextAlignmentOptions.TopLeft;
@@ -49,7 +50,28 @@ namespace MachineYard
             Button("啟動", -dx, y, () => machine.StartSpindle(1)); Button("反轉", 0, y, () => machine.StartSpindle(-1)); Button("停止", dx, y, () => machine.StopSpindle()); y -= 0.065f;
             feedLabel = Button("進給量", -dx * 0.5f, y, CycleFeed, 0.27f); modeLabel = Button("車外徑", dx * 0.6f, y, ToggleMode, 0.27f); y -= 0.065f;
             workLabel = Button("裝上工件", -dx * 0.5f, y, MountOrReset, 0.27f); Button("重設機台", dx * 0.6f, y, () => { machine.ResetMachine(); cutting.MountHandle(); }, 0.27f); y -= 0.065f;
-            Button("X 歸零", -dx * 0.5f, y, () => { cutting.DatumX = machine.Axes.Offsets["y"] * 1000; }, 0.27f); Button("Z 歸零", dx * 0.6f, y, () => { cutting.DatumZ = machine.Axes.Offsets["x"] * 1000; }, 0.27f);
+            Button("X 歸零", -dx * 0.5f, y, () => { cutting.DatumX = machine.Axes.Offsets["y"] * 1000; }, 0.27f); Button("Z 歸零", dx * 0.6f, y, () => { cutting.DatumZ = machine.Axes.Offsets["x"] * 1000; }, 0.27f); y -= 0.065f;
+            for (int i = 0; i < SaveSlots.Count; i++)
+            {
+                int slot = i; float x = (i - 1) * 0.19f;
+                Button("存檔 " + (i + 1), x, y, () =>
+                {
+                    if (!cutting.HasWorkpiece) { Say("尚未裝上工件"); return; }
+                    if (confirm.ShouldSave(slot)) { WorkpieceSaves.SaveLathe(slot, cutting.workpiece.State); Say("已存到第 " + (slot + 1) + " 格"); } else Say("第 " + (slot + 1) + " 格已有工件，再按一次覆蓋");
+                }, 0.16f);
+            }
+            y -= 0.065f;
+            for (int i = 0; i < SaveSlots.Count; i++)
+            {
+                int slot = i; float x = (i - 1) * 0.19f;
+                Button("讀檔 " + (i + 1), x, y, () =>
+                {
+                    var st = WorkpieceSaves.LoadLathe(slot);
+                    if (st == null) { Say("第 " + (slot + 1) + " 格沒有可讀的車床工件"); return; }
+                    if (!cutting.HasWorkpiece) cutting.MountHandle();
+                    cutting.workpiece.Mount(st); Say("已讀取第 " + (slot + 1) + " 格");
+                }, 0.16f);
+            }
             panel.SetActive(false);
         }
 
@@ -69,8 +91,11 @@ namespace MachineYard
         void ToggleMode() { cutting.mode = cutting.mode == LatheCuttingController.Mode.Turning ? LatheCuttingController.Mode.Facing : LatheCuttingController.Mode.Turning; }
         void MountOrReset() { cutting.MountHandle(); }
 
+        void Say(string m) { notice = m; noticeTime = 4f; }
+
         void Update()
         {
+            if (noticeTime > 0) noticeTime -= Time.deltaTime;
             if (panel == null || !panel.activeSelf) return;
             if ((refresh -= Time.deltaTime) <= 0) { refresh = 0.2f; Refresh(); }
         }
@@ -88,6 +113,7 @@ namespace MachineYard
                 if (cutting.Unsafe) sb.Append("<color=#ff5a3c>危險：刀具撞到夾頭</color>\n");
             }
             else sb.Append("尚未裝上工件\n");
+            if (noticeTime > 0 && !string.IsNullOrEmpty(notice)) sb.Append($"<color=#ffcf7a>{notice}</color>\n");
             status.text = sb.ToString();
             feedLabel.text = $"進給 {wiring.FeedMm:0.##} mm/格";
             modeLabel.text = cutting.mode == LatheCuttingController.Mode.Turning ? "車外徑" : "車端面";

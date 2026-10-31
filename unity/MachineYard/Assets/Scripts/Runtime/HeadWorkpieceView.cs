@@ -52,7 +52,8 @@ namespace MachineYard
             verts.Clear(); tris.Clear();
             int nx = State.Nx, ny = State.Ny; double r = State.ResolutionMm, L = State.LengthMm, W = State.WidthMm;
             var tops = State.DisplayTops();
-            double X(int ix) => System.Math.Min(ix * r, L), Y(int iy) => System.Math.Min(iy * r, W);
+            double X(int ix) => System.Math.Min(ix * r, L);
+            double Y(int iy) => System.Math.Min(iy * r, W);
             for (int iy = 0; iy < ny; iy++)
             {
                 double y = iy * r, y1 = Y(iy + 1);
