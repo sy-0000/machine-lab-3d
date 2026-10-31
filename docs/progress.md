@@ -15,3 +15,8 @@
 - npm test：79 pass / 0 fail
 - npm run build：成功；`grep -rl "__xrExport\|GLTFExporter\|__export/\|installExportTool" dist/` 無結果
 - 無頭瀏覽器完整匯出（Shift+A）：27 個 glb、約 218 MB、1,802,649 三角形（重新讀檔計算），耗時約 29 分鐘；機台設定節點全部存在於模型
+
+# 階段 2 備檔（使用者要求階段 1、2 完成後一起測）
+- [x] unity/MachineYard 專案骨架、Editor 設定／匯入／場景建置腳本、ExteriorDoors、FPS、README（未在 Unity 編譯驗證）
+- [x] docs/testing-guide.md 第 7 節
+- [ ] Unity 實機驗收（需使用者）

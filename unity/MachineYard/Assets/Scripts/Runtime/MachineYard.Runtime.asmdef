@@ -1,0 +1,9 @@
+{
+  "name": "MachineYard.Runtime",
+  "rootNamespace": "MachineYard",
+  "references": [ "Unity.XR.Interaction.Toolkit" ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": true
+}

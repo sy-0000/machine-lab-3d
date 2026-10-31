@@ -202,3 +202,21 @@ npm test
 | manifest 出現 `Batched_*` 警告 | 網址少了 `&nobatch`，重新整理後再匯出 |
 | 匯出非常慢 | 大檔（工作室約 38 MB）要把貼圖編成 PNG；等 Console 出現「完成」再關頁面 |
 | `npm run build` 後 grep 找到 `GLTFExporter` | 匯出工具被打包了（不應發生）；請回報 |
+
+---
+
+## 7. 階段 2（Unity 骨架＋門外場景）測試 — 與階段 1 一起測
+
+> Unity 專案在 `unity/MachineYard/`，是在沒有 Unity 的環境寫的，**尚未編譯過**。完整步驟與驗收清單見 `unity/README.md`，這裡只列摘要。
+
+1. 先完成第 2 節的匯出（至少要有 `exports/exterior_static.glb`、`exports/exterior_interactive.glb`）。
+2. 裝 Unity 6 LTS（含 Android Build Support），Unity Hub 用「Add project from disk」開 `unity/MachineYard`。
+   **預期結果**：套件解析完成，Console 沒有紅色編譯錯誤。有紅字 → 把訊息貼給我。
+3. 依序執行選單 `Machine Yard ▸ 1. Apply Quest Settings`，手動勾 OpenXR / Meta Quest Support（`unity/README.md` 第 4 步），匯入 XRI 的 Starter Assets 範例。
+4. 選單 `2. Import glb exports`（選 `exports/` 資料夾）→ `3. Build Exterior Scene`。
+   **預期結果**：`Assets/Scenes/Exterior.unity` 產生，Scene 視窗看到磚牆八角建築與玻璃穹頂、大門與招牌。
+5. Quest 3 開發者模式連線，`File ▸ Build And Run`。
+   **預期結果**：戴上頭盔站在門外；左下角有 FPS，目標 ≥ 72；射線點大門，門約 1 秒向內推開。
+6. 回報：FPS 數字（靜止與環顧）、門的方向是否正確、招牌文字是否鏡像、有無粉紅材質。
+
+常見問題：門往外開 → 對調 `ExteriorDoors` 的兩個 openDegrees 正負號；整個場景左右相反 → `ThreeCoords.Mode` 改成 `NegateZ` 後重建場景；套件找不到版本 → Package Manager 升級該套件。

@@ -1,0 +1,13 @@
+# Unity 產生物
+MachineYard/Library/
+MachineYard/Temp/
+MachineYard/Obj/
+MachineYard/Logs/
+MachineYard/UserSettings/
+MachineYard/Builds/
+MachineYard/*.csproj
+MachineYard/*.sln
+# 從 exports/ 匯入的 glb 不 commit（太大，且由匯出工具產生）
+MachineYard/Assets/Models/*.glb
+MachineYard/Assets/Models/*.glb.meta
+MachineYard/Assets/Models/tools/

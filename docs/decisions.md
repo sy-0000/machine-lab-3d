@@ -49,3 +49,17 @@
 ## D10 機台 glb 為 Git LFS
 - 問題：`*.glb` 走 LFS，雲端 checkout 只有 132 byte 指標檔，工作室載入失敗。
 - 選擇：在本 session 執行 `git lfs pull`（不改 repo）；測試說明加入 `git lfs pull` 步驟；記錄於 known-bugs #3。
+
+## D11 階段 2 在雲端只能備檔，不能驗證
+- 問題：階段 2 需要 Unity 編輯器與 Quest 3，雲端沒有。
+- 選擇：在 `unity/MachineYard/` 放專案骨架（套件清單、Editor 設定腳本、門外場景建置腳本、大門互動、FPS 顯示）與 `unity/README.md`；明確標示未編譯、未實機驗證。使用者選擇階段 1 與 2 完成後一起測。
+- 理由：先把能預先備好的做完，減少來回；不宣稱已通過驗收。
+- 回復：刪除 `unity/` 資料夾即可，不影響網站。
+
+## D12 座標轉換集中在 ThreeCoords，預設 NegateX 且可切換
+- 問題：不確定 glTFast 的手性轉換是取負 X 或取負 Z，無法在雲端驗證。
+- 選擇：所有手寫座標（站位、燈光）都經 `ThreeCoords`，一行切換；README 的驗收項有檢查方式。
+- 回復：改 `ThreeCoords.Mode`。
+
+## D13 光照暫不烘焙
+- 選擇：階段 2 先用即時日光＋環境光量 fps；烘焙需先替網格產生 lightmap UV，留到實機數字出來再做（README 已列）。
