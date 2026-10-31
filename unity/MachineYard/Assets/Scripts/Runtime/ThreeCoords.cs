@@ -18,6 +18,9 @@ namespace MachineYard
 
         public static Vector3 Direction(float x, float y, float z) => Position(x, y, z);
 
+        /// <summary>Unity 座標換回 three.js 座標（兩種翻轉都是自己的反函數）。走動範圍判斷用 three.js 的數字。</summary>
+        public static Vector3 ToThree(Vector3 u) => Position(u.x, u.y, u.z);
+
         /// <summary>three.js 的 yaw（0 = 面向北 = -Z，逆時針為正）轉成 Unity 的 Y 旋轉角（度）。</summary>
         public static float YawDegrees(float threeYawRadians)
         {

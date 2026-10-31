@@ -33,6 +33,27 @@ namespace MachineYard.Editor
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var root = new GameObject("Exterior");
+            BuildContent(root, staticAsset, interactiveAsset);
+
+            // ---- XR rig
+            var rig = CreateRig();
+            rig.transform.position = ThreeCoords.Position(OutsideStation.x, OutsideStation.y, OutsideStation.z);
+            rig.transform.rotation = Quaternion.Euler(0, ThreeCoords.YawDegrees(0f), 0);
+            var cam = rig.GetComponentInChildren<Camera>();
+            if (cam != null) AddFpsHud(cam.transform);
+
+            var path = "Assets/Scenes/Exterior.unity";
+            EditorSceneManager.SaveScene(scene, path);
+            var scenes = EditorBuildSettings.scenes;
+            if (System.Array.FindIndex(scenes, s => s.path == path) < 0)
+                EditorBuildSettings.scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(scenes) { new EditorBuildSettingsScene(path, true) }.ToArray();
+            Debug.Log("[Machine Yard] 已建立 " + path + "。站位與光源是依 three.js 座標換算，請在 Scene 視窗確認門在正前方、大門朝向正確（見 README 驗收）。");
+        }
+
+        /// <summary>門外模型、大門互動、日光、煤氣燈、霧與天空（階段 2 與階段 3 的場景建置共用）。</summary>
+        internal static ExteriorDoors BuildContent(GameObject root, GameObject staticAsset, GameObject interactiveAsset)
+        {
+            ExteriorDoors doors = null;
 
             // ---- 模型
             var stat = (GameObject)PrefabUtility.InstantiatePrefab(staticAsset, root.transform);
@@ -51,7 +72,7 @@ namespace MachineYard.Editor
                 box.center = doorsT.InverseTransformPoint(bounds.center);
                 box.size = doorsT.InverseTransformVector(bounds.size).Abs() + new Vector3(0, 0, 0.3f);
                 doorsT.gameObject.AddComponent<XRSimpleInteractable>();
-                var doors = doorsT.gameObject.AddComponent<ExteriorDoors>();
+                doors = doorsT.gameObject.AddComponent<ExteriorDoors>();
                 doors.AutoWire();
             }
             else Debug.LogWarning("[Machine Yard] exterior_interactive 裡找不到 OuterDoors（請看 manifest.json）。");
@@ -89,23 +110,10 @@ namespace MachineYard.Editor
                 var flicker = lamp.gameObject.AddComponent<GasLanternFlicker>();
                 flicker.baseIntensity = 2f; flicker.index = i;
             }
-
-            // ---- XR rig
-            var rig = CreateRig();
-            rig.transform.position = ThreeCoords.Position(OutsideStation.x, OutsideStation.y, OutsideStation.z);
-            rig.transform.rotation = Quaternion.Euler(0, ThreeCoords.YawDegrees(0f), 0);
-            var cam = rig.GetComponentInChildren<Camera>();
-            if (cam != null) AddFpsHud(cam.transform);
-
-            var path = "Assets/Scenes/Exterior.unity";
-            EditorSceneManager.SaveScene(scene, path);
-            var scenes = EditorBuildSettings.scenes;
-            if (System.Array.FindIndex(scenes, s => s.path == path) < 0)
-                EditorBuildSettings.scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(scenes) { new EditorBuildSettingsScene(path, true) }.ToArray();
-            Debug.Log("[Machine Yard] 已建立 " + path + "。站位與光源是依 three.js 座標換算，請在 Scene 視窗確認門在正前方、大門朝向正確（見 README 驗收）。");
+            return doors;
         }
 
-        static GameObject CreateRig()
+        internal static GameObject CreateRig()
         {
             foreach (var guid in AssetDatabase.FindAssets("XR Origin (XR Rig) t:Prefab"))
             {
@@ -122,7 +130,7 @@ namespace MachineYard.Editor
             return rig;
         }
 
-        static void AddFpsHud(Transform cam)
+        internal static void AddFpsHud(Transform cam)
         {
             var canvasGo = new GameObject("FpsCanvas", typeof(Canvas), typeof(CanvasScaler));
             canvasGo.transform.SetParent(cam, false);
@@ -141,13 +149,13 @@ namespace MachineYard.Editor
             canvasGo.AddComponent<FpsHud>().label = text;
         }
 
-        static Transform FindDeep(Transform root, string name)
+        internal static Transform FindDeep(Transform root, string name)
         {
             foreach (var t in root.GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
             return null;
         }
 
-        static Bounds RendererBounds(GameObject go)
+        internal static Bounds RendererBounds(GameObject go)
         {
             var rs = go.GetComponentsInChildren<Renderer>();
             var b = rs.Length > 0 ? rs[0].bounds : new Bounds(go.transform.position, Vector3.one);
@@ -155,7 +163,7 @@ namespace MachineYard.Editor
             return b;
         }
 
-        static Color HexColor(int hex) => new Color(((hex >> 16) & 255) / 255f, ((hex >> 8) & 255) / 255f, (hex & 255) / 255f);
-        static Vector3 Abs(this Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
+        internal static Color HexColor(int hex) => new Color(((hex >> 16) & 255) / 255f, ((hex >> 8) & 255) / 255f, (hex & 255) / 255f);
+        internal static Vector3 Abs(this Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
     }
 }

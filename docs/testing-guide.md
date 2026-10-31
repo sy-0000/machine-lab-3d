@@ -220,3 +220,18 @@ npm test
 6. 回報：FPS 數字（靜止與環顧）、門的方向是否正確、招牌文字是否鏡像、有無粉紅材質。
 
 常見問題：門往外開 → 對調 `ExteriorDoors` 的兩個 openDegrees 正負號；整個場景左右相反 → `ThreeCoords.Mode` 改成 `NegateZ` 後重建場景；套件找不到版本 → Package Manager 升級該套件。
+
+
+---
+
+## 8. 階段 3（玄關＋瞬移／搖桿＋存檔）測試 — 與階段 1、2 一起測
+
+> 同樣尚未在 Unity 編譯過。完整步驟與驗收清單在 `unity/README.md` 的「階段 3」一節。
+
+1. 第 7 節的步驟做完後，再執行一次選單 `2. Import glb exports`（會多匯入 `vestibule_*.glb`）。
+2. 照 `unity/README.md` 階段 3 建立中文字型資產 `Resources/MachineYardFont`。
+3. 選單 `4. Build Lobby Scene (stage 3)` → `Build And Run` 到 Quest 3。
+   **預期結果**：能從門外走完整個流程：開大門 → 讀告示板 → 看三段動畫 → 解鎖金庫門 → 進佔位工作室 → 用瞬移圓盤。
+4. 回報：①玄關 fps（靜止、環顧）；②門與指針方向是否正確；③中文是否正常；④搖桿走動手感、有沒有穿牆；⑤瞬移拋物線能不能指到圓盤；⑥重啟後進度是否保留。
+
+常見問題：中文方塊 → 沒建 `MachineYardFont`；移動重複或抖動 → Starter Assets 的 Move/Turn provider 沒被停用（重跑選單 4）；搖桿沒反應 → Project Settings ▸ Player ▸ Active Input Handling 要含 Input System（Both 或 Input System Package）。

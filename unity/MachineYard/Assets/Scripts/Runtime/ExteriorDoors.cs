@@ -8,8 +8,8 @@ namespace MachineYard
     /// 玄關大門：點擊（XR 射線選取）→ 約 1 秒推開兩扇（smoothstep，最大角度 1.45 rad ≈ 83°）。
     /// 對應 src/xr/lobby/exterior.js 的 openDoors()；節點是 exterior_interactive.glb 的
     /// OuterDoors/LeafLeftPivot、OuterDoors/LeafRightPivot。
-    /// 開門方向：three.js 左扇轉 +angle、右扇轉 -angle（向內，往 -Z）。匯入手性轉換後符號可能相反；
-    /// 如果門往外開，把兩個 openDegrees 的正負號對調即可。
+    /// 開門方向：執行時實測哪個旋轉符號會讓門板往建築內部（three.js 的 -Z）移動，不依賴手性轉換的猜測；
+    /// openDegrees 只取絕對值（預設 83°）。
     /// </summary>
     public class ExteriorDoors : MonoBehaviour
     {
@@ -49,7 +49,10 @@ namespace MachineYard
         {
             opening = true;
             Quaternion l0 = leftPivot.localRotation, r0 = rightPivot.localRotation;
-            Quaternion l1 = l0 * Quaternion.Euler(0, leftOpenDegrees, 0), r1 = r0 * Quaternion.Euler(0, rightOpenDegrees, 0);
+            // 方向用實測決定：哪個符號會讓門板中心往建築內部（three.js 的 -Z）移動
+            var inward = ThreeCoords.Direction(0, 0, -1);
+            float ls = XrUtil.SwingSign(leftPivot, leftPivot, inward), rs = XrUtil.SwingSign(rightPivot, rightPivot, inward);
+            Quaternion l1 = l0 * Quaternion.Euler(0, ls * Mathf.Abs(leftOpenDegrees), 0), r1 = r0 * Quaternion.Euler(0, rs * Mathf.Abs(rightOpenDegrees), 0);
             for (float t = 0; t < duration; t += Time.deltaTime)
             {
                 float k = Mathf.Clamp01(t / duration); k = k * k * (3f - 2f * k);

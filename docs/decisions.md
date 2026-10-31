@@ -63,3 +63,20 @@
 
 ## D13 光照暫不烘焙
 - 選擇：階段 2 先用即時日光＋環境光量 fps；烘焙需先替網格產生 lightmap UV，留到實機數字出來再做（README 已列）。
+
+## D14 階段 3 的移動／瞬移不用 XRI 內建 provider
+- 問題：Starter Assets 的 Move/Turn/Teleportation 與網站規格（左手 1.6 m/s 平滑、右手快速轉 30°、拋物線只能落在圓盤、可站範圍）差異大，且 XRI 版本間 API 常變。
+- 選擇：自己寫 `StickLocomotion`／`StickTeleport`（直接讀 InputSystem 的搖桿），場景建置時依型別名稱停用內建 provider。
+- 理由：行為精準對齊 `Locomotion.js`／`Teleport.js`，不依賴 XRI provider API。
+- 回復：刪掉兩個腳本，改回 Starter Assets 預設 provider。
+
+## D15 放映幕用「佔位計時／影片」
+- 問題：三段動畫是 `public/previews/*.anim.js` 的 canvas 程式繪圖，無法匯出，也不能直接在 Unity 跑。
+- 選擇：支援每段指定 VideoClip；未指定時 12 秒佔位計時讓解鎖流程可測。請你決定是否預錄影片（遷移計畫的待確認項目）。
+- 回復：無。
+
+## D16 告示板一節一頁
+- 選擇：不複製網站的逐行排版與續頁；4 節都很短，用 TMP 自動縮放。進度的 pages 數＝節數（4），與網站（依排版算頁）可能不同；兩邊進度存檔互不相通，沒有影響。
+
+## D17 簡易選單只是測試用
+- 選擇：左手 Y 的簡易選單（回門外／回玄關／存檔狀態／DEV 解鎖重置）；翻牌板風格選單留到階段 5。

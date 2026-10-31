@@ -20,3 +20,8 @@
 - [x] unity/MachineYard 專案骨架、Editor 設定／匯入／場景建置腳本、ExteriorDoors、FPS、README（未在 Unity 編譯驗證）
 - [x] docs/testing-guide.md 第 7 節
 - [ ] Unity 實機驗收（需使用者）
+
+# 階段 3 備檔（未在 Unity 驗證）
+- [x] ProgressStore／SaveSlots／淡入淡出／站位／搖桿走動／瞬移／金庫門／告示板／放映幕／LobbyFlow／簡易選單／LobbySceneBuilder
+- [x] unity/README.md 階段 3、testing-guide 第 8 節、decisions D14–D17
+- [ ] Unity 編譯與 Quest 實機驗收（需使用者）
