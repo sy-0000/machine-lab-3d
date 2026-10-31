@@ -92,6 +92,9 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
   const ready = manager.go(startArea, { machineId });
   // 開發模式除錯用：檢查換區域後 GPU 資源有沒有釋放（renderer.info.memory）
   if (import.meta.env.DEV) window.__xrWorld = { renderer, manager };
+  // 開發用 glb 匯出工具（Shift+E／Shift+A；給 Unity 遷移用，正式建置不含）
+  let disposeExport = null, worldDisposed = false;
+  if (import.meta.env.DEV) import('../dev/exportTool.js').then(m => { if (!worldDisposed) disposeExport = m.installExportTool({ manager, input }); });
 
   // ---- 選單（VR：視野正前方的翻牌板；桌機：WorldPage 的 HTML 選單，用同一份項目）
   const LOCKED = '需先在玄關讀完工安規則並看完切削動畫';
@@ -228,6 +231,7 @@ export function createWorld(container, { onStatus = () => {}, onExitVR = () => {
       renderer.setAnimationLoop(null);
       observer.disconnect();
       removeEventListener('keydown', onKey);
+      worldDisposed = true; disposeExport?.();
       menu.dispose();
       manager.dispose();
       input.dispose();

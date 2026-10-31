@@ -39,3 +39,6 @@ desktop.ini
 
 # Test screenshots and audit output (regenerated)
 reports/
+
+# glb export output (src/dev/exportTool.js)
+exports/

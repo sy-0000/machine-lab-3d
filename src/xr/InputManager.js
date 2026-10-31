@@ -68,6 +68,8 @@ export class InputManager {
     }
     this.#targets.delete(object);
   }
+  /** 目前登記的可互動物件（開發用匯出工具判斷「會互動的物件」；不影響行為） */
+  targetObjects() { return [...this.#targets.keys()]; }
   /** 擋住射線的物件（牆、屋頂）：隔著牆指不到後面的面板 */
   addOccluder(object) { this.#occluders.add(object); }
   /** 換區域時清空（persistent 的物件保留） */
