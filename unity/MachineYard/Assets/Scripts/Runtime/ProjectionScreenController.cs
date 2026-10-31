@@ -9,7 +9,7 @@ namespace MachineYard
     /// 玄關右牆的放映幕（對應 src/xr/lobby/ProjectionScreen.js ＋ src/xr/AnimationScreen.js）：三段切削動畫輪播，
     /// 「某一段從頭完整播到最後」才算看完（按上一段／下一段會從頭開始，跳過的不算），看完寫入 ProgressStore。
     /// 內容：網站版是 public/previews/*.anim.js 的程式繪圖（CanvasTexture，無法匯出）。Unity 版有兩條路：
-    ///   1) 給每一段指定 VideoClip（把動畫預錄成影片，建議）→ 用 VideoPlayer 貼到 Picture；
+    ///   1) 每一段的 VideoClip（scripts/record-previews.mjs 從網站動畫逐格錄成 Assets/Videos/preview_*.mp4，場景建置時自動指定）→ VideoPlayer 貼到 Picture；
     ///   2) 沒有影片時用「佔位計時」：顯示該段標題與倒數，fallbackSeconds 秒後算播完（讓流程與解鎖可以先測）。
     /// 按鈕沿用 glb 的 ScreenButton_prev / play / next / back。
     /// </summary>
@@ -54,7 +54,10 @@ namespace MachineYard
 
             vp = gameObject.AddComponent<VideoPlayer>();
             vp.playOnAwake = false; vp.isLooping = false;
-            vp.renderMode = VideoRenderMode.MaterialOverride; vp.targetMaterialRenderer = picture; vp.targetMaterialProperty = "_BaseMap";
+            vp.renderMode = VideoRenderMode.MaterialOverride; vp.targetMaterialRenderer = picture;
+            // glTFast 的材質貼圖屬性名稱（unlit／PBR 都是 baseColorTexture），URP 是 _BaseMap，內建是 _MainTex
+            var m = picture.sharedMaterial;
+            vp.targetMaterialProperty = m != null && m.HasProperty("baseColorTexture") ? "baseColorTexture" : m != null && m.HasProperty("_BaseMap") ? "_BaseMap" : "_MainTex";
             vp.loopPointReached += _ => videoEnded = true;
 
             Wire("ScreenButton_prev", () => Go(index - 1));
@@ -101,7 +104,7 @@ namespace MachineYard
             if (done)
             {
                 if (startedFromBeginning) ProgressStore.Instance.ClipWatched(c.id);
-                hold = holdSeconds;
+                hold = c.video != null ? 0.05f : holdSeconds;   // 影片本身已含播完後停 1.6 秒（scripts/record-previews.mjs）
             }
         }
     }

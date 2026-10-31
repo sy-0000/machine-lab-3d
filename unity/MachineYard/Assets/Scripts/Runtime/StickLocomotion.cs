@@ -6,7 +6,8 @@ namespace MachineYard
     /// <summary>
     /// 搖桿走動（對應 src/xr/Locomotion.js；使用者自己控制，程式不會自行移動視角）：
     ///   左手搖桿：往頭盔面向的方向平滑移動，1.6 m/s，死區 0.18；
-    ///   右手搖桿左右扳：快速轉向 30°（繞著頭轉，不晃動）；
+    ///   右手搖桿左右扳：快速轉向 30°／45° 或平滑轉向（ComfortSettings；繞著頭轉）；只用瞬移模式時左搖桿不走動；
+    ///   握著手輪或工具時暫停；平滑移動與轉向時顯示視野暗角（ComfortVignette）；
     ///   右手搖桿往前推保留給瞬移（StickTeleport）。
     /// 先試 X、再試 Z，碰到障礙沿著邊滑過去。範圍由 <see cref="LobbyFlow"/> 提供。
     /// 注意：Starter Assets 的 Move／Turn／Teleport provider 必須停用，否則會重複移動（場景建置腳本會停用）。
@@ -16,7 +17,7 @@ namespace MachineYard
         public Transform rig; public Camera head; public StationMover mover; public StickTeleport teleport;
         public System.Func<float, float, bool> canStand = (x, z) => true;
         public System.Action<float, float> onWalk;
-        public float speed = 1.6f, deadzone = 0.18f, snapDegrees = 30f;
+        public float speed = 1.6f, deadzone = 0.18f, snapDegrees = 30f, smoothTurnDegPerSec = 90f;
         InputAction left, right; bool snapReady = true;
 
         void OnEnable()
@@ -31,10 +32,21 @@ namespace MachineYard
         {
             if (mover != null && mover.Busy) return;
             if (teleport != null && teleport.Aiming) return;
+            if (XrPointer.Instance != null && XrPointer.Instance.AnyGrabbing) return;   // 握著手輪／工具時不走動不轉向
             var r = right.ReadValue<Vector2>();
-            if (snapReady && Mathf.Abs(r.x) > 0.7f) { rig.RotateAround(head.transform.position, Vector3.up, Mathf.Sign(r.x) * snapDegrees); snapReady = false; }
-            else if (Mathf.Abs(r.x) < 0.35f) snapReady = true;
+            var turn = ComfortSettings.TurnMode;
+            if (turn == ComfortSettings.Turn.Smooth)
+            {
+                if (Mathf.Abs(r.x) > deadzone) { rig.RotateAround(head.transform.position, Vector3.up, Mathf.Sign(r.x) * (Mathf.Abs(r.x) - deadzone) / (1f - deadzone) * smoothTurnDegPerSec * Time.deltaTime); ComfortVignette.Instance?.Moving(); }
+            }
+            else
+            {
+                float deg = turn == ComfortSettings.Turn.Snap45 ? 45f : snapDegrees;
+                if (snapReady && Mathf.Abs(r.x) > 0.7f) { rig.RotateAround(head.transform.position, Vector3.up, Mathf.Sign(r.x) * deg); snapReady = false; }
+                else if (Mathf.Abs(r.x) < 0.35f) snapReady = true;
+            }
 
+            if (ComfortSettings.MoveMode == ComfortSettings.Move.TeleportOnly) return;
             var m = left.ReadValue<Vector2>();
             float mag = m.magnitude;
             if (mag < deadzone) return;
@@ -47,6 +59,7 @@ namespace MachineYard
             var p = head.transform.position;
             if (Ok(p.x + step.x, p.z)) { rig.position += new Vector3(step.x, 0, 0); p.x += step.x; }
             if (Ok(p.x, p.z + step.z)) { rig.position += new Vector3(0, 0, step.z); p.z += step.z; }
+            ComfortVignette.Instance?.Moving();
             var t = ThreeCoords.ToThree(p);
             onWalk?.Invoke(t.x, t.z);
         }

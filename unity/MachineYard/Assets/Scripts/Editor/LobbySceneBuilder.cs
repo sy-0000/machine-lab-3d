@@ -4,7 +4,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MachineYard.Editor
 {
@@ -56,6 +55,7 @@ namespace MachineYard.Editor
             else { Debug.LogWarning("[Machine Yard] 沒有 workshop／車床的 glb，使用佔位工作室。要真的工作室請先執行「2b. Import glb exports (workshop + lathe)」。"); BuildWorkshopPlaceholder(root.transform); }
 
             DisableStarterLocomotion(rigGo);
+            ExteriorSceneBuilder.SetupPointer(rigGo, cam);
             ExteriorSceneBuilder.AddFpsHud(cam.transform);
             var fade = cam.gameObject.AddComponent<ScreenFade>();
 
@@ -71,7 +71,12 @@ namespace MachineYard.Editor
             var boardT = ExteriorSceneBuilder.FindDeep(vInter.transform, "SafetyBoard");
             if (boardT != null) { flow.board = boardT.gameObject.AddComponent<SafetyBoardController>(); }
             var screenT = ExteriorSceneBuilder.FindDeep(vInter.transform, "ProjectionScreen");
-            if (screenT != null) { flow.screen = screenT.gameObject.AddComponent<ProjectionScreenController>(); }
+            if (screenT != null)
+            {
+                flow.screen = screenT.gameObject.AddComponent<ProjectionScreenController>();
+                // 網站動畫錄成的影片（scripts/record-previews.mjs）：有就用，沒有就退回佔位計時
+                foreach (var c in flow.screen.clips) c.video = AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>($"Assets/Videos/preview_{c.id}.mp4");
+            }
             var vaultT = ExteriorSceneBuilder.FindDeep(vInter.transform, "VaultDoor");
             if (vaultT != null) { flow.vault = vaultT.gameObject.AddComponent<VaultDoorController>(); flow.vault.AutoWire(); }
             var bootstrap = sys.AddComponent<LobbyBootstrap>();
@@ -79,10 +84,11 @@ namespace MachineYard.Editor
 
             var tele = sys.AddComponent<StickTeleport>();
             tele.mover = mover;
+            cam.gameObject.AddComponent<ComfortVignette>();
             var right = FindHand(rigGo.transform, "Right");
             tele.rightHand = right;
             var loco = sys.AddComponent<StickLocomotion>();
-            loco.rig = rigGo.transform; loco.head = cam; loco.mover = mover; loco.teleport = tele;
+            loco.rig = rigGo.transform; loco.head = cam; loco.mover = mover; loco.teleport = tele; tele.locomotion = loco;
             bootstrap.loco = loco; bootstrap.flow = flow;
 
             var menu = sys.AddComponent<DebugMenu>();

@@ -42,7 +42,7 @@ namespace MachineYard
         void Build()
         {
             panel = new GameObject("DebugMenu");
-            AddBox(panel.transform, "bg", new Vector3(0, -0.02f, 0.01f), new Vector2(0.5f, 0.6f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
+            AddBox(panel.transform, "bg", new Vector3(0, -0.06f, 0.01f), new Vector2(0.5f, 0.7f), new Color(0.11f, 0.08f, 0.05f, 0.96f));
             AddLabel(panel.transform, "Machine Yard（簡易選單）", new Vector3(0, 0.22f, 0), 0.05f, new Color(0.91f, 0.76f, 0.48f));
             float y = 0.14f;
             AddButton("回門外", y, () => Go(Stations.Outside, true)); y -= 0.07f;
@@ -59,6 +59,15 @@ namespace MachineYard
                 }
                 y -= 0.07f;
             }
+            // 舒適度設定（存檔，重啟後保留）
+            string[] cl = { "移動方式", "轉向", "暗角" };
+            for (int i = 0; i < 3; i++)
+            {
+                int k = i; var go = AddBox(panel.transform, cl[i], new Vector3((i - 1) * 0.135f, y, 0), new Vector2(0.125f, 0.055f), new Color(0.22f, 0.28f, 0.34f));
+                AddLabel(go.transform, cl[i], new Vector3(0, 0, -0.002f), 0.03f, Color.white, true, new Vector2(0.12f, 0.05f));
+                XrUtil.MakeClickable(go, () => { CycleComfort(k); RefreshSlots(); }, 0.01f);
+            }
+            y -= 0.07f;
             if (Debug.isDebugBuild || Application.isEditor)
             {
                 AddButton("[DEV] 直接解鎖", y, () => ProgressStore.Instance.UnlockAll()); y -= 0.07f;
@@ -66,6 +75,13 @@ namespace MachineYard
             }
             slotsText = AddLabel(panel.transform, "", new Vector3(0, y - 0.1f, 0), 0.032f, new Color(0.9f, 0.86f, 0.75f), false, new Vector2(0.46f, 0.2f));
             panel.SetActive(false);
+        }
+
+        static void CycleComfort(int k)
+        {
+            if (k == 0) ComfortSettings.MoveMode = ComfortSettings.MoveMode == ComfortSettings.Move.Smooth ? ComfortSettings.Move.TeleportOnly : ComfortSettings.Move.Smooth;
+            else if (k == 1) ComfortSettings.TurnMode = (ComfortSettings.Turn)(((int)ComfortSettings.TurnMode + 1) % 3);
+            else ComfortSettings.Vignette = !ComfortSettings.Vignette;
         }
 
         void Go(Station s, bool openDoorsState)
@@ -78,7 +94,7 @@ namespace MachineYard
 
         void RefreshSlots()
         {
-            var sb = new System.Text.StringBuilder("存檔欄位（工件存檔於階段 4 起可用）\n");
+            var sb = new System.Text.StringBuilder(ComfortSettings.Describe() + "\n存檔欄位（機台面板 X 鍵可存／讀）\n");
             for (int i = 0; i < SaveSlots.Count; i++)
             {
                 var s = SaveSlots.Instance.Get(i);

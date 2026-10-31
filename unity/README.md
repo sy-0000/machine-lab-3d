@@ -192,3 +192,20 @@
 - **關卡（星星評分、挑戰步驟）沒有移植**——VR 版沒有這個功能（網站桌機版才有）。
 - **槌頭毛胚的鑽孔／攻牙在 Unity 端的容許值**：float 量到的橫向漂移 < 0.01 mm 視為純軸向（Core 本身與網站一致，容許 1e-7 mm），見 D27。
 - 銑床／鑽床的原始教學刀具（FaceMill、TwistDrill 節點）會在裝上程序化刀具時隱藏，避免重疊。
+
+---
+
+# 階段 5 之後的修正
+
+| 項目 | 內容 |
+|---|---|
+| 互動（D31） | `Runtime/XrPointer.cs`：自己的射線指標，trigger＝點擊、grip＝抓住／反向，與網站一致。所有可操作物件用 `PointerTarget`（取代 XRI 的 XRSimpleInteractable）；場景建置會停用 rig 的 XRI Interactor |
+| 移動（D32） | `Runtime/Comfort.cs`（設定與視野暗角）、`StickLocomotion`（只用瞬移、轉向方式、握手輪時暫停）、`StickTeleport`（自由瞬移到地板）；左手 Y 選單三顆按鈕切換 |
+| 字型（D33） | `Assets/Fonts/MachineYardSansTC.ttf`（Noto Sans TC 子集，OFL）＋選單 **0b. Create CJK font asset** → `Resources/MachineYardFont.asset` |
+| 放映幕（D35） | `Assets/Videos/preview_{lathe,milling,drill}.mp4`（網站動畫逐格錄製），場景建置時自動指定 |
+| 只支援 Quest 3（D34） | Target Devices 只勾 Quest 3 |
+| 車床精度 | 刀尖量測改用局部座標鏈（與銑床／鑽床相同，D27） |
+| 車床接觸光圈 | 刀尖碰到工件外圓時畫一圈（轉動中切削為橘色） |
+| 銑鑽床新工件 | 主軸轉動中按「新工件」改為提示「停機後才能換新工件」（原本毛胚可能留在刀具裡） |
+
+步驟：選單 **1** → Target Devices 只勾 Quest 3 → **0b** → **2b**（若未匯入）→ **4** → Build And Run。驗收清單見 `docs/testing-guide.md` 第 11 節。

@@ -23,11 +23,11 @@ namespace MachineYard
     /// </summary>
     public class StickTeleport : MonoBehaviour
     {
-        public StationMover mover; public Transform handFallback; public Transform rightHand;
+        public StationMover mover; public Transform handFallback; public Transform rightHand; public StickLocomotion locomotion;
         public bool Aiming { get; private set; }
         const float AimOn = 0.6f, AimOff = 0.3f, Speed = 7f, Gravity = 9.8f, Dt = 0.03f, SnapRadius = 0.5f;
         const int Steps = 48;
-        InputAction stick; LineRenderer line; TeleportDisc target;
+        InputAction stick; LineRenderer line; TeleportDisc target; Vector3? freeSpot;
 
         void OnEnable()
         {
@@ -46,33 +46,57 @@ namespace MachineYard
 
         void Update()
         {
-            bool enabledNow = ProgressStore.Instance.FactoryEntered && mover != null && !mover.Busy && TeleportDisc.All.Count > 0;
+            // 自由瞬移（任何可站立的地板）一律可用；圓盤只在進過工廠後才出現（網站規則）
+            bool grabbing = XrPointer.Instance != null && XrPointer.Instance.AnyGrabbing;
+            bool enabledNow = mover != null && !mover.Busy && !grabbing;
             float y = stick.ReadValue<Vector2>().y;
             if (!enabledNow) { if (Aiming) Stop(); return; }
             if (!Aiming && y > AimOn) Aiming = true;
             if (!Aiming) return;
             if (y < AimOff)
             {
-                var chosen = target; Stop();
+                var chosen = target; var spot = freeSpot; Stop();
                 if (chosen != null) mover.MoveTo(chosen.station);
+                else if (spot.HasValue) MoveFree(spot.Value);
                 return;
             }
-            var hand = rightHand != null ? rightHand : handFallback;
-            if (hand == null) { Stop(); return; }
-            Vector3 hit; bool landed = Cast(hand, out hit);
+            Vector3 o, dir;
+            var ptr = XrPointer.Instance;
+            if (ptr != null) { o = ptr.hands[1].origin; dir = ptr.hands[1].direction; }
+            else { var hand = rightHand != null ? rightHand : handFallback; if (hand == null) { Stop(); return; } o = hand.position; dir = hand.forward; }
+            Vector3 hit; bool landed = Cast(o, dir, out hit);
             TeleportDisc best = null; float bestD = SnapRadius;
-            if (landed) foreach (var d in TeleportDisc.All)
+            if (landed && ProgressStore.Instance.FactoryEntered) foreach (var d in TeleportDisc.All)
             {
                 float dist = Vector2.Distance(new Vector2(d.transform.position.x, d.transform.position.z), new Vector2(hit.x, hit.z));
                 if (dist < bestD) { best = d; bestD = dist; }
             }
             SetTarget(best);
+            freeSpot = null;
+            if (best == null && landed && CanStandAt(hit)) { freeSpot = hit; SetLineColor(new Color(0.85f, 0.95f, 1f)); }
         }
 
-        bool Cast(Transform hand, out Vector3 landing)
+        bool CanStandAt(Vector3 world)
+        {
+            if (locomotion == null) return false;
+            var t = ThreeCoords.ToThree(world);
+            return locomotion.canStand(t.x, t.z);
+        }
+
+        /// <summary>自由瞬移：落點可站立就移過去，保持目前面向。</summary>
+        void MoveFree(Vector3 world)
+        {
+            var head = mover.head.transform; var f = ThreeCoords.ToThree(head.forward);
+            float yaw = Mathf.Atan2(-f.x, -f.z);   // three：yaw 0 面向 −Z，逆時針為正
+            var t = ThreeCoords.ToThree(world);
+            mover.MoveTo(new Station { Name = "free", Three = new Vector3(t.x, 0, t.z), YawRadians = yaw, Area = mover.CurrentArea });
+            locomotion.onWalk?.Invoke(t.x, t.z);
+        }
+
+        bool Cast(Vector3 origin, Vector3 dir, out Vector3 landing)
         {
             var pts = new List<Vector3>(Steps);
-            Vector3 origin = hand.position, dir = hand.forward, prev = origin; landing = origin;
+            Vector3 prev = origin; landing = origin;
             for (int i = 0; i < Steps; i++)
             {
                 float t = i * Dt;
@@ -97,6 +121,6 @@ namespace MachineYard
             target = d; target?.SetTarget(true);
             SetLineColor(d != null ? new Color(1f, 0.81f, 0.48f) : new Color(0.6f, 0.56f, 0.5f));
         }
-        void Stop() { Aiming = false; line.positionCount = 0; SetTarget(null); }
+        void Stop() { Aiming = false; line.positionCount = 0; SetTarget(null); freeSpot = null; }
     }
 }

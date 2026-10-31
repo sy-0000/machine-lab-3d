@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MachineYard
 {
@@ -42,24 +41,16 @@ namespace MachineYard
             return b;
         }
 
-        /// <summary>讓 go 可被 XR 射線選取：BoxCollider（貼合渲染範圍）＋ XRSimpleInteractable，選取時呼叫 action。</summary>
-        public static XRSimpleInteractable MakeClickable(GameObject go, Action action, float pad = 0.02f)
+        /// <summary>讓 go 可被射線點擊（trigger）：碰撞盒（貼合渲染範圍外加 pad）＋ PointerTarget，點擊時呼叫 action。</summary>
+        public static PointerTarget MakeClickable(GameObject go, Action action, float pad = 0.02f)
         {
-            if (go.GetComponent<Collider>() == null)
-            {
-                var b = RendererBounds(go);
-                var box = go.AddComponent<BoxCollider>();
-                box.center = go.transform.InverseTransformPoint(b.center);
-                var size = go.transform.InverseTransformVector(b.size);
-                box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)) + Vector3.one * pad;
-            }
-            var it = go.GetComponent<XRSimpleInteractable>() ?? go.AddComponent<XRSimpleInteractable>();
-            it.selectEntered.AddListener(_ => action());
-            return it;
+            var t = EnsureTarget(go, pad);
+            t.onClick += _ => action();
+            return t;
         }
 
-        /// <summary>確保 go 有碰撞盒（貼合渲染範圍外加 pad）與 XRSimpleInteractable，回傳 interactable（事件由呼叫端自己接）。</summary>
-        public static XRSimpleInteractable EnsureInteractable(GameObject go, float pad = 0.02f)
+        /// <summary>確保 go 有碰撞盒（貼合渲染範圍外加 pad）與 PointerTarget，回傳 target（事件由呼叫端自己接）。</summary>
+        public static PointerTarget EnsureTarget(GameObject go, float pad = 0.02f)
         {
             if (go.GetComponent<Collider>() == null)
             {
@@ -69,7 +60,7 @@ namespace MachineYard
                 var size = go.transform.InverseTransformVector(b.size);
                 box.size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)) + Vector3.one * pad;
             }
-            return go.GetComponent<XRSimpleInteractable>() ?? go.AddComponent<XRSimpleInteractable>();
+            return go.GetComponent<PointerTarget>() ?? go.AddComponent<PointerTarget>();
         }
 
         /// <summary>設定材質顏色（glTFast 的 URP 材質屬性名稱依版本不同：_BaseColor / baseColorFactor / _Color）。</summary>

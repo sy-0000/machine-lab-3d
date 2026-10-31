@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MachineYard
 {
@@ -24,8 +21,7 @@ namespace MachineYard
     public class ToolboxFlow : MonoBehaviour
     {
         public Transform workshopRoot, tray; public Camera head; public MachineEffects fx;
-        public Transform leftHand;   // 抓住工具轉動的手（不指定就用右手射線的來源）
-        static readonly Vector3 ShowAtThree = new Vector3(-0.4f, 1.24f, 5.85f);   // 工作室座標（SHOW_AT）
+                static readonly Vector3 ShowAtThree = new Vector3(-0.4f, 1.24f, 5.85f);   // 工作室座標（SHOW_AT）
         const float ShowScale = 1.8f, DimTo = 0.15f, PanelDistance = 0.8f, PanelRise = 0.12f;
 
         enum State { Browse, Lifting, Showing, Returning }
@@ -34,7 +30,7 @@ namespace MachineYard
         readonly List<Entry> entries = new List<Entry>();
         int current = -1; float dim; Light spot; readonly List<(Light light, float baseIntensity, GasLanternFlicker flicker)> lights = new List<(Light, float, GasLanternFlicker)>();
         GameObject panel; TextMeshPro title, counter, body, qty;
-        XRBaseInteractor grabber; Quaternion handRot0, toolRot0;
+        PointerHand grabber; Quaternion handRot0, toolRot0;
         public bool Busy => state != State.Browse;
 
         void Start()
@@ -49,13 +45,10 @@ namespace MachineYard
                 var e = new Entry { info = info, node = node, pos = node.localPosition, rot = node.localRotation, scale = node.localScale };
                 entries.Add(e);
                 int idx = entries.Count - 1;
-                var it = XrUtil.EnsureInteractable(node.gameObject, 0.03f);
-                it.selectEntered.AddListener(a =>
-                {
-                    if (state == State.Browse) Select(idx);
-                    else if (state == State.Showing && idx == current) BeginGrab(a.interactorObject as XRBaseInteractor);
-                });
-                it.selectExited.AddListener(_ => grabber = null);
+                var it = XrUtil.EnsureTarget(node.gameObject, 0.03f);
+                it.onClick += h => { if (state == State.Browse) { h.Pulse(0.25f, 0.02f); Select(idx); } };              // trigger：拿起
+                it.onGrab = h => { if (state == State.Showing && idx == current) { BeginGrab(h); return true; } return false; }; // grip：展示中抓住轉動
+                it.onRelease = _ => grabber = null;
             }
             foreach (var l in workshopRoot.GetComponentsInChildren<Light>(true)) { var f = l.GetComponent<GasLanternFlicker>(); lights.Add((l, f != null ? f.baseIntensity : l.intensity, f)); }
         }
@@ -150,16 +143,16 @@ namespace MachineYard
         }
 
         // ---- 抓住工具轉動
-        void BeginGrab(XRBaseInteractor hand)
+        void BeginGrab(PointerHand hand)
         {
             if (hand == null || current < 0) return;
-            grabber = hand; handRot0 = hand.transform.rotation; toolRot0 = entries[current].node.rotation;
+            grabber = hand; handRot0 = hand.rotation; toolRot0 = entries[current].node.rotation;
         }
 
         void Update()
         {
             if (state != State.Showing || grabber == null || current < 0) return;
-            entries[current].node.rotation = grabber.transform.rotation * Quaternion.Inverse(handRot0) * toolRot0;
+            entries[current].node.rotation = grabber.rotation * Quaternion.Inverse(handRot0) * toolRot0;
         }
 
         // ---- 說明面板

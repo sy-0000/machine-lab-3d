@@ -39,7 +39,7 @@ export function createMenu({ input, player, camera, items, run, machine, nearMac
 
   const state = { page: 'main', hover: -1, pressed: -1, pressT: 0, note: '', noteT: 0, signature: '', pinned: false, desktop: false };
   const hold = { button: null, t: 0, next: 0 };
-  let pendingRun = null, buttons = [];
+  let pendingRun = null, runT = 0, buttons = [];
   const pinnedWorld = new Matrix4();
   const say = text => { state.note = text; state.noteT = text ? NOTE_SECONDS : 0; draw(); };
   const machinePage = createMachinePage({ machine, audio, say: text => { if (text) say(text); } });
@@ -133,7 +133,7 @@ export function createMenu({ input, player, camera, items, run, machine, nearMac
     if (b.action.startsWith('item:')) {
       const item = items().find(x => x.key === b.item.key);
       if (!item?.enabled) { say(item?.reason || '目前不能使用'); info?.pulse?.(0.5, 40); return; }
-      pendingRun = item.key; // 按下回彈後才跳轉
+      pendingRun = item.key; runT = 0; // 按下回彈後才跳轉
     }
   }
   function select(i, info) {
@@ -249,7 +249,8 @@ export function createMenu({ input, player, camera, items, run, machine, nearMac
       }
       if (hold.button && (hold.t += dt) >= hold.next) { hold.next += REPEAT_EVERY; if (hold.button.enabled()) { hold.button.action(); draw(); } }
       if (state.pressed >= 0 && (state.pressT += dt) >= PRESS_SECONDS && !hold.button) { state.pressed = -1; draw(); }
-      if (pendingRun && state.pressT >= RUN_AFTER) {
+      // 跳轉計時獨立累加：pressT 在按鈕回彈（PRESS_SECONDS）後就停止，不能拿來等 RUN_AFTER（否則 pendingRun 永遠不清除、選單點不動）
+      if (pendingRun && (runT += dt) >= RUN_AFTER) {
         const key = pendingRun; pendingRun = null;
         if (!state.pinned && !state.desktop) hide();
         run(key);

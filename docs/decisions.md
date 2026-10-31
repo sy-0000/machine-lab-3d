@@ -135,3 +135,26 @@
 
 ## D30 刀具與機台原有教學刀具
 - 選擇：5 支槌頭刀具用程序化圓柱組成（形狀比網站簡化：沒有螺旋刃與刀片細節），尺寸、刃長與網站完全一致（碰撞與切削只看這些數字）。機台 glb 內原有的 FaceMill／TwistDrill 隱藏。
+
+## D31 互動改用自己的射線指標（不用 XRI Interactor）
+- 問題：XRI 的 Activate（trigger）只送給「已被 grip 選取」的物件，單按 trigger 不會觸發；Starter Assets 的 Select 是 grip。結果是拉桿 trigger 無效、所有按鈕要按 grip，與網站相反。
+- 選擇：`XrPointer` 自己從控制器 aim pose（OpenXR pointerPosition／pointerRotation）做 Physics.Raycast，找 `PointerTarget`：trigger＝點擊、grip＝抓住（手輪、工具）或反向（拉桿）。場景建置時停用 rig 的 XRI Interactor 與射線外觀；震動改用 Input System 的 `XRControllerWithRumble.SendImpulse`。
+- trigger 在「按下」時就觸發（網站是放開時仍指著同一物件才算）：VR 手會晃，按下即觸發比較不會漏按。
+- 回復：想改回放開才觸發，在 `XrPointer.Update` 把 `WasPressedThisFrame` 改成記住按下的目標、`WasReleasedThisFrame` 時比對。
+
+## D32 移動方式與舒適度
+- 選擇：①平滑走動與平滑轉向時顯示視野暗角（預設開）；②「只用瞬移」模式；③自由瞬移到任何可站立的地板（圓盤仍優先，進工廠後才有）；④握著手輪／工具時暫停走動、轉向與瞬移；⑤轉向可選快轉 30°／45°／平滑 90°/s。設定在左手 Y 選單，存在 PlayerPrefs。
+- 自由瞬移保持目前面向；圓盤會轉向機台（網站規則）。
+
+## D33 中文字型
+- 選擇：Noto Sans TC（SIL Open Font License 1.1，免費可商用可再散布），子集化成靜態 wght 500 的 TrueType（`scripts/unity-font.mjs`，收網站 VR 用字＋Unity 程式與資料檔的所有字，約 1,070 字、362 KB），附 OFL.txt。Unity 選單 0b 轉成 TMP 字型資產（SDF、可動態補字）。
+- 字型內部名稱仍是「Noto Sans TC Thin」（子集工具沿用預設實例名稱），實際筆畫是 500；不影響顯示。
+- 回復：改字或改字重後重跑 `node scripts/unity-font.mjs` 與選單 0b。
+
+## D34 只支援 Quest 3
+- 選擇：Target Devices 只勾 Quest 3；畫質預算以 Quest 3（XR2 Gen 2）為準，不為 Quest 2／3S 降級。
+
+## D35 放映幕影片
+- 選擇：用無頭 Chromium 執行網站的 `AnimationScreen.js`（與 VR 版同一份繪圖與排版），固定 1/30 秒步進逐格擷取，ffmpeg 編成 H.264 MP4（1280×800、30 fps、CRF 24，三段共約 4 MB），commit 在 `unity/MachineYard/Assets/Videos/`。影片結尾已含網站的 1.6 秒停頓，所以 Unity 端播完不再另外停。
+- 「暫停中」字樣等互動狀態不在影片裡（暫停時畫面停住即可）。
+- 回復：網站動畫改了就重跑 `node scripts/record-previews.mjs`（需先 `npm run dev`）。

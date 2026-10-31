@@ -92,6 +92,7 @@ namespace MachineYard
         public void NewStock()
         {
             if (workMount == null) return;
+            if (State != null && (machine.SpindleRunning || machine.Spindle.Rpm > 0)) { Warn?.Invoke("停機後才能換新工件"); return; }
             State = IsDrill ? HeadState.CreateDrillStock() : HeadState.CreateBlock();
             if (View == null) View = HeadWorkpieceView.Create(workMount, State); else View.SetState(State);
             View.transform.localPosition = Vector3.zero; View.transform.localRotation = Quaternion.identity;

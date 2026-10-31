@@ -76,13 +76,16 @@ namespace MachineYard
         {
             pos = default; tipWorld = default;
             if (workpiece == null || mount == null || !FindInsert()) return false;
-            var origin = ToMachineThree(mount.position);
-            var axis = (ToMachineThree(mount.TransformPoint(ThreeCoords.Direction(1, 0, 0))) - origin).normalized;
+            // 局部座標鏈換算（LocalSpace，不經世界座標：工作室在 x = 200 m，float 的世界座標只有約 0.015 mm 精度，見 D27）
+            var root = machine.machineRoot;
+            var origin = ThreeCoords.ToThree(LocalSpace.ToAncestor(mount, root, Vector3.zero));
+            var axis = (ThreeCoords.ToThree(LocalSpace.ToAncestor(mount, root, ThreeCoords.Direction(1, 0, 0))) - origin).normalized;
             var u = (new Vector3(0, 1, 0) - axis * axis.y).normalized;
             var v = Vector3.Cross(axis, u).normalized;
-            tipWorld = insert.TransformPoint(ThreeCoords.Direction(tip.x, tip.y, tip.z));
-            var p = ToMachineThree(tipWorld) - origin;
-            double mm(float meters) => System.Math.Round(meters * 1000.0, 9) + 0.0;
+            var tipLocal = ThreeCoords.Direction(tip.x, tip.y, tip.z);
+            tipWorld = insert.TransformPoint(tipLocal);
+            var p = ThreeCoords.ToThree(LocalSpace.ToAncestor(insert, root, tipLocal)) - origin;
+            double mm(float meters) => System.Math.Round(meters * 1000.0, 3) + 0.0;   // 量化到 1 µm（float 雜訊約 1e-3 mm）
             pos = new TipMm(mm(Vector3.Dot(p, axis)), mm(Vector3.Dot(p, u)), mm(Vector3.Dot(p, v)));
             return true;
         }
@@ -105,6 +108,34 @@ namespace MachineYard
             if (entering) return;
             bool removed = mode == Mode.Facing ? Cutting.CutFacing(st, from, after, rpm) : Cutting.CutRevolvedProfile(st, from, after, rpm);
             if (removed) { CutCount++; CutHappened?.Invoke(rpm > 0); }
+        }
+
+        // ---- 接觸光圈（網站 MachineV1Adapter 的 ContactMarker）：刀尖碰到工件外圓時，在該處畫一圈；轉動中切削為橘色
+        LineRenderer ring;
+        void Update()
+        {
+            if (workpiece == null || mount == null || !machine.Ready) { if (ring != null) ring.gameObject.SetActive(false); return; }
+            if (!Sample(out var p, out _)) return;
+            var st = workpiece.State;
+            int idx = (int)System.Math.Min(st.Count - 1, System.Math.Floor(p.Z / st.ResolutionMm));
+            bool atStock = p.Z >= 0 && p.Z <= st.LengthMm && idx >= 0;
+            double radius = atStock ? st.Radii[idx] : 0;
+            bool contact = atStock && p.Z > st.ClampEndMm && System.Math.Sqrt(p.U * p.U + p.V * p.V) <= radius + 0.05;
+            if (ring == null)
+            {
+                var go = new GameObject("ContactMarker"); go.transform.SetParent(mount, false);
+                ring = go.AddComponent<LineRenderer>(); ring.useWorldSpace = false; ring.widthMultiplier = 0.0012f; ring.positionCount = 48; ring.material = SimpleMat.Unlit(Color.yellow);
+                var pts = new Vector3[48];
+                // 單位圓在「垂直於主軸」的平面：three 局部 (0, sinθ, cosθ)（主軸＝局部 +X）
+                for (int i = 0; i < 48; i++) { float a = i / 47f * Mathf.PI * 2; pts[i] = ThreeCoords.Position(0, Mathf.Sin(a), Mathf.Cos(a)); }
+                ring.SetPositions(pts);
+            }
+            ring.gameObject.SetActive(contact);
+            if (!contact) return;
+            var c = machine.Spindle.Rpm > 0 ? new Color(1f, 0.42f, 0.17f) : new Color(1f, 0.71f, 0.28f);
+            ring.startColor = c; ring.endColor = c;
+            ring.transform.localPosition = ThreeCoords.Position((float)(p.Z * 0.001), 0, 0);
+            float r = (float)((radius + 0.3) * 0.001); ring.transform.localScale = new Vector3(1, r, r);
         }
 
         /// <summary>刀尖高度對準主軸中心：把車刀整組沿機台局部 Y 移動 −U（alignCuttingTip；掛上工件時做一次）。</summary>

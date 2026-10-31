@@ -1,8 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MachineYard
 {
@@ -10,7 +7,7 @@ namespace MachineYard
     /// VR 直接操作車床（對應 src/xr/machine/vrMachineControls.js）：
     ///   手輪：射線指著按住 grip 抓住，手繞手輪畫圈（WheelGrab）。方案 C：手每轉過一格（10°），軸走「每格進給量」(FeedMm)，
     ///         手輪模型另外跟著手轉；碰到行程限制：較強震動，手輪不再往那邊轉。
-    ///   其他零件：射線指著按 trigger（Activate）＝桌機左鍵、按 grip（Select）＝右鍵（反向）：
+    ///   其他零件：射線指著按 trigger ＝桌機左鍵、按 grip ＝右鍵（反向）（XrPointer，不經過 XRI）：
     ///         啟動拉桿 → 正轉／反轉；段位旋鈕 → 步進；刀座 → 分度 10°；腳踏煞車 → 緊急煞車。
     /// </summary>
     public class MachineControlWiring : MonoBehaviour
@@ -30,14 +27,14 @@ namespace MachineYard
         void Start() { if (machine.Ready) Wire(); else StartCoroutine(WaitAndWire()); }
         System.Collections.IEnumerator WaitAndWire() { while (!machine.Ready) yield return null; Wire(); }
 
-        static void Pulse(XRBaseInteractor hand, float amp, float sec) { if (hand is XRBaseInputInteractor i) i.SendHapticImpulse(amp, sec); }
+        static void Pulse(PointerHand hand, float amp, float sec) { hand?.Pulse(amp, sec); }
 
         void Wire()
         {
             foreach (var w in machine.Config.wheels)
             {
                 if (!machine.Nodes.TryGetValue(w.node, out var node)) continue;
-                XrUtil.EnsureInteractable(node.gameObject, 0.06f);
+                XrUtil.EnsureTarget(node.gameObject, 0.06f);
                 var grab = node.gameObject.AddComponent<WheelGrab>();
                 grabs.Add(grab);
                 grab.axisLocalUnity = ThreeCoords.Direction(w.axis[0], w.axis[1], w.axis[2]).normalized;
@@ -98,9 +95,9 @@ namespace MachineYard
         void Both(string nodeName, Action forward, Action reverse)
         {
             if (string.IsNullOrEmpty(nodeName) || !machine.Nodes.TryGetValue(nodeName, out var node)) return;
-            var it = XrUtil.EnsureInteractable(node.gameObject, 0.03f);
-            it.activated.AddListener(a => { Pulse(a.interactorObject as XRBaseInteractor, 0.3f, 0.02f); forward(); });   // trigger
-            it.selectEntered.AddListener(a => { Pulse(a.interactorObject as XRBaseInteractor, 0.3f, 0.02f); reverse(); }); // grip
+            var it = XrUtil.EnsureTarget(node.gameObject, 0.03f);
+            it.onClick += h => { Pulse(h, 0.3f, 0.02f); forward(); };   // trigger ＝ 網站左鍵
+            it.onAlt += h => { Pulse(h, 0.3f, 0.02f); reverse(); };     // grip ＝ 網站右鍵（反向）
         }
     }
 }

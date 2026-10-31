@@ -27,7 +27,7 @@ namespace MachineYard.Editor
             PlayerSettings.productName = "Machine Yard";
             EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ASTC;
             PlayerSettings.gpuSkinning = true;
-            Debug.Log("[Machine Yard] Quest 設定已套用。請再到 Project Settings ▸ XR Plug-in Management ▸ Android 勾選 OpenXR，並啟用 Meta Quest Support。");
+            Debug.Log("[Machine Yard] Quest 設定已套用（只支援 Quest 3）。請再到 Project Settings ▸ XR Plug-in Management ▸ Android 勾選 OpenXR，啟用 Meta Quest Support，並在 Meta Quest Support 的齒輪 ▸ Target Devices 只勾 Quest 3。接著執行選單 0b 建立中文字型。");
         }
     }
 }

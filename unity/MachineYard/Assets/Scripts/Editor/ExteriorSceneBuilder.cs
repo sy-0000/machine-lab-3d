@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MachineYard.Editor
 {
@@ -41,6 +40,8 @@ namespace MachineYard.Editor
             rig.transform.rotation = Quaternion.Euler(0, ThreeCoords.YawDegrees(0f), 0);
             var cam = rig.GetComponentInChildren<Camera>();
             if (cam != null) AddFpsHud(cam.transform);
+            SetupPointer(rig, cam);
+            var doorsOnly = Object.FindObjectOfType<ExteriorDoors>(); if (doorsOnly != null) doorsOnly.clickToOpen = true; // 只有門外的場景：點門就開
 
             var path = "Assets/Scenes/Exterior.unity";
             EditorSceneManager.SaveScene(scene, path);
@@ -63,7 +64,7 @@ namespace MachineYard.Editor
             var inter = (GameObject)PrefabUtility.InstantiatePrefab(interactiveAsset, root.transform);
             inter.name = "exterior_interactive";
 
-            // ---- 大門：碰撞盒 + XRSimpleInteractable + ExteriorDoors
+            // ---- 大門：碰撞盒 + ExteriorDoors（點擊用 XrPointer／PointerTarget）
             var doorsT = FindDeep(inter.transform, "OuterDoors");
             if (doorsT != null)
             {
@@ -71,7 +72,6 @@ namespace MachineYard.Editor
                 var box = doorsT.gameObject.AddComponent<BoxCollider>();
                 box.center = doorsT.InverseTransformPoint(bounds.center);
                 box.size = doorsT.InverseTransformVector(bounds.size).Abs() + new Vector3(0, 0, 0.3f);
-                doorsT.gameObject.AddComponent<XRSimpleInteractable>();
                 doors = doorsT.gameObject.AddComponent<ExteriorDoors>();
                 doors.AutoWire();
             }
@@ -111,6 +111,25 @@ namespace MachineYard.Editor
                 flicker.baseIntensity = 2f; flicker.index = i;
             }
             return doors;
+        }
+
+        /// <summary>
+        /// 停用 Starter Assets rig 的 XRI Interactor 與射線外觀（依型別名稱，不綁 XRI 版本），改用我們自己的 XrPointer：
+        /// trigger＝點擊、grip＝抓住／反向，與網站一致（XRI 的 Activate 只送給已被 grip 選取的物件，trigger 單按無效，見 D31）。
+        /// </summary>
+        internal static XrPointer SetupPointer(GameObject rig, Camera cam)
+        {
+            string[] names = { "NearFarInteractor", "XRRayInteractor", "XRDirectInteractor", "XRPokeInteractor", "XRSocketInteractor", "XRInteractorLineVisual", "CurveVisualController", "XRInteractorReticleVisual" };
+            foreach (var mb in rig.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (mb == null) continue;
+                for (var t = mb.GetType(); t != null; t = t.BaseType)
+                    if (System.Array.IndexOf(names, t.Name) >= 0) { mb.enabled = false; break; }
+            }
+            foreach (var lr in rig.GetComponentsInChildren<LineRenderer>(true)) lr.enabled = false;
+            var go = new GameObject("XrPointer");
+            var p = go.AddComponent<XrPointer>(); p.head = cam;
+            return p;
         }
 
         internal static GameObject CreateRig()

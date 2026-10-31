@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MachineYard
 {
@@ -33,11 +32,9 @@ namespace MachineYard
             return null;
         }
 
-        void OnEnable()
-        {
-            var interactable = GetComponent<XRSimpleInteractable>();
-            if (interactable != null) interactable.selectEntered.AddListener(_ => Open());
-        }
+        /// <summary>只有門外的場景（階段 2）由門自己接點擊；完整場景由 LobbyFlow 接（只在門外才開門）。</summary>
+        public bool clickToOpen;
+        void Start() { if (clickToOpen) XrUtil.MakeClickable(gameObject, Open); }
 
         public void Open()
         {
