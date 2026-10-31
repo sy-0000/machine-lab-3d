@@ -21,6 +21,8 @@ namespace MachineYard
         public int DirectionRequested = 1;
         public bool SpindleRunning { get; private set; }
         public int ToolIndexSteps { get; private set; }
+        /// <summary>目前被握住的彈簧手柄（鑽床進給手柄）：握住時不回彈。</summary>
+        public string HeldWheel { get; private set; }
 
         /// <summary>軸或手輪動作前後呼叫（切削取樣用）。</summary>
         public event Action BeforeMove, AfterMove;
@@ -29,6 +31,7 @@ namespace MachineYard
         readonly Dictionary<string, (Vector3 pos, Quaternion rot)> rest = new Dictionary<string, (Vector3, Quaternion)>();
         ActionCfg gearAction, modeAction, indexAction, brakeAction;
         Transform columnNode; AdditionCfg columnCfg; Vector3 columnRest;
+        readonly List<(AdditionCfg cfg, Transform node, Vector3 rest)> sleeves = new List<(AdditionCfg, Transform, Vector3)>();
 
         public bool Ready { get; private set; }
 
@@ -46,7 +49,9 @@ namespace MachineYard
             Axes = new AxisModel { TeachingTurnsForFullTravel = Config.lesson?.teachingTurnsForFullTravel ?? 10 };
             foreach (var a in Config.axes) Axes.AddAxis(new AxisDef { Id = a.id, RangeLo = a.range[0], RangeHi = a.range[1], Enabled = a.enabled });
             foreach (var w in Config.wheels)
-                Axes.AddWheel(new WheelDef { Id = w.id, Drives = w.drives, Ratio = w.ratio, AngleLo = w.angleRange?[0], AngleHi = w.angleRange?[1], NeedsCalibration = w.needsCalibration });
+                Axes.AddWheel(new WheelDef { Id = w.id, Drives = w.drives, Ratio = w.ratio, AngleLo = w.angleRange?[0], AngleHi = w.angleRange?[1], NeedsCalibration = w.needsCalibration, SpringReturnSpeed = w.springReturn?.speed });
+            // 銑床手輪沒有真實比例（需要教學比例）：VR 用每格進給量，直接開啟教學比例（Workshop.js：teaching.set）
+            foreach (var w in Config.wheels) if (w.needsCalibration) Axes.Teaching = true;
 
             var sel = Config.speedSelectors;
             Spindle = new SpindleModel
@@ -64,8 +69,10 @@ namespace MachineYard
             // 每個會動的節點記住 0 點（匯出時 restOffset 已經套在位置上）
             foreach (var a in Config.axes) Remember(a.node);
             foreach (var w in Config.wheels) Remember(w.node);
-            Remember(Config.spindle.node); if (Config.lever != null) Remember(Config.lever.node);
+            Remember(Config.spindle.node); if (Config.lever != null) Remember(Config.lever.node); if (Config.toggle != null) Remember(Config.toggle.node);
             foreach (var a in Config.actions) Remember(a.node);
+            foreach (var ad in Config.additions ?? new AdditionCfg[0])
+                if (ad.kind == "sleeve" && Nodes.TryGetValue(ad.name, out var sl)) sleeves.Add((ad, sl, sl.localPosition));
             columnCfg = Array.Find(Config.additions ?? new AdditionCfg[0], a => a.kind == "supportColumn");
             if (columnCfg != null && Nodes.TryGetValue(columnCfg.name, out columnNode)) columnRest = columnNode.localPosition;
             // 段位旋鈕轉到 home 位置（要在記住 0 點之後，因為轉角是相對於 0 點）
@@ -88,6 +95,15 @@ namespace MachineYard
             if (!Nodes.TryGetValue(a.node, out var t) || !rest.TryGetValue(a.node, out var r)) return;
             var dir = ThreeCoords.Direction(a.axis[0], a.axis[1], a.axis[2]).normalized;
             t.localPosition = r.pos + dir * (float)Axes.Offsets[a.id];
+            foreach (var (cfg, node, restPos) in sleeves)
+            {
+                // 套筒延伸（sleeve）隨套筒軸伸縮：頂端固定在 top[1]，長度 = top.y − bottomY − 位移（runtime.js setAxis）
+                if (cfg.drives != a.id) continue;
+                float length = cfg.top[1] - cfg.bottomY - (float)Axes.Offsets[a.id];
+                var three = ThreeCoords.ToThree(restPos);
+                node.localPosition = ThreeCoords.Position(three.x, cfg.top[1] - length / 2, three.z);
+                if (node.childCount > 0) { var c = node.GetChild(0); var sc = c.localScale; c.localScale = new Vector3(sc.x, length, sc.z); }
+            }
             if (columnNode != null && columnCfg.drives == a.id)
             {
                 // 刀座立柱（supportColumn）隨高度軸伸縮：位置上移一半、第一個子節點拉長
@@ -169,11 +185,15 @@ namespace MachineYard
             AfterMove?.Invoke();
         }
 
+        public void HoldWheel(string id) { HeldWheel = id; }
+        public void ReleaseWheel() { HeldWheel = null; }
+
         float pedal;
         void Update()
         {
             if (!Ready) return;
             double dt = Time.deltaTime;
+            StepSpringReturn(dt);
             Spindle.Step(SpindleRunning, Config.defaultRpm, dt, DirectionRequested);
             Rotate(Config.spindle.node, Config.spindle.axis, Spindle.SpindleAngle);
             if (Config.lever != null) Rotate(Config.lever.node, Config.lever.axis, Spindle.LeverAngle);
@@ -183,6 +203,23 @@ namespace MachineYard
                 float target = Spindle.BrakeTime > 0 ? 0.025f * Mathf.Min(1f, (float)Spindle.BrakeTime / 0.18f) : 0f;
                 if (!Mathf.Approximately(target, pedal)) { pedal = target; pedalNode.localPosition = pr.pos + ThreeCoords.Direction(0, -1, 0) * pedal; }
             }
+        }
+
+        void StepSpringReturn(double dt)
+        {
+            bool any = false;
+            foreach (var w in Config.wheels) if (w.springReturn != null && w.id != HeldWheel && Axes.Angles[w.id] != 0) { any = true; break; }
+            if (!any) return;
+            BeforeMove?.Invoke();
+            Axes.StepReturn(HeldWheel, dt);
+            foreach (var w in Config.wheels)
+            {
+                if (w.springReturn == null) continue;
+                var a = Array.Find(Config.axes, x => x.id == w.drives);
+                if (a != null) ApplyAxis(a);
+                Rotate(w.node, w.axis, Axes.Angles[w.id]);
+            }
+            AfterMove?.Invoke();
         }
 
         public void ResetMachine()

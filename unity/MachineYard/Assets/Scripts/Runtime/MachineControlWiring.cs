@@ -20,6 +20,9 @@ namespace MachineYard
         public float FeedMm = 0.1f;
         public static readonly float[] FeedChoices = { 0.01f, 0.1f, 1f };
         public LatheCuttingController cutting;
+        public HeadMachining head;   // 銑床／鑽床的槌頭工件（沒有就留空）
+        int CutCountNow => cutting != null ? cutting.CutCount : head != null ? head.CutCount : 0;
+        bool UnsafeNow => (cutting != null && cutting.Unsafe) || (head != null && head.Unsafe);
         readonly System.Collections.Generic.List<WheelGrab> grabs = new System.Collections.Generic.List<WheelGrab>();
         float buzz, cutRate, lastCutTime;
         int lastCutCount;
@@ -38,6 +41,15 @@ namespace MachineYard
                 var grab = node.gameObject.AddComponent<WheelGrab>();
                 grabs.Add(grab);
                 grab.axisLocalUnity = ThreeCoords.Direction(w.axis[0], w.axis[1], w.axis[2]).normalized;
+                if (w.angleRange != null || w.springReturn != null)
+                {
+                    // 鑽床進給手柄：照真實比例跟手轉（−115°～0°），握住時不回彈（wheel.grip），放開才回彈
+                    string leverId = w.id;
+                    grab.onGrabbed = () => machine.HoldWheel(leverId);
+                    grab.onReleased = () => machine.ReleaseWheel();
+                    grab.onTurn = delta => { var r = machine.TurnWheel(leverId, delta); if (r.AtLimit) Pulse(grab.Hand, 0.5f, 0.025f); };
+                    continue;
+                }
                 double visual = machine.Axes.Angles[w.id]; int limitDir = 0; string id = w.id;
                 grab.onGrabbed = () => { limitDir = 0; visual = machine.Axes.Angles[id]; };
                 grab.onReleased = () => limitDir = 0;
@@ -58,7 +70,8 @@ namespace MachineYard
                 };
             }
 
-            Both(machine.Config.lever?.node, forward: () => machine.ToggleSpindle(1), reverse: () => { if (machine.Config.lever.bidirectional) machine.ToggleSpindle(-1); });
+            if (machine.Config.toggle != null) Both(machine.Config.toggle.node, forward: () => machine.ToggleSpindle(1), reverse: () => machine.ToggleSpindle(-1));
+            Both(machine.Config.lever?.node, forward: () => machine.ToggleSpindle(1), reverse: () => { if (machine.Config.lever != null && machine.Config.lever.bidirectional) machine.ToggleSpindle(-1); });
             // JS：detent.step 的 direction = −(左鍵 +1)，所以 trigger → −1、grip → +1
             if (machine.GearAction != null) Both(machine.GearAction.node, () => machine.StepDetent(machine.GearAction, -1), () => machine.StepDetent(machine.GearAction, 1));
             if (machine.ModeAction != null) Both(machine.ModeAction.node, () => machine.StepDetent(machine.ModeAction, -1), () => machine.StepDetent(machine.ModeAction, 1));
@@ -69,8 +82,8 @@ namespace MachineYard
         // 切削回饋（cuttingFeedback）：切削中握著手輪的控制器持續輕震（強度隨切削量增加）；撞夾頭較強震動
         void Update()
         {
-            if (cutting == null || !machine.Ready) return;
-            int delta = cutting.CutCount - lastCutCount; lastCutCount = cutting.CutCount;
+            if ((cutting == null && head == null) || !machine.Ready) return;
+            int delta = CutCountNow - lastCutCount; lastCutCount = CutCountNow;
             cutRate = cutRate * Mathf.Exp(-Time.deltaTime * 6f) + delta;
             if ((buzz -= Time.deltaTime) > 0) return;
             if (machine.Spindle.Rpm > 0 && cutRate > 0.05f)
@@ -79,7 +92,7 @@ namespace MachineYard
                 float strength = Mathf.Min(0.6f, 0.12f + cutRate * 0.08f);
                 foreach (var g in grabs) if (g.IsGrabbed) Pulse(g.Hand, strength, 0.08f);
             }
-            if (cutting.Unsafe) { buzz = 0.2f; foreach (var g in grabs) if (g.IsGrabbed) Pulse(g.Hand, 0.9f, 0.14f); }
+            if (UnsafeNow) { buzz = 0.2f; foreach (var g in grabs) if (g.IsGrabbed) Pulse(g.Hand, 0.9f, 0.14f); }
         }
 
         void Both(string nodeName, Action forward, Action reverse)

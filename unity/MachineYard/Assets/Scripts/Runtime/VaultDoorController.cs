@@ -18,6 +18,8 @@ namespace MachineYard
         public Transform[] needles = new Transform[2]; // 0 = 工安、1 = 動畫
         public List<Transform> bolts = new List<Transform>();
         public bool IsOpening { get; private set; }
+        /// <summary>蒸汽特效（門栓收回、壓力錶滿格時噴）；沒指定就不噴。</summary>
+        public MachineEffects fx;
         float[] value = new float[2], target = new float[2];
         float hingeSign = 1f, needleSign = -1f, hintTime, shake; Quaternion wheel0;
         Vector3[] boltStart;
@@ -62,6 +64,7 @@ namespace MachineYard
         void Sync(bool initial)
         {
             var p = ProgressStore.Instance;
+            for (int k = 0; k < 2; k++) { float nt = k == 0 ? p.SafetyRatio : p.ClipsRatio; if (!initial && nt >= 1f && target[k] < 1f && needles[k] != null && fx != null) fx.Steam(needles[k].position, Vector3.up, 10); }
             target[0] = p.SafetyRatio; target[1] = p.ClipsRatio;
             if (initial) { value[0] = target[0]; value[1] = target[1]; }
             if (lamp != null) XrUtil.SetColor(lamp.GetComponent<Renderer>(), p.Unlocked ? new Color(0.22f, 1f, 0.42f) : new Color(1f, 0.23f, 0.14f));
@@ -78,7 +81,7 @@ namespace MachineYard
             {
                 if (wheelPivot != null) wheelPivot.Rotate(0, 0, -Time.deltaTime * Mathf.Min(1f, t / 0.6f) * 5f * Mathf.Rad2Deg, Space.Self);
                 if (t > 1.5f) PlaceBolts(Ease(Mathf.Min(1f, (t - 1.5f) / 0.6f)));
-                if (t > 1.5f && !bolted) { bolted = true; onBolts?.Invoke(); }
+                if (t > 1.5f && !bolted) { bolted = true; onBolts?.Invoke(); if (fx != null) foreach (var b in bolts) fx.Steam(b.position, leaf.forward, 6); }
                 if (t > 2.1f && hinge != null) hinge.localRotation = Quaternion.Euler(0, hingeSign * 100f * Ease(Mathf.Min(1f, (t - 2.1f) / 1.9f)), 0);
                 yield return null;
             }

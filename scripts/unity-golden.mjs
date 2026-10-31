@@ -6,7 +6,12 @@ import { normalizeConfig } from '../src/machines/config.js';
 import { createHandleState } from '../src/machining/WorkpieceState.js';
 import { cutRevolvedProfile, cutFacing, entersChuck } from '../src/machining/CuttingSimulation.js';
 import { LATHE_MACHINING } from '../src/machining/latheMachining.config.js';
-import { stepMachine, turnControlBy, setAxis, wheelRatio, selectorRpm } from '../src/machines/runtime.js';
+import { stepMachine, turnControlBy, setAxis, wheelRatio, selectorRpm, stepReturn } from '../src/machines/runtime.js';
+import { createHeadState } from '../src/machining/HeadWorkpieceState.js';
+import { cutHead } from '../src/machining/HeadCuttingSimulation.js';
+import { createDrillStock, createBlockStock, measureTop } from '../src/levels/challenges.js';
+import { TOOL_DEFINITIONS } from '../src/tools/tool.config.js';
+import { surfaceAt } from '../src/machining/HeadWorkpieceState.js';
 
 const raw = JSON.parse(fs.readFileSync('public/models/lathe_parts.json', 'utf8'));
 const config = normalizeConfig('lathe', raw);
@@ -102,6 +107,97 @@ const out = { config: { axes: config.axes.map(a => ({ id: a.id, range: a.range, 
   for (let i = 0; i < 10; i++) turn('tailstockHandwheel', -tick * 3);
   for (let i = 0; i < 150; i++) turn('carriageHandwheel', -tick);                 // 負向到底
   out.axes = { ratios: Object.fromEntries(config.wheels.map(w => [w.id, wheelRatio(m, w.id)])), steps };
+}
+
+// ---- 槌頭工件：銑削（面銑、立銑）、鑽孔（Ø8.5、Ø10）、攻牙、孔邊再銑
+{
+  const toolOf = id => { const d = TOOL_DEFINITIONS[id]; return { id, type: d.type, diameterMm: d.dimensions.radius * 2000, cuttingLengthMm: d.dimensions.cuttingLength * 1000, designation: d.designation, pilotDiameterMm: d.pilotDiameterMm }; };
+  const tools = ['head_face_mill', 'head_end_mill', 'head_drill_85', 'head_drill_10', 'head_tap_m10'].map(toolOf);
+  const P = (x, y, z) => ({ xMm: x, yMm: y, zMm: z });
+  const snapshot = s => ({ tops: [...s.surface.topMm], features: s.features.map(h => ({ ...h, thread: h.thread ? { ...h.thread } : null })), ops: s.operationHistory.length });
+  const scenarios = [];
+  const run = (name, makeState, steps) => {
+    let state = makeState();
+    const rec = [];
+    for (const st of steps) {
+      const tool = tools.find(t => t.id === st.tool);
+      const next = cutHead(state, st.from, st.to, tool, { running: st.running ?? true, rpm: st.rpm ?? 500, direction: st.direction ?? 1 });
+      rec.push({ ...st, changed: next !== state, state: next !== state ? snapshot(next) : null });
+      state = next;
+    }
+    scenarios.push({ name, scribes: (state.surfaceMarks || []).map(m => [m.xMm, m.yMm]), steps: rec, final: snapshot(state), measureTop: measureTop(state), surfaceUnder: [] });
+    return state;
+  };
+  // 面銑：刀從左側外面下到 z=18.5，沿 X 走過整個工件；再走第二條（Y 偏移）與回頭
+  const face = [{ tool: 'head_face_mill', from: P(-37, 10, 25), to: P(-37, 10, 18.5) }];
+  for (let x = -37; x <= 130; x += 4.1) face.push({ tool: 'head_face_mill', from: P(x, 10, 18.5), to: P(x + 4.1, 10, 18.5) });
+  face.push({ tool: 'head_face_mill', from: P(130, 10, 18.5), to: P(130, 10, 17.2) });
+  for (let x = 130; x >= -40; x -= 6.3) face.push({ tool: 'head_face_mill', from: P(x, 14, 17.2), to: P(x - 6.3, 14, 17.2) });
+  face.push({ tool: 'head_face_mill', from: P(40, 10, 17), to: P(40, 10, 5), running: false }); // 不轉不切
+  face.push({ tool: 'head_face_mill', from: P(40, 10, 17), to: P(40, 10, 5), rpm: 0 });
+  run('face', createBlockStock, face);
+  // 立銑：切溝（深 3 mm，沿 X），斜向，超過刀刃長度的深度不切
+  const slot = [{ tool: 'head_end_mill', from: P(-12, 10, 25), to: P(-12, 10, 17) }, { tool: 'head_end_mill', from: P(-12, 10, 17), to: P(-12, 10, 5) }];
+  for (let x = -12; x < 100; x += 1.7) slot.push({ tool: 'head_end_mill', from: P(x, 10, 17), to: P(x + 1.7, 10 + (x > 40 ? 3 : 0), 17) });
+  slot.push({ tool: 'head_end_mill', from: P(20, 3, 17), to: P(60, 17, 12) }); // 斜向切下
+  run('slot', createBlockStock, slot);
+  // 鑽床：孔 A（X=25）先 Ø8.5 底孔、再攻牙；孔 B（X=65）Ø10；中途嘗試各種不合法動作
+  const drill = [];
+  const dz = (x, y, z0, z1, tool, extra = {}) => { for (let i = 0; i <= 12; i++) drill.push({ tool, from: P(x, y, i ? z0 + (z1 - z0) * (i - 1) / 12 : z0), to: P(x, y, z0 + (z1 - z0) * i / 12), ...extra }); };
+  dz(25, 10, 25, 5, 'head_drill_85');
+  drill.push({ tool: 'head_drill_85', from: P(25, 10, 22), to: P(25.5, 10, 18) });      // 橫向拖曳：不能鑽
+  drill.push({ tool: 'head_drill_85', from: P(26, 10, 22), to: P(26, 10, 10) });          // 與孔 A 重疊（距離 1 < 8.5）：不能鑽
+  dz(25, 10, 25, 3, 'head_tap_m10');                                                      // 攻牙
+  dz(25, 10, 25, 15, 'head_tap_m10', { direction: -1 });                                  // 反轉：不能攻
+  dz(65, 10, 25, 8, 'head_drill_10');
+  dz(65, 10, 25, -5, 'head_drill_10');                                                    // 鑽穿
+  dz(2, 10, 25, 5, 'head_drill_10');                                                      // 孔邊緣：孔緣不受支撐（x=2, r=5）
+  dz(45, 10, 25, 5, 'head_tap_m10');                                                      // 沒有底孔：不能攻牙
+  drill.push({ tool: 'head_drill_10', from: P(45, 10, 10), to: P(45, 10, 5) });           // 實心料中瞬間下刀：不能鑽
+  drill.push({ tool: 'head_drill_10', from: P(55, 10, 18.5), to: P(55, 10, 17) });         // 下刀落差 1.5 mm（> 1）：不能鑽
+  drill.push({ tool: 'head_drill_10', from: P(55, 10, 18.5), to: P(55, 10, 17.8) });       // 落差 0.7 mm：可鑽（連續進給）
+  run('drill', createDrillStock, drill);
+  // 孔邊再銑：先鑽 Ø10 孔，面銑切掉 2 mm（孔入口降低、牙深縮短）
+  const mix = [];
+  mix.push({ tool: 'head_drill_85', from: P(45, 10, 25), to: P(45, 10, 12) });
+  mix.push({ tool: 'head_tap_m10', from: P(45, 10, 25), to: P(45, 10, 12) });
+  mix.push({ tool: 'head_face_mill', from: P(0, 10, 22), to: P(0, 10, 18) });
+  for (let x = 0; x < 80; x += 5) mix.push({ tool: 'head_face_mill', from: P(x, 10, 18), to: P(x + 5, 10, 18) });
+  mix.push({ tool: 'head_tap_m10', from: P(45, 10, 25), to: P(45, 10, 12) });
+  run('mix', createDrillStock, mix);
+  // 接觸與刀尖下方表面
+  const s = createBlockStock();
+  const probes = [];
+  for (const [x, y, z, d] of [[10, 10, 25, 8], [10, 10, 20, 8], [10, 10, 20.04, 58], [-20, 10, 20, 8], [45, 10, 19.9, 58], [88, 10, 20, 8], [-3, 10, 20, 8], [95, 20.5, 20, 8]]) probes.push({ x, y, z, d, top: surfaceAtMax(s, x, y, d) });
+  function surfaceAtMax(st, x, y, d) { // 與 HeadMachiningAdapter.surfaceUnder 相同
+    const { nx, ny, resolutionMm: res, topMm } = st.surface, reach = d / 2 + 0.05; let top = 0;
+    for (let iy = Math.max(0, Math.floor((y - reach) / res)); iy <= Math.min(ny - 1, Math.floor((y + reach) / res)); iy++)
+      for (let ix = Math.max(0, Math.floor((x - reach) / res)); ix <= Math.min(nx - 1, Math.floor((x + reach) / res)); ix++)
+        if (Math.hypot((ix + .5) * res - x, (iy + .5) * res - y) <= reach + res * .71) top = Math.max(top, topMm[iy * nx + ix]);
+    return top;
+  }
+  out.head = { scenarios, probes, surfaceAt: [[10, 10], [0, 0], [89.9, 19.9], [90, 5], [-1, 3]].map(([x, y]) => ({ x, y, v: surfaceAt(s, x, y) })), tools };
+}
+
+// ---- 鑽床：進給手柄彈簧回位（stepReturn）
+{
+  const drillRaw = JSON.parse(fs.readFileSync('public/models/drill_press_parts.json', 'utf8'));
+  const dcfg = normalizeConfig('drill', drillRaw);
+  const nodes = {}, initial = {}, angles = {}, offsets = {}, controls = {};
+  for (const a of dcfg.axes) { nodes[a.node] = new Object3D(); initial[a.node] = { position: new Vector3(), quaternion: new Quaternion() }; offsets[a.id] = 0; }
+  for (const w of dcfg.wheels) { nodes[w.node] = new Object3D(); initial[w.node] = { position: new Vector3(), quaternion: new Quaternion() }; controls[w.id] = { ...w, type: 'wheel' }; angles[w.id] = 0; }
+  const m = { config: { ...dcfg, additions: [] }, controls, initial, pivots: nodes, lookup: nodes, angles, offsets, rpm: 0, scene: { updateWorldMatrix() {} } };
+  const steps = [];
+  const w = dcfg.wheels[0];
+  const turn = d => { const r = turnControlBy(m, w.id, d, false); steps.push({ op: 'turn', delta: d, result: r, offsets: { ...m.offsets }, angles: { ...m.angles } }); };
+  const ret = (held, dt) => { const r = stepReturn(m, held, dt); steps.push({ op: 'return', held, dt, returning: r, offsets: { ...m.offsets }, angles: { ...m.angles } }); };
+  for (let i = 0; i < 8; i++) turn(-0.2);
+  for (let i = 0; i < 5; i++) ret(w.id, 1 / 72);            // 握住：不回彈
+  for (let i = 0; i < 60; i++) ret(null, 1 / 72);            // 放開：回彈
+  for (let i = 0; i < 30; i++) turn(-0.15);                  // 壓到底（行程限制）
+  for (let i = 0; i < 10; i++) turn(0.1);
+  for (let i = 0; i < 80; i++) ret(null, 1 / 72);
+  out.springDrill = { wheel: { id: w.id, drives: w.drives, ratio: w.ratio, angleRange: w.angleRange, springReturn: w.springReturn, needsCalibration: !!w.needsCalibration }, axes: dcfg.axes.map(a => ({ id: a.id, range: a.range, enabled: a.enabled })), lesson: dcfg.lesson, steps };
 }
 
 fs.writeFileSync('unity/MachineYard.CoreTests/golden.json', JSON.stringify(out));

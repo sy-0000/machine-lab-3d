@@ -17,7 +17,7 @@ namespace MachineYard.CoreTests
         static int Main()
         {
             var golden = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "golden.json"))).RootElement;
-            Cutting_(golden); Facing(golden); Chuck(golden); Spindle(golden); Axes(golden);
+            Cutting_(golden); Facing(golden); Chuck(golden); Spindle(golden); Axes(golden); Head(golden); SpringReturn(golden); Synth();
             Console.WriteLine($"{checks} checks, {failures} failures");
             return failures == 0 ? 0 : 1;
         }
@@ -144,6 +144,141 @@ namespace MachineYard.CoreTests
             }
             Check(limits > 10, "情境有碰到行程上下限");
             Console.WriteLine($"axes: {i} 步（{limits} 次碰到行程限制）");
+        }
+
+        static HeadPoint Pt(JsonElement e) => new HeadPoint(e.GetProperty("xMm").GetDouble(), e.GetProperty("yMm").GetDouble(), e.GetProperty("zMm").GetDouble());
+
+        static void CompareHead(HeadState s, JsonElement snap, string tag)
+        {
+            var tops = Arr(snap.GetProperty("tops"));
+            Check(tops.Length == s.TopMm.Length, tag + " 格數");
+            for (int i = 0; i < Math.Min(tops.Length, s.TopMm.Length); i++) Near(s.TopMm[i], tops[i], 1e-9, $"{tag} top[{i}]");
+            var fs = snap.GetProperty("features").EnumerateArray().ToArray();
+            Check(fs.Length == s.Features.Count, $"{tag} 孔數 C#={s.Features.Count} JS={fs.Length}");
+            for (int k = 0; k < Math.Min(fs.Length, s.Features.Count); k++)
+            {
+                var j = fs[k]; var h = s.Features[k];
+                Check(h.Id == j.GetProperty("id").GetString(), $"{tag} hole[{k}] id {h.Id}");
+                Near(h.XMm, j.GetProperty("xMm").GetDouble(), 1e-9, $"{tag} hole[{k}] x"); Near(h.YMm, j.GetProperty("yMm").GetDouble(), 1e-9, $"{tag} hole[{k}] y");
+                Near(h.DiameterMm, j.GetProperty("diameterMm").GetDouble(), 1e-9, $"{tag} hole[{k}] d");
+                Near(h.EntryZMm, j.GetProperty("entryZMm").GetDouble(), 1e-9, $"{tag} hole[{k}] entry"); Near(h.DepthMm, j.GetProperty("depthMm").GetDouble(), 1e-9, $"{tag} hole[{k}] depth");
+                Check(h.Through == j.GetProperty("through").GetBoolean(), $"{tag} hole[{k}] through");
+                var th = j.GetProperty("thread");
+                if (th.ValueKind == JsonValueKind.Null) Check(h.Thread == null, $"{tag} hole[{k}] 不應有牙");
+                else
+                {
+                    Check(h.Thread != null, $"{tag} hole[{k}] 應有牙");
+                    if (h.Thread != null) { Near(h.Thread.TappedDepthMm, th.GetProperty("tappedDepthMm").GetDouble(), 1e-9, $"{tag} hole[{k}] 牙深"); Check(h.Thread.State == th.GetProperty("state").GetString(), $"{tag} hole[{k}] 牙狀態"); }
+                }
+            }
+            Check(s.OperationCount == snap.GetProperty("ops").GetInt32(), $"{tag} 操作數 C#={s.OperationCount} JS={snap.GetProperty("ops").GetInt32()}");
+        }
+
+        static void Head(JsonElement g)
+        {
+            var head = g.GetProperty("head");
+            var tools = head.GetProperty("tools").EnumerateArray().ToDictionary(t => t.GetProperty("id").GetString(), t => new HeadTool
+            {
+                Id = t.GetProperty("id").GetString(), DiameterMm = t.GetProperty("diameterMm").GetDouble(), CuttingLengthMm = t.GetProperty("cuttingLengthMm").GetDouble(),
+                Type = t.GetProperty("type").GetString() == "milling" ? HeadToolType.Milling : t.GetProperty("type").GetString() == "drilling" ? HeadToolType.Drilling : HeadToolType.Tapping,
+                Designation = t.TryGetProperty("designation", out var des) && des.ValueKind == JsonValueKind.String ? des.GetString() : null,
+                PilotDiameterMm = t.TryGetProperty("pilotDiameterMm", out var pil) && pil.ValueKind == JsonValueKind.Number ? pil.GetDouble() : 0,
+            });
+            int total = 0, changedTotal = 0;
+            foreach (var sc in head.GetProperty("scenarios").EnumerateArray())
+            {
+                string name = sc.GetProperty("name").GetString();
+                var s = name == "drill" || name == "mix" ? HeadState.CreateDrillStock() : HeadState.CreateBlock();
+                int n = 0;
+                foreach (var st in sc.GetProperty("steps").EnumerateArray())
+                {
+                    bool running = !st.TryGetProperty("running", out var rn) || rn.GetBoolean();
+                    double rpm = st.TryGetProperty("rpm", out var rp) ? rp.GetDouble() : 500;
+                    int dir = st.TryGetProperty("direction", out var dr) ? dr.GetInt32() : 1;
+                    bool changed = HeadCutting.Cut(s, Pt(st.GetProperty("from")), Pt(st.GetProperty("to")), tools[st.GetProperty("tool").GetString()], running, rpm, dir);
+                    Check(changed == st.GetProperty("changed").GetBoolean(), $"head/{name}[{n}] changed C#={changed}");
+                    if (changed) { changedTotal++; CompareHead(s, st.GetProperty("state"), $"head/{name}[{n}]"); }
+                    n++; total++;
+                }
+                CompareHead(s, sc.GetProperty("final"), $"head/{name} 最終");
+                var mt = s.MeasureTop(); var jm = sc.GetProperty("measureTop");
+                Near(mt.max, jm.GetProperty("max").GetDouble(), 1e-9, $"head/{name} top max"); Near(mt.min, jm.GetProperty("min").GetDouble(), 1e-9, $"head/{name} top min");
+                Check(mt.cut == jm.GetProperty("cut").GetBoolean(), $"head/{name} cut");
+            }
+            Check(changedTotal > 100, "槌頭情境有足夠的實際切削");
+            var block = HeadState.CreateBlock();
+            foreach (var p in head.GetProperty("probes").EnumerateArray())
+            {
+                var tip = new HeadPoint(p.GetProperty("x").GetDouble(), p.GetProperty("y").GetDouble(), p.GetProperty("z").GetDouble());
+                Near(block.SurfaceUnder(tip, p.GetProperty("d").GetDouble()), p.GetProperty("top").GetDouble(), 1e-9, $"surfaceUnder {tip.XMm},{tip.YMm}");
+            }
+            foreach (var p in head.GetProperty("surfaceAt").EnumerateArray()) Near(block.SurfaceAt(p.GetProperty("x").GetDouble(), p.GetProperty("y").GetDouble()), p.GetProperty("v").GetDouble(), 1e-12, "surfaceAt");
+            Console.WriteLine($"head: {total} 步（{changedTotal} 步有改動），含面銑／立銑／鑽孔／攻牙／孔邊再銑");
+        }
+
+        static void SpringReturn(JsonElement g)
+        {
+            var sd = g.GetProperty("springDrill");
+            var am = new AxisModel { TeachingTurnsForFullTravel = sd.GetProperty("lesson").GetProperty("teachingTurnsForFullTravel").GetDouble() };
+            foreach (var a in sd.GetProperty("axes").EnumerateArray()) { var r = Arr(a.GetProperty("range")); am.AddAxis(new AxisDef { Id = a.GetProperty("id").GetString(), RangeLo = r[0], RangeHi = r[1], Enabled = a.GetProperty("enabled").GetBoolean() }); }
+            var w = sd.GetProperty("wheel"); var ar = Arr(w.GetProperty("angleRange"));
+            am.AddWheel(new WheelDef { Id = w.GetProperty("id").GetString(), Drives = w.GetProperty("drives").GetString(), Ratio = w.GetProperty("ratio").GetDouble(), AngleLo = ar[0], AngleHi = ar[1], SpringReturnSpeed = w.GetProperty("springReturn").GetProperty("speed").GetDouble() });
+            int i = 0, returns = 0;
+            foreach (var st in sd.GetProperty("steps").EnumerateArray())
+            {
+                if (st.GetProperty("op").GetString() == "turn")
+                {
+                    var res = am.TurnBy(w.GetProperty("id").GetString(), st.GetProperty("delta").GetDouble());
+                    var jr = st.GetProperty("result");
+                    if (jr.ValueKind != JsonValueKind.Null) Check(res.Ok && res.AtLimit == jr.GetProperty("atLimit").GetBoolean(), $"spring[{i}] atLimit");
+                }
+                else
+                {
+                    var held = st.GetProperty("held"); double dt = st.GetProperty("dt").GetDouble();
+                    bool ret = am.StepReturn(held.ValueKind == JsonValueKind.String ? held.GetString() : null, dt);
+                    Check(ret == st.GetProperty("returning").GetBoolean(), $"spring[{i}] returning"); if (ret) returns++;
+                }
+                foreach (var p in st.GetProperty("offsets").EnumerateObject()) Near(am.Offsets[p.Name], p.Value.GetDouble(), 1e-12, $"spring[{i}] offset {p.Name}");
+                foreach (var p in st.GetProperty("angles").EnumerateObject()) Near(am.Angles[p.Name], p.Value.GetDouble(), 1e-12, $"spring[{i}] angle {p.Name}");
+                i++;
+            }
+            Check(returns > 30, "彈簧回位情境有實際回彈");
+            Console.WriteLine($"springReturn: {i} 步（{returns} 步回彈中）");
+        }
+
+        static void Synth()
+        {
+            const double sr = 48000;
+            var buf = new float[4800];
+            // 停機：靜音
+            var s = new MachineSynth("lathe", sr); s.SetState(0);
+            float quiet = 0; for (int i = 0; i < 10; i++) quiet = Math.Max(quiet, s.Render(buf, 1));
+            Check(quiet < 1e-6f, $"synth 停機應靜音 ({quiet})");
+            // 轉動：有聲音、有上限、不是 NaN
+            s.SetState(1500); float peak = 0; bool nan = false;
+            for (int i = 0; i < 40; i++) { peak = Math.Max(peak, s.Render(buf, 1)); foreach (var v in buf) nan |= float.IsNaN(v) || float.IsInfinity(v); }
+            Check(peak > 0.01f && peak < 1f, $"synth 轉動音量 {peak}"); Check(!nan, "synth 無 NaN");
+            // 嗡聲主頻 100 Hz：過零率約 200/s ±（含高頻泛音，所以只檢查有明顯週期成分：自相關在 480 取樣點有峰）
+            s = new MachineSynth("lathe", sr); s.SetState(1000); for (int i = 0; i < 30; i++) s.Render(buf, 1);
+            var big = new float[48000]; s.Render(big, 1);
+            double Auto(int lag) { double a = 0; for (int i = 0; i + lag < big.Length; i++) a += big[i] * big[i + lag]; return a; }
+            Check(Auto(480) > Auto(240), "synth 100 Hz 週期性（自相關）");
+            // 切削：事件讓聲音變大，之後衰減
+            s = new MachineSynth("milling", sr); s.SetState(800); for (int i = 0; i < 30; i++) s.Render(buf, 1);
+            float idle = s.Render(buf, 1); s.OnCut(); float during = s.Render(buf, 1);
+            for (int i = 0; i < 60; i++) s.Render(buf, 1);
+            float after = s.Render(buf, 1);
+            Check(during > idle * 1.5f, $"synth 切削音量上升 idle={idle} during={during}"); Check(after < during * 0.6f, $"synth 切削音量衰減 after={after}");
+            // 喀聲節流：0.001 mm 的微動 0.01 s 內只喀一次
+            s = new MachineSynth("lathe", sr); s.SetState(0); s.Render(buf, 1);
+            s.OnAxisMoved(0.001, 1.000); s.OnAxisMoved(0.001, 1.010); s.OnAxisMoved(0.3, 1.020); float c1 = s.Render(buf, 1);
+            Check(c1 > 0.001f, "synth 喀聲有聲音");
+            // 警告
+            s = new MachineSynth("lathe", sr); s.SetState(0); s.Render(buf, 1); s.Warn(); float w = s.Render(buf, 1);
+            Check(w > 0.05f, $"synth 警告音量 {w}");
+            // 靜音
+            s.SetMuted(true); s.Warn(); Check(s.Render(buf, 1) < 1e-9f, "synth 靜音");
+            Console.WriteLine("synth: 停機靜音、轉速音、切削包絡、喀聲節流、警告音、靜音");
         }
     }
 }

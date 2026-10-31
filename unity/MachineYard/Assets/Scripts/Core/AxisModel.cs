@@ -14,6 +14,7 @@ namespace MachineYard.Core
         public double? Ratio;                       // 每弧度的行程（公尺）；null 表示用教學比例
         public double? AngleLo, AngleHi;            // 有值＝進給手柄（鑽床）
         public bool NeedsCalibration;
+        public double? SpringReturnSpeed;           // 有值＝放手後以此速度（弧度／秒）回彈到 0（鑽床進給手柄）
     }
 
     public struct TurnResult
@@ -84,6 +85,23 @@ namespace MachineYard.Core
             }
             Angles[key] = next;
             return new TurnResult { Ok = true, AtLimit = Math.Abs(next - requested) > 1e-9, AxisId = a.Id, Offset = Offsets[a.Id], Angle = next };
+        }
+
+        /// <summary>
+        /// 彈簧回位（對應 runtime.js stepReturn）：沒被握住、角度不為 0 的彈簧手柄每格向 0 回彈。heldKey 是目前被握住的手輪。
+        /// 回傳是否仍在回彈中。
+        /// </summary>
+        public bool StepReturn(string heldKey, double dt)
+        {
+            bool returning = false;
+            foreach (var w in Wheels.Values)
+            {
+                if (!w.SpringReturnSpeed.HasValue || w.Id == heldKey || Angles[w.Id] == 0 || !Axes.TryGetValue(w.Drives, out var a)) continue;
+                double current = Angles[w.Id], next = current - Math.Sign(current) * Math.Min(Math.Abs(current), w.SpringReturnSpeed.Value * dt);
+                Angles[w.Id] = next; SetAxis(a.Id, next * RatioOf(w, a));
+                returning |= next != 0;
+            }
+            return returning;
         }
 
         /// <summary>直接設定軸位置，同步帶動驅動它的手輪角度（setAxisAndWheel）。</summary>
