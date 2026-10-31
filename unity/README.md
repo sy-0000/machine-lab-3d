@@ -86,3 +86,51 @@
 - **佔位工作室**是遠處的一個圓盤地板＋機台／工作桌方塊＋4 個圓盤，座標與玄關分開（`WorkshopOffsetThree`）；真正的工作室在階段 4。
 - 門與指針的旋轉方向都在執行時實測決定，不靠猜測；若仍反向，看 `XrUtil.SwingSign`。
 - TextMeshPro 3D 的字級單位不直觀，文字都用自動縮放塞進矩形；若字太小/太大，調整各控制器裡的矩形大小。
+
+
+---
+
+# 階段 4：工作室靜態場景 + 車床互動（最關鍵）
+
+> **驗證程度（請先讀）**
+> - ✅ `Assets/Scripts/Core/`（切削、車端面、夾頭碰撞、主軸加速與拉桿、軸行程與手輪）是純 C#，已在這裡用 .NET 編譯，並與網站 JS 產生的標準答案逐項比對：**79,022 項、0 失敗**；刻意改壞兩處邏輯（夾持區邊界、端面長度）都會被抓到。執行：`npm run test:unity-core`（需要 dotnet 8）。
+> - ✅ 左右手系的旋轉換算（鏡像後角度變號）用 three.js 數值驗證，誤差 ~1e-16（NegateX、NegateZ 兩種模式）。
+> - ⚠️ 其餘 Runtime／Editor 腳本只用**手寫的 Unity API 替身**做過型別檢查（能抓拼字與型別，抓不到 Unity／XRI 真實 API 與我記憶不符之處），**沒有在 Unity 執行過**。手感、視覺、fps 全部要你在 Quest 上驗。
+
+## 新增內容
+| 檔案 | 作用（對應網站） |
+|---|---|
+| `Core/*.cs` | 純數學：`Cutting`（cutRevolvedProfile／cutFacing／entersChuck）、`SpindleModel`（stepMachine）、`AxisModel`（setAxis／turnControlBy／wheelRatio）、`RevolvedState`（槌柄工件：半徑 10、長 300、0.5 mm 一格、夾持 0–40 mm） |
+| `Runtime/LatheMachine.cs` | 用 Core 驅動匯入模型的節點：5 條軸沿局部軸向平移、手輪／主軸／拉桿／段位旋鈕繞軸旋轉、刀座每 10° 分度、立柱隨高度伸縮、腳踏煞車 |
+| `Runtime/LatheCuttingController.cs` | 量刀尖在「不旋轉的工件座標」的位置（`MachineV1Adapter.#cuttingSample`），每次軸／手輪動作前後取樣並切削；撞夾頭判斷；`AlignCuttingTip`（掛上工件時把刀尖高度對準中心） |
+| `Runtime/LatheWorkpiece.cs` | 可切削工件的旋轉網格（`RevolvedWorkpiece.profileGeometry`），被切削後重建；掛在夾頭的 `WorkpieceMount` 隨主軸轉 |
+| `Runtime/WheelGrab.cs` | 抓住手輪畫圈（`wheelGrab.js`）：手在 0.22 m 內用手的位置，否則用射線打轉動平面；每 10° 一格 |
+| `Runtime/MachineControlWiring.cs` | `vrMachineControls.js`：手輪＝按住 grip 畫圈，每格進給「每格進給量」（0.01/0.1/1 mm），碰行程限制較強震動；拉桿／段位／刀座／煞車＝trigger 正向、grip 反向；切削時握手輪的手持續輕震 |
+| `Runtime/MachinePanel.cs` | 左手 **X** 叫出並釘在原地：轉速、DRO、刀尖與工件直徑、接觸；按鈕：啟動／反轉／停止、進給量、裝上工件、車外徑⇄車端面、X/Z 歸零、重設機台 |
+| `Editor/WorkshopBuilder.cs` | 匯入的工作室＋工具箱＋車床建成場景、瞬移圓盤、光源（讀 manifest）、停用小於 5 cm 的裝飾零件 |
+| `MachineYard.CoreTests/`（在 unity/ 下） | dotnet 測試專案：編譯 Core 並比對 `golden.json` |
+
+## 步驟（接在階段 3 之後）
+1. 重新匯出（修正了隱藏零件與新增 `machine_lathe_runtime.json`）：照 `docs/testing-guide.md` 第 2 節再跑一次 Shift+A。
+2. 選單 **2. Import glb exports (lobby)**（若匯出有更新）→ **2b. Import glb exports (workshop + lathe)**（約 60 MB，匯入要等幾分鐘）。
+3. 選單 **4. Build Lobby + Workshop Scene (stage 3-4)**。Console 會印出停用的小零件數與光源數。
+4. Build And Run。流程：門外 → 玄關 → 解鎖金庫門（或左手 Y 選單 [DEV] 直接解鎖）→ 進入工作室（工作桌前）→ 瞬移圓盤到「機台正面」。
+
+## 車床操作（實機驗收，完成定義見 `docs/unity-migration-plan.md`）
+- [ ] 左手 **X** 叫出面板 →「裝上工件」→ 夾頭上出現銀色槌柄（半徑 10 mm、長 300 mm）
+- [ ] 拉動啟動拉桿（射線指著按 trigger）→ 拉桿動、主軸加速到 1000 rpm（預設檔位）、夾頭與工件旋轉；再按 trigger 停止；grip＝反轉
+- [ ] 轉左側段位旋鈕（trigger／grip）→ 轉速在 250/500/750/1000（×1 或 ×2）之間變
+- [ ] 抓住橫向手輪（grip，畫圈）：每轉過 10° 刀座橫向進給 0.1 mm（面板可切 0.01/1）；DRO 的 X 直徑跟著變；碰到行程限制時強震動
+- [ ] 主軸轉動中，用縱向手輪把刀移到工件上、橫向進刀 → 工件被車細；面板「工件此處直徑」變小；握手輪的手持續輕震
+- [ ] DRO 數值與桌機版一致（同樣的手輪格數 → 同樣的 X/Z mm）
+- [ ] 把刀撞向夾頭 → 面板顯示「危險」、不再切削、較強震動
+- [ ] 腳踏煞車：主軸停止、踏板下沉
+- [ ] 工作室靜止環顧 **≥ 72 fps**（WebXR 為 20–30 fps）；車床操作中（切削）**≥ 72 fps**
+
+## 重要的風險與取捨
+- **三角形預算**：工作室靜態 555,304、車床靜態 85,272 + 互動 306,815、工具箱 ~98,000，合計約 **105 萬**。Quest 3 在 72 fps 通常撐不住這個量（雙眼）。已預設停用 5 cm 以下的小零件（約省十餘萬），但很可能仍需要：LOD／簡化網格、遮擋剔除（Occlusion Culling 烘焙）、把工作室遠處擺設換成低面數。**階段 4 的主要工作其實是用實機 fps 驅動這些取捨**——請把 fps 數字與 OVR Metrics 的 draw call／三角形回報給我。
+- **車床互動節點 307k 三角形偏重**：會動的整組溜板／刀架。需要時可在 Unity 用 mesh 簡化（Mesh Simplifier）處理，或請我把匯出分得更細（例如把大溜板的鑄件拆成靜態）。
+- **光源強度**是目測初值（`WorkshopBuilder.PointScale/SunScale`）；沒有烘焙，即時光源數量多會吃 fps。
+- **尚未做**：切屑、接觸環標記、鑽銑床、工具箱拿起展示流程、特效、音訊（階段 5）；工件存檔實際寫入（`SaveSlots` 已備好，等車床工件狀態序列化）。
+- **工件取下／重新裝夾、調頭**不在本階段（網站規劃的第 10 階段）。
+- 手輪抓握的角度方向、拉桿方向等「手性」相關行為，若實機方向相反：先試 `ThreeCoords.Mode`；個別旋轉符號集中在 `ThreeCoords.AxisAngle`。

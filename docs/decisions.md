@@ -80,3 +80,28 @@
 
 ## D17 簡易選單只是測試用
 - 選擇：左手 Y 的簡易選單（回門外／回玄關／存檔狀態／DEV 解鎖重置）；翻牌板風格選單留到階段 5。
+
+## D18 匯出工具原本把「隱藏節點」也匯出了（我自己的錯，已修）
+- 問題：移植車床時發現，網站用 `visible=false` 隱藏舊零件（lathe_parts.json 的 hideNodes），glTF 沒有顯示旗標，匯出後它們在 Unity 會看得見。
+- 選擇：匯出時略過 `visible === false` 的節點並記入 manifest。車床靜態 196,254 → 85,272 三角形。所有匯出重跑，`docs/export-report.md` 以新數字為準。
+- 回復：移除 `skipReason` 開頭的 visible 判斷。
+
+## D19 把純數學拆成 Core，並在這裡真的編譯、比對
+- 問題：階段 4 的風險集中在車床數學（切削、行程、主軸），但 Unity 無法在雲端執行。
+- 選擇：數學放 `Assets/Scripts/Core`（無 UnityEngine 依賴，asmdef `noEngineReferences`），用 dotnet 編譯，並用網站 JS 產生的 `golden.json` 比對（79k 項，且做過突變測試確認測試有鑑別力）。其餘腳本用手寫 Unity API 替身做型別檢查（替身不納入 repo）。
+- 回復：Core 以外的程式與它無耦合；刪 `unity/MachineYard.CoreTests` 與 `scripts/unity-golden.mjs` 即可。
+
+## D20 車刀與工件
+- 車刀（TurningTool 與刀片尖端 `cuttingTipLocal`）本來就在匯出的機台 glb 裡；工件是執行期程式產生的，所以 Unity 也在執行期用 Core 的狀態建網格（掛在 runtime.json 的 WorkpieceMount 設定上）。`alignCuttingTip`（掛工件時把刀尖高度對準中心）照網站移植。
+- 工件預設是網站的「槌柄」（半徑 10、長 300 mm）；其他工件形狀（銑床、鑽床的高度場）在階段 5。
+
+## D21 機台面板簡化
+- 選擇：左手 X 叫出、釘在原地的簡易面板，而非翻牌板風格的「機台」分頁（那是階段 5 的 3D UI 重做）。功能涵蓋網站「機台」頁的車床項目。
+
+## D22 三角形預算與小零件
+- 問題：工作室＋車床＋工具箱約 105 萬三角形，Quest 3 72 fps 很可能撐不住。
+- 選擇：不在匯出端先簡化（保留完整資料），Unity 端預設停用 5 cm 以下裝飾零件（可調），其餘由實機 fps 決定要簡化什麼。
+- 回復：`WorkshopBuilder.TinyDetailMeters = 0` 即不停用。
+
+## D23 光源換算
+- 選擇：three.js 的光強度乘以 0.25（點光）／0.5（日光）作為 Unity 初值，無烘焙；實機調整。

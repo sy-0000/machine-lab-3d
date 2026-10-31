@@ -25,3 +25,10 @@
 - [x] ProgressStore／SaveSlots／淡入淡出／站位／搖桿走動／瞬移／金庫門／告示板／放映幕／LobbyFlow／簡易選單／LobbySceneBuilder
 - [x] unity/README.md 階段 3、testing-guide 第 8 節、decisions D14–D17
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）
+
+# 階段 4（車床互動）
+- [x] Core 純數學 + dotnet 測試（79,022 項比對 JS 標準答案、突變測試）
+- [x] 匯出工具修正：略過隱藏節點、userData 巢狀、machine_*_runtime.json
+- [x] LatheMachine／切削／工件網格／手輪抓握／面板／WorkshopBuilder（型別檢查通過，未在 Unity 執行）
+- [ ] 完整重新匯出與 export-report 更新（背景執行中）
+- [ ] Unity 編譯與 Quest 實機驗收（需使用者）

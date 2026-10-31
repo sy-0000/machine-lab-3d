@@ -84,14 +84,14 @@ namespace MachineYard
             XrUtil.MakeClickable(go, a, 0.01f);
         }
 
-        static GameObject AddBox(Transform parent, string name, Vector3 localPos, Vector2 size, Color c)
+        internal static GameObject AddBox(Transform parent, string name, Vector3 localPos, Vector2 size, Color c)
         {
             var q = XrUtil.CreateQuad(name, parent, c);
             q.transform.localPosition = localPos; q.transform.localScale = new Vector3(size.x, size.y, 1);
             return q;
         }
 
-        static TextMeshPro AddLabel(Transform parent, string text, Vector3 localPos, float size, Color c, bool counterScale = false, Vector2? rectSize = null)
+        internal static TextMeshPro AddLabel(Transform parent, string text, Vector3 localPos, float size, Color c, bool counterScale = false, Vector2? rectSize = null)
         {
             var go = new GameObject("Label");
             go.transform.SetParent(parent, false);

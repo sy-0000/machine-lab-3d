@@ -19,7 +19,7 @@ namespace MachineYard.Editor
         // 玄關的兩盞吊燈（vestibule.js createLamps：PointLight 0xffc27a、強度 7、距離 9，z = 12.1 / 14.55，高度約 天花板 − 1.05）
         static readonly float[] LampZ = { 12.1f, 14.55f };
 
-        [MenuItem("Machine Yard/4. Build Lobby Scene (stage 3)")]
+        [MenuItem("Machine Yard/4. Build Lobby + Workshop Scene (stage 3-4)")]
         public static void Build()
         {
             var ext = Load("exterior_static.glb"); var extI = Load("exterior_interactive.glb");
@@ -47,12 +47,14 @@ namespace MachineYard.Editor
                 l.transform.SetParent(root.transform);
             }
 
-            // ---- 佔位工作室（真正的工作室在階段 4 以後；放在遠處避免與玄關座標重疊）
-            BuildWorkshopPlaceholder(root.transform);
-
-            // ---- XR rig 與全域元件
+            // ---- XR rig（先建，工作室的面板需要相機）
             var rigGo = ExteriorSceneBuilder.CreateRig();
             var cam = rigGo.GetComponentInChildren<Camera>();
+
+            // ---- 工作室：檔案齊全就建真的（階段 4：房間＋車床），否則用佔位工作室。放在遠處避免與玄關座標重疊
+            if (WorkshopBuilder.HasAssets()) WorkshopBuilder.Build(root.transform, cam);
+            else { Debug.LogWarning("[Machine Yard] 沒有 workshop／車床的 glb，使用佔位工作室。要真的工作室請先執行「2b. Import glb exports (workshop + lathe)」。"); BuildWorkshopPlaceholder(root.transform); }
+
             DisableStarterLocomotion(rigGo);
             ExteriorSceneBuilder.AddFpsHud(cam.transform);
             var fade = cam.gameObject.AddComponent<ScreenFade>();

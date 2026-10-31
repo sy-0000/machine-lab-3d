@@ -235,3 +235,30 @@ npm test
 4. 回報：①玄關 fps（靜止、環顧）；②門與指針方向是否正確；③中文是否正常；④搖桿走動手感、有沒有穿牆；⑤瞬移拋物線能不能指到圓盤；⑥重啟後進度是否保留。
 
 常見問題：中文方塊 → 沒建 `MachineYardFont`；移動重複或抖動 → Starter Assets 的 Move/Turn provider 沒被停用（重跑選單 4）；搖桿沒反應 → Project Settings ▸ Player ▸ Active Input Handling 要含 Input System（Both 或 Input System Package）。
+
+
+---
+
+## 9. 階段 4（工作室＋車床互動）測試 — 與前面一起測
+
+> 完整說明與驗收清單在 `unity/README.md` 的「階段 4」。以下是最短路徑。
+
+### 9-1 先跑一個不需要 Unity 的檢查（約 1 分鐘）
+需要 dotnet 8（`dotnet --version`）：
+
+```bash
+npm run test:unity-core
+```
+
+**預期結果**：最後一行 `79022 checks, 0 failures`（數字可能因標準答案更新而略有不同，但失敗必須是 0）。這是車床切削、主軸、手輪行程的數學，與網站 JS 逐項比對。
+
+### 9-2 重新匯出（修正了隱藏零件）
+照第 2 節再跑一次 `Shift+A`（`?area=lobby&nobatch#/world`）。**預期結果**：`exports/` 多了 `machine_lathe_runtime.json`；`machine_lathe_static.glb` 的三角形比上次少（約 8.5 萬，原本 19.6 萬含被隱藏的舊零件）。
+
+### 9-3 Unity
+1. 選單 `2. Import glb exports (lobby)`（若有更新）、`2b. Import glb exports (workshop + lathe)`。
+2. 選單 `4. Build Lobby + Workshop Scene (stage 3-4)`。**預期結果**：Console 出現「工作室與車床已建立」，以及停用小零件數、光源數。
+3. Build And Run 到 Quest 3，照 `unity/README.md` 階段 4 的清單逐項操作。
+4. 回報：①工作室靜止 fps、車床操作中 fps（OVR Metrics 的 draw call／三角形也貼上）；②拉桿、手輪、段位旋鈕的方向與手感是否正確；③工件被車削的樣子；④DRO 數值是否與桌機一致；⑤任何粉紅材質或穿幫。
+
+常見問題：fps 很低 → 預期內，貼數字給我決定要簡化什麼；手輪抓不到 → 射線要指到手輪再按 grip；面板叫不出來 → 左手 **X**（不是 Y，Y 是階段 3 的簡易選單）。

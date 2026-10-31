@@ -35,12 +35,22 @@ const isShader = m => !!(m && (m.isShaderMaterial || m.isRawShaderMaterial));
 const mats = o => (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []);
 const nameOf = o => o.name || `<${o.type}>`;
 
+const isPrim = v => v == null || ['string', 'number', 'boolean'].includes(typeof v);
+function safeValue(v, depth) {
+  if (isPrim(v)) return v;
+  if (depth > 4) return undefined;
+  if (Array.isArray(v)) { const a = v.map(x => safeValue(x, depth + 1)); return a.every(x => x !== undefined) ? a : undefined; }
+  if (Object.getPrototypeOf(v) === Object.prototype) {
+    const o = {};
+    for (const [k, x] of Object.entries(v)) { const y = safeValue(x, depth + 1); if (y !== undefined) o[k] = y; }
+    return o;
+  }
+  return undefined; // Object3D、Vector3 等不可序列化的東西丟掉
+}
+/** userData 只留可 JSON 化的資料（含巢狀物件，例如刀片的 cuttingEdge），其餘丟掉 */
 function safeUserData(ud) {
   const out = {};
-  for (const [k, v] of Object.entries(ud || {})) {
-    if (v == null || ['string', 'number', 'boolean'].includes(typeof v)) out[k] = v;
-    else if (Array.isArray(v) && v.every(x => ['string', 'number', 'boolean'].includes(typeof x))) out[k] = v;
-  }
+  for (const [k, v] of Object.entries(ud || {})) { const y = safeValue(v, 0); if (y !== undefined) out[k] = y; }
   return out;
 }
 
@@ -84,6 +94,7 @@ function shell(node, job, asGroup = false) {
 
 /** 判斷這個節點本身要不要略過（不含子節點）；回傳理由或 null */
 function skipReason(node, root) {
+  if (node.visible === false) return '隱藏節點（visible=false；glTF 沒有顯示旗標，匯出會變成看得見，所以略過）';
   for (const [re, why] of SKIP_NAMES) if (re.test(node.name)) return why;
   if (node.isLight) return `燈光（${node.type}）：glb 不帶光源，Unity 端改用烘焙／重設光源；參數記錄於 manifest.lights`;
   if (node.isPoints) return '粒子／點精靈（THREE.Points + 自訂 shader），Unity 改用 VFX/Particle System 重做';
@@ -425,6 +436,32 @@ export function installExportTool({ manager, input }) {
     const slot = scene.getObjectByName('MachineSlot');
     const offset = slot?.children.find(c => c !== undefined && c.children.includes(rt.scene));
     const placement = { machineSlotRotationY: slot?.rotation.y ?? 0, offset: offset ? offset.position.toArray() : null, pedestal: !!slot?.getObjectByName('MachinePedestal'), centerOfModel: rt.center?.toArray?.(), floorY: rt.floor };
+    // 機台執行期設定（給 Unity 的機台控制器用）：config 正規化後的軸／手輪／主軸／拉桿／段位／安全距離，掛點，刀片尖端
+    const cfg = rt.config;
+    const pick = (o, keys) => o && Object.fromEntries(keys.filter(k => o[k] !== undefined).map(k => [k, o[k]]));
+    const inserts = [];
+    rt.scene.traverse(o => { if (o.userData?.cuttingTipLocal || o.userData?.cuttingEdge) inserts.push({ node: o.name, tip: o.userData.cuttingTipLocal || o.userData.cuttingEdge?.tip, edge: o.userData.cuttingEdge || null, parent: o.parent?.name || null }); });
+    const runtimeJson = {
+      machineId: m.id, units: 'meters/radians', coordinateSystem: 'three.js 右手系（+X 東、-Z 北、+Y 上）；節點局部座標，軸向量也是節點局部座標',
+      lesson: cfg.lesson, maxRpm: cfg.maxRpm, defaultRpm: cfg.defaultRpm,
+      axes: cfg.axes.map(a => pick(a, ['id', 'node', 'axis', 'range', 'restOffset', 'label', 'enabled'])),
+      wheels: cfg.wheels.map(w => pick(w, ['id', 'node', 'axis', 'drives', 'ratio', 'speed', 'label', 'angleRange', 'springReturn', 'needsCalibration', 'generated', 'pivot'])),
+      spindle: pick(cfg.spindle, ['node', 'axis', 'pivot']),
+      lever: pick(cfg.lever, ['node', 'axis', 'runAngle', 'duration', 'label', 'bidirectional', 'pivot']),
+      toggle: cfg.toggle || null,
+      actions: (cfg.actions || []).map(a => pick(a, ['id', 'node', 'type', 'axis', 'step', 'label', 'degrees', 'homeIndex', 'referenceDegrees', 'bidirectional'])),
+      speedSelectors: cfg.speedSelectors || null,
+      safety: cfg.safety || null,
+      mounts: cfg.mounts || {},
+      additions: (cfg.additions || []).map(a => pick(a, ['name', 'kind', 'parent', 'drives', 'position', 'topY', 'top', 'bottomY', 'radius', 'tool'])),
+      cuttingInserts: inserts,
+      placement,
+      restOffsetsApplied: 'restOffset 已套用在匯出的節點位置上（Unity 直接讀匯入後的局部位置當作軸的 0 點）',
+    };
+    manifest.runtime ??= {};
+    manifest.runtime[m.id] = { file: `machine_${m.id}_runtime.json` };
+    await writeFile(`machine_${m.id}_runtime.json`, new TextEncoder().encode(JSON.stringify(runtimeJson, null, 1)).buffer);
+    log(`machine_${m.id}_runtime.json`);
     await emit(`machine_${m.id}`, trees, job, { area: 'workshop', zone: 'machine', machineId: m.id, source: `public/models/machines/${m.id}/${m.id}.glb（經 MachineBase 預處理後的 runtime.scene）`, placement, configNodesMissingInScene: missing, interactiveNodeRoles: Object.fromEntries(names) });
   }
 
