@@ -11,7 +11,7 @@ try {
   await page.goto(`${base}/?area=lobby&nobatch#/world`);
   await page.waitForFunction(() => window.__xrExport && window.__xrWorld?.manager?.current?.scene, null, { timeout: 240000 });
   await page.keyboard.press('Shift+A'); // 與使用者在瀏覽器按的快捷鍵相同
-  await page.waitForFunction(() => window.__xrExport.manifest.groups?.some(g => g.machineId === 'drill'), null, { timeout: 1500000, polling: 2000 });
+  await page.waitForFunction(() => window.__xrExport.manifest.groups?.some(g => g.machineId === 'drill'), null, { timeout: 5400000, polling: 2000 });
   await page.waitForTimeout(1500);
   console.log('done in', ((Date.now() - t0) / 1000).toFixed(0) + 's');
 } finally { await browser.close(); }

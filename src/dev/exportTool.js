@@ -299,7 +299,10 @@ export function installExportTool({ manager, input }) {
       const rec = { file, kind, source: extra.source || base, status: 'ok', bytes: 0, triangles: info.tris, meshes: info.meshes, nodes: info.nodes, objects: objectList(tree), textures: info.textures, ...(kind === 'interactive' ? { interactiveReasons: job.interactive } : {}) };
       if (!info.meshes) { rec.status = 'empty'; rec.note = '沒有任何 mesh，未產生檔案'; manifest.files.push(rec); log(file, '空，略過'); continue; }
       try {
+        log(file, `開始編碼：${info.meshes} meshes、${info.textures.length} 張貼圖（${info.textures.map(t => t.width + 'x' + t.height).join(' ')}）`);
+        const t0 = performance.now();
         const buffer = await parse(tree);
+        rec.encodeSeconds = +((performance.now() - t0) / 1000).toFixed(1);
         rec.bytes = buffer.byteLength;
         rec.written = await writeFile(file, buffer);
         log(file, `${(rec.bytes / 1024).toFixed(0)} KB`, `${info.tris} tris`);
@@ -455,8 +458,7 @@ export function installExportTool({ manager, input }) {
       await manager.go('workshop', { machineId: id });
       if (id !== 'lathe') {
         // 後兩台只匯出機台（工作室與工具箱已經匯出過）
-        busy = true;
-        try { await exportMachine(manager.current, manager.current.scene); await flush(); } finally { busy = false; }
+        await exportMachineOnly();
       } else await exportCurrent();
     }
     return manifest;
@@ -468,7 +470,12 @@ export function installExportTool({ manager, input }) {
     else if (e.code === 'KeyA') { e.preventDefault(); exportAll().catch(err => console.error('[export]', err)); }
   };
   addEventListener('keydown', onKey);
-  window.__xrExport = { exportCurrent, exportAll, manifest };
+  /** 只匯出目前機台（除錯與 exportAll 後兩台用） */
+  async function exportMachineOnly() {
+    busy = true;
+    try { await exportMachine(manager.current, manager.current.scene); await flush(); } finally { busy = false; }
+  }
+  window.__xrExport = { exportCurrent, exportAll, exportMachineOnly, manifest };
   log('匯出工具就緒：Shift+E 匯出目前區域、Shift+A 匯出全部');
   return () => { removeEventListener('keydown', onKey); delete window.__xrExport; };
 }
