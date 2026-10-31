@@ -79,7 +79,7 @@ http://localhost:5173/?area=lobby&nobatch#/world
 
    工具會自動依序：門外/玄關 → 工作室（車床）→ 工作室（銑床）→ 工作室（鑽床），每到一處就匯出。
    **預期結果**：Console 陸續出現 `[export] exterior_static.glb … KB … tris` 等訊息；畫面會自己淡出淡入切換區域。
-   一般電腦約 2–5 分鐘（雲端無 GPU 的測試機約 15 分鐘）。最後一行是 `machine_drill_interactive.glb`。
+   有獨立顯卡的電腦約 3–8 分鐘（無 GPU 的雲端測試機實測約 30 分鐘）；匯出時畫面會停頓、風扇會轉，屬正常。最後一行是 `machine_drill_interactive.glb`。
 
 4. **只匯出目前區域**：按 **Shift + E**。
    - 在門外或玄關按 → 產生 `exterior_*`、`vestibule_*`。
@@ -92,7 +92,7 @@ http://localhost:5173/?area=workshop&machine=milling&nobatch#/world
 
 5. **檔案位置**：專案根目錄的 `exports/` 資料夾（不會被 commit）。
 
-**預期會產生的檔案**（全部匯出後，共 34 個 glb＋1 個 manifest）：
+**預期會產生的檔案**（全部匯出後，共 27 個 glb（14 個場景／機台檔＋13 個單件工具）＋1 個 manifest.json）：
 
 | 檔案 | 內容 |
 |---|---|

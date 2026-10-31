@@ -45,3 +45,7 @@
 
 ## D9 匯出的 glb 不 commit；manifest 範例只 commit 精簡版
 - `docs/export-manifest-example.json` 由 `scripts/export-report.mjs` 從真實 manifest 產生，長清單只留前 5 筆。
+
+## D10 機台 glb 為 Git LFS
+- 問題：`*.glb` 走 LFS，雲端 checkout 只有 132 byte 指標檔，工作室載入失敗。
+- 選擇：在本 session 執行 `git lfs pull`（不改 repo）；測試說明加入 `git lfs pull` 步驟；記錄於 known-bugs #3。

@@ -1,6 +1,6 @@
 # 匯出報告（無頭瀏覽器實際執行）
 
-- 產生時間：2026-10-31T09:00:51.255Z；three r180；工具 `src/dev/exportTool.js`
+- 產生時間：2026-10-31T09:30:25.369Z；three r180；工具 `src/dev/exportTool.js`
 - 執行方式：`npm run dev` 後 `node scripts/export-headless.mjs`（等同在 `?area=lobby&nobatch#/world` 按 Shift+A），再用 `node scripts/export-report.mjs` 產生本報告。
 - 三角形與節點數是**重新讀檔**（gltf-transform）計算，不是匯出端自報；兩者不一致會標 ⚠。
 - glb 未壓縮（GLTFExporter 不做 meshopt/Draco），大小主要是 PNG 貼圖；同一張程序貼圖在不同檔案各存一份。
@@ -10,10 +10,10 @@
 | exterior_static.glb | 13356 | 26,706 | 958 | 64 | 16 | 23 | ok |
 | exterior_interactive.glb | 11165 | 2,192 | 22 | 18 | 18 | 16 | ok |
 | vestibule_static.glb | 11179 | 13,068 | 210 | 129 | 22 | 31 | ok |
-| vestibule_interactive.glb | 7873 | 61,040 | 196 | 102 | 64 | 28 | ok |
+| vestibule_interactive.glb | 7870 | 61,040 | 196 | 102 | 64 | 28 | ok |
 | workshop_static.glb | 38014 | 555,304 | 7294 | 1381 | 95 | 61 | ok |
 | workshop_interactive.glb | 10563 | 50,558 | 221 | 121 | 27 | 23 | ok |
-| toolbox_static.glb | 5271 | 22,812 | 139 | 70 | 11 | 14 | ok |
+| toolbox_static.glb | 5262 | 22,716 | 139 | 70 | 11 | 14 | ok |
 | toolbox_interactive.glb | 5035 | 75,386 | 841 | 126 | 51 | 23 | ok |
 | tools/tool_vernier-caliper.glb | 474 | 9,996 | 12 | 8 | 6 | 4 | ok |
 | tools/tool_steel-ruler.glb | 238 | 1,778 | 5 | 2 | 2 | 1 | ok |
@@ -34,7 +34,7 @@
 | machine_milling_interactive.glb | 20152 | 87,050 | 154 | 121 | 17 | 24 | ok |
 | machine_drill_static.glb | 6497 | 21,914 | 32 | 23 | 1 | 3 | ok |
 | machine_drill_interactive.glb | 6461 | 32,948 | 49 | 25 | 4 | 3 | ok |
-| **合計** | **222794** | **1,802,745** | | | | | 27 個檔案 |
+| **合計** | **222782** | **1,802,649** | | | | | 27 個檔案 |
 
 ## 未產生的預期檔案
 
@@ -148,6 +148,6 @@
 
 ## 機台節點對照
 
-- **lathe**：設定檔中的互動節點 23 個；模型中找不到：CrossSlideAssembly, ToolHeightAssembly, TailstockQuill, CarriageHandwheelPivot, CrossSlideHandwheelPivot, HeightHandwheelPivot, TailstockHandwheelPivot, TailTravelWheel, StartLeverPivot, ToolIndexPivot, ToolPostColumn, ToolPostBaseCap, ToolPostBottomCap, TurningTool。放置：rotationY=0.0000，offset=[-0.0837,-0.004,-0.0745]，鐵座=無
-- **milling**：設定檔中的互動節點 11 個；模型中找不到：X_Axis_Table, Y_Axis_Saddle, X_Handwheel_Left_Group, X_Handwheel_Right_Group, FaceMill。放置：rotationY=-1.5708，offset=[0.427,0.0011,0.0186]，鐵座=無
-- **drill**：設定檔中的互動節點 7 個；模型中找不到：SpindleAssembly, TwistDrill。放置：rotationY=0.0000，offset=[-0.0315,0.7201,-0.0203]，鐵座=有
+- **lathe**：設定檔中的互動節點 23 個；模型中找不到：無。放置：rotationY=0.0000，offset=[-0.0837,-0.004,-0.0745]，鐵座=無
+- **milling**：設定檔中的互動節點 11 個；模型中找不到：無。放置：rotationY=-1.5708，offset=[0.427,0.0011,0.0186]，鐵座=無
+- **drill**：設定檔中的互動節點 7 個；模型中找不到：無。放置：rotationY=0.0000，offset=[-0.0315,0.7201,-0.0203]，鐵座=有

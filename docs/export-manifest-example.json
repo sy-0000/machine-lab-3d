@@ -1,6 +1,6 @@
 {
  "_note": "由 scripts/export-report.mjs 從實際匯出的 exports/manifest.json 產生；files 保留全部檔案，其他較長的清單只留前 5 筆。",
- "generatedAt": "2026-10-31T09:00:51.255Z",
+ "generatedAt": "2026-10-31T09:30:25.369Z",
  "tool": "src/dev/exportTool.js",
  "three": "180",
  "files": [
@@ -7000,7 +7000,7 @@
      ]
     }
    ],
-   "encodeSeconds": 45.2,
+   "encodeSeconds": 41.6,
    "written": "exports"
   },
   {
@@ -7401,7 +7401,7 @@
      "reason": "InputManager 登記的可互動物件"
     }
    ],
-   "encodeSeconds": 36.5,
+   "encodeSeconds": 45.2,
    "written": "exports"
   },
   {
@@ -7409,7 +7409,7 @@
    "kind": "static",
    "source": "vestibule",
    "status": "ok",
-   "bytes": 11446848,
+   "bytes": 11446844,
    "triangles": 13068,
    "meshes": 183,
    "nodes": 210,
@@ -9025,7 +9025,7 @@
      ]
     }
    ],
-   "encodeSeconds": 36.7,
+   "encodeSeconds": 38.6,
    "written": "exports"
   },
   {
@@ -9033,7 +9033,7 @@
    "kind": "interactive",
    "source": "vestibule",
    "status": "ok",
-   "bytes": 8062008,
+   "bytes": 8058988,
    "triangles": 61040,
    "meshes": 162,
    "nodes": 196,
@@ -10168,7 +10168,7 @@
      "reason": "玄關／工作室可互動或會開關的物件"
     }
    ],
-   "encodeSeconds": 34.3,
+   "encodeSeconds": 36.5,
    "written": "exports"
   },
   {
@@ -10176,7 +10176,7 @@
    "kind": "static",
    "source": "workshop",
    "status": "ok",
-   "bytes": 38926072,
+   "bytes": 38926068,
    "triangles": 555304,
    "meshes": 6984,
    "nodes": 7294,
@@ -11103,7 +11103,7 @@
      ]
     }
    ],
-   "encodeSeconds": 165.7,
+   "encodeSeconds": 175.3,
    "written": "exports"
   },
   {
@@ -11111,7 +11111,7 @@
    "kind": "interactive",
    "source": "workshop",
    "status": "ok",
-   "bytes": 10816476,
+   "bytes": 10816528,
    "triangles": 50558,
    "meshes": 156,
    "nodes": 221,
@@ -11723,7 +11723,7 @@
      "reason": "玄關／工作室可互動或會開關的物件"
     }
    ],
-   "encodeSeconds": 57.1,
+   "encodeSeconds": 71.7,
    "written": "exports"
   },
   {
@@ -11731,8 +11731,8 @@
    "kind": "static",
    "source": "toolbox",
    "status": "ok",
-   "bytes": 5397772,
-   "triangles": 22812,
+   "bytes": 5388556,
+   "triangles": 22716,
    "meshes": 128,
    "nodes": 139,
    "objects": [
@@ -11741,7 +11741,7 @@
      "type": "Group",
      "depth": 1,
      "meshes": 128,
-     "triangles": 22812
+     "triangles": 22716
     },
     {
      "path": "DeskToolbox/Workbench",
@@ -11835,14 +11835,14 @@
      "type": "Group",
      "depth": 2,
      "meshes": 100,
-     "triangles": 20892
+     "triangles": 20796
     },
     {
      "path": "DeskToolbox/ToolTray/Toolbox",
      "type": "Group",
      "depth": 3,
      "meshes": 100,
-     "triangles": 20892
+     "triangles": 20796
     }
    ],
    "textures": [
@@ -12002,7 +12002,7 @@
      ]
     }
    ],
-   "encodeSeconds": 50.1,
+   "encodeSeconds": 49.6,
    "written": "exports"
   },
   {
@@ -12010,7 +12010,7 @@
    "kind": "interactive",
    "source": "toolbox",
    "status": "ok",
-   "bytes": 5155840,
+   "bytes": 5155724,
    "triangles": 75386,
    "meshes": 793,
    "nodes": 841,
@@ -12466,7 +12466,7 @@
      "reason": "工具 Tool_safety-glasses（userData.toolIndex=12）"
     }
    ],
-   "encodeSeconds": 46.2,
+   "encodeSeconds": 39.7,
    "written": "exports"
   },
   {
@@ -13059,7 +13059,7 @@
    "kind": "tool",
    "source": "Tool_paint-brush",
    "status": "ok",
-   "bytes": 818556,
+   "bytes": 818436,
    "triangles": 13864,
    "meshes": 579,
    "nodes": 584,
@@ -13140,7 +13140,7 @@
    "kind": "tool",
    "source": "Tool_brass-brush",
    "status": "ok",
-   "bytes": 820116,
+   "bytes": 820120,
    "triangles": 4380,
    "meshes": 98,
    "nodes": 104,
@@ -13648,7 +13648,7 @@
      ]
     }
    ],
-   "encodeSeconds": 78.4,
+   "encodeSeconds": 79.7,
    "written": "exports"
   },
   {
@@ -14187,7 +14187,7 @@
      "reason": "機台設定：addition:selectorScale"
     }
    ],
-   "encodeSeconds": 45.4,
+   "encodeSeconds": 47,
    "written": "exports"
   },
   {
@@ -19173,7 +19173,7 @@
      ]
     }
    ],
-   "encodeSeconds": 245.3,
+   "encodeSeconds": 230.6,
    "written": "exports"
   },
   {
@@ -19602,7 +19602,7 @@
      "reason": "機台設定：axis:Knee_Z_Slide（Z 軸／工作臺升降）"
     }
    ],
-   "encodeSeconds": 104.7,
+   "encodeSeconds": 99.6,
    "written": "exports"
   },
   {
@@ -19714,7 +19714,7 @@
      ]
     }
    ],
-   "encodeSeconds": 46.7,
+   "encodeSeconds": 45.5,
    "written": "exports"
   },
   {
@@ -19842,7 +19842,7 @@
      "reason": "機台設定：addition:sleeve"
     }
    ],
-   "encodeSeconds": 47.6,
+   "encodeSeconds": 46.2,
    "written": "exports"
   }
  ],
@@ -20390,7 +20390,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffb468",
-     "intensity": 4.117149674310235,
+     "intensity": 4.127139898900441,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -20403,7 +20403,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffb468",
-     "intensity": 4.138719080500724,
+     "intensity": 4.087279714437962,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -21800,7 +21800,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffc27a",
-     "intensity": 6.791038162312168,
+     "intensity": 6.795588891955002,
      "distance": 9,
      "castShadow": false,
      "position": [
@@ -21813,7 +21813,7 @@
      "name": "<PointLight>",
      "type": "PointLight",
      "color": "#ffc27a",
-     "intensity": 7.105922627713339,
+     "intensity": 7.128825761420183,
      "distance": 9,
      "castShadow": false,
      "position": [
@@ -30550,7 +30550,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.5196619164617867）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.4752659536732871）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
@@ -30560,7 +30560,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.5196619164617867）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.4752659536732871）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_desk/<Mesh>",
@@ -30575,7 +30575,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.457079166911415）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.36202129884392353）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
@@ -30585,7 +30585,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.457079166911415）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.36202129884392353）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_front/<Mesh>",
@@ -30600,7 +30600,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.34201809453675314）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28369408670970275）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
@@ -30610,7 +30610,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.34201809453675314）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28369408670970275）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_left/<Mesh>",
@@ -30625,7 +30625,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28026531864774357）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3122979948823814）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
@@ -30635,7 +30635,7 @@
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
      "name": "<Mesh>",
-     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.28026531864774357）"
+     "message": "透明材質「MeshBasicMaterial」：glTF 以 alphaMode=BLEND 匯出，渲染排序在 Unity 需手動設定（opacity 0.3122979948823814）"
     },
     {
      "path": "<Scene>/TeleportDiscs/TeleportDisc_right/<Mesh>",
@@ -31059,7 +31059,7 @@
      "name": "BoilerFire",
      "type": "PointLight",
      "color": "#ff6a24",
-     "intensity": 7.598911303545302,
+     "intensity": 7.838673725287132,
      "distance": 11,
      "castShadow": false,
      "position": [
@@ -31072,7 +31072,7 @@
      "name": "EdisonLamp_0",
      "type": "PointLight",
      "color": "#ffc07a",
-     "intensity": 13.553095559630929,
+     "intensity": 13.519323335853837,
      "distance": 10,
      "castShadow": false,
      "position": [
@@ -31085,7 +31085,7 @@
      "name": "EdisonLamp_1",
      "type": "PointLight",
      "color": "#ffa352",
-     "intensity": 3.1696559226770415,
+     "intensity": 3.1487454480854433,
      "distance": 5,
      "castShadow": false,
      "position": [
@@ -31098,7 +31098,7 @@
      "name": "EdisonLamp_2",
      "type": "PointLight",
      "color": "#ffb466",
-     "intensity": 20.668506683408296,
+     "intensity": 20.669648359670735,
      "distance": 14,
      "castShadow": false,
      "position": [
@@ -31111,7 +31111,7 @@
      "name": "EdisonLamp_3",
      "type": "PointLight",
      "color": "#ffa24e",
-     "intensity": 6.685258038171422,
+     "intensity": 6.6437336305738555,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -31124,7 +31124,7 @@
      "name": "EdisonLamp_4",
      "type": "PointLight",
      "color": "#ffab5c",
-     "intensity": 5.9002422445477904,
+     "intensity": 5.938511296630811,
      "distance": 8,
      "castShadow": false,
      "position": [
@@ -33247,22 +33247,7 @@
     ],
     "floorY": -0.6278195343911648
    },
-   "configNodesMissingInScene": [
-    "CrossSlideAssembly",
-    "ToolHeightAssembly",
-    "TailstockQuill",
-    "CarriageHandwheelPivot",
-    "CrossSlideHandwheelPivot",
-    "HeightHandwheelPivot",
-    "TailstockHandwheelPivot",
-    "TailTravelWheel",
-    "StartLeverPivot",
-    "ToolIndexPivot",
-    "ToolPostColumn",
-    "ToolPostBaseCap",
-    "ToolPostBottomCap",
-    "TurningTool"
-   ],
+   "configNodesMissingInScene": [],
    "interactiveNodeRoles": {
     "CarriageAssembly": "axis:x（X軸／縱向進給）",
     "CrossSlideAssembly": "axis:y（Y軸／橫向進給）",
@@ -34868,13 +34853,7 @@
     ],
     "floorY": -1.098345147445798
    },
-   "configNodesMissingInScene": [
-    "X_Axis_Table",
-    "Y_Axis_Saddle",
-    "X_Handwheel_Left_Group",
-    "X_Handwheel_Right_Group",
-    "FaceMill"
-   ],
+   "configNodesMissingInScene": [],
    "interactiveNodeRoles": {
     "X_Axis_Table": "axis:X_Axis_Table（X 軸／工作臺進給）",
     "Y_Axis_Saddle": "axis:Y_Axis_Saddle（Y 軸／鞍座進給）",
@@ -37446,10 +37425,7 @@
     ],
     "floorY": -0.3956790342926979
    },
-   "configNodesMissingInScene": [
-    "SpindleAssembly",
-    "TwistDrill"
-   ],
+   "configNodesMissingInScene": [],
    "interactiveNodeRoles": {
     "Quill": "axis:quill（套筒／垂直進給）",
     "TableAssembly": "axis:table（工作臺高度）",
