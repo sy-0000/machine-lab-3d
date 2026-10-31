@@ -416,7 +416,11 @@ export function installExportTool({ manager, input }) {
     const isInteractive = n => { const r = names.get(n.name); if (r) found.add(n.name); return r ? `機台設定：${r}` : (n.userData?.isMountPoint ? '掛點（isMountPoint）' : null); };
     const job = new Job(`machine_${m.id}`);
     const trees = partition([rt.scene], isInteractive, job, rt.scene.parent);
-    const missing = [...names.keys()].filter(n => !found.has(n));
+    // 設定檔裡的名稱是否真的存在於模型（巢狀在別的互動節點底下的不會被個別走訪到，所以直接在場景樹裡找）
+    const present = new Set();
+    rt.scene.traverse(o => { if (o.name) present.add(o.name); });
+    const missing = [...names.keys()].filter(n => !present.has(n));
+    void found;
     // 放置資訊：房間座標下機台怎麼擺（工作室 Workshop.js 的 offset／machineRoot）
     const slot = scene.getObjectByName('MachineSlot');
     const offset = slot?.children.find(c => c !== undefined && c.children.includes(rt.scene));
