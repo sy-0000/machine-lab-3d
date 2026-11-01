@@ -56,5 +56,5 @@
 - [x] 指到發亮、Unity 自我檢查選單、EditMode 測試、asmdef 參照修正
 - [x] 減面版本（exports/lod）與 Detail 切換、遮擋剔除烘焙選單
 - [x] 網站選單回歸測試（tests/xr-menu.spec.js，突變檢查會失敗）
-- [ ] 門的造型統一（等使用者選方案）
+- [x] 門的造型統一：拱形防爆鋼門（方案 1，只改 Unity，D41）
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）

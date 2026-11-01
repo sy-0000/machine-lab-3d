@@ -15,6 +15,9 @@ namespace MachineYard
     {
         public LobbyFlow flow; public StationMover mover; public Transform workshopRoot;
         public float openDegrees = 80f, openSeconds = 1.0f;
+        /// <summary>拱形防爆鋼門（D41；場景建置時建好）。有值時木門零件隱藏，改播鋼門的開門動畫（手輪轉 → 門栓收回 → 往外轉開）。</summary>
+        public ArchedBlastDoor blast; public MachineEffects fx;
+        float blastSign = 1f; Vector3[] boltStart; Quaternion wheel0;
         Transform pivotL, pivotR; float signL = 1, signR = 1; bool busy, built;
         static readonly HashSet<string> Fixed = new HashSet<string> { "HingeKnuckle", "ArchSurround", "Threshold" };
 
@@ -23,6 +26,15 @@ namespace MachineYard
         void Build()
         {
             if (built) return; built = true;
+            if (blast != null)
+            {
+                var outwardB = transform.position - workshopRoot.position; outwardB.y = 0; outwardB.Normalize();
+                blastSign = SideSign(blast.hinge, outwardB);
+                boltStart = blast.bolts.ConvertAll(b => b.localPosition).ToArray(); wheel0 = blast.wheel.localRotation;
+                var tb = XrUtil.EnsureTarget(gameObject, 0.05f); tb.highlight = false;
+                tb.onClick += _ => { if (!busy) StartCoroutine(ExitBlast()); };
+                return;
+            }
             pivotL = MakePivot("HingePivot_L", -1.08f); pivotR = MakePivot("HingePivot_R", 1.08f);
             var parts = new List<Transform>();
             foreach (Transform c in transform) parts.Add(c);
@@ -71,6 +83,32 @@ namespace MachineYard
             yield return Swing(0, 1);
             yield return flow.ReturnFromWorkshop();
             pivotL.localRotation = Quaternion.identity; pivotR.localRotation = Quaternion.identity;   // 玩家已離開，門回到關閉
+            busy = false;
+        }
+
+        // 鋼門：手輪轉 0.8 s（後半段門栓收回、噴蒸汽）→ 門往外轉開 → 淡出回玄關 → 門復位
+        IEnumerator ExitBlast()
+        {
+            if (flow == null || mover == null || mover.Busy) yield break;
+            busy = true;
+            bool steamed = false;
+            for (float t = 0; t < 0.8f; t += Time.deltaTime)
+            {
+                blast.wheel.Rotate(0, 0, -Time.deltaTime * 5f * Mathf.Rad2Deg, Space.Self);
+                float k = Mathf.Clamp01((t - 0.4f) / 0.4f); k = k * k * (3 - 2 * k);
+                for (int i = 0; i < blast.bolts.Count; i++) blast.bolts[i].localPosition = boltStart[i] + blast.boltDirs[i] * (ArchedBlastDoor.BoltTravel * k);
+                if (t > 0.4f && !steamed) { steamed = true; if (fx != null) foreach (var b in blast.bolts) fx.Steam(b.position, -blast.leaf.forward, 4); }
+                yield return null;
+            }
+            for (float t = 0; t < openSeconds; t += Time.deltaTime)
+            {
+                float k = t / openSeconds; k = k * k * (3 - 2 * k);
+                blast.hinge.localRotation = Quaternion.Euler(0, blastSign * openDegrees * k, 0);
+                yield return null;
+            }
+            yield return flow.ReturnFromWorkshop();
+            blast.hinge.localRotation = Quaternion.identity; blast.wheel.localRotation = wheel0;
+            for (int i = 0; i < blast.bolts.Count; i++) blast.bolts[i].localPosition = boltStart[i];
             busy = false;
         }
 

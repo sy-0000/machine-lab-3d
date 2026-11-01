@@ -162,6 +162,10 @@ namespace MachineYard.Editor
             {
                 foreach (var t in arched.GetComponentsInChildren<Transform>(true)) GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
                 LastExitDoor = arched.gameObject.AddComponent<WorkshopExitDoor>(); LastExitDoor.workshopRoot = root;
+                // 拱形防爆鋼門（D41）：與玄關同一種門。木門零件隱藏，保留石拱框（ArchSurround）與門檻
+                foreach (Transform c in arched)
+                    if (c.name != "ArchSurround" && c.name != "Threshold") c.gameObject.SetActive(false);
+                LastExitDoor.blast = ArchedBlastDoor.Build(arched, new ArchedBlastDoor.Spec { halfWidth = 1.11f, spring = 2.5f, depthFront = 0.12f, frame = false, wheelY = 1.3f, wheelRadius = 0.32f, bottom = 0.09f });
             }
             else Debug.LogWarning("[Machine Yard] workshop_static 裡找不到 ArchedDoor，工作室沒有出口門（可用左手 Y 選單回玄關）。");
 
@@ -204,6 +208,7 @@ namespace MachineYard.Editor
             foreach (var e in switcher.entries) e.root.SetActive(e.id == "lathe");
             switcher.Current = "lathe";
             fx.lathes = lathes.ToArray(); fx.heads = heads.ToArray();
+            if (LastExitDoor != null) LastExitDoor.fx = fx;
 
             // ---- 工作桌上的工具箱：點工具 → 升起展示（階段 5）
             var tray = toolboxInteractive != null ? XrUtil.FindDeep(toolboxInteractive.transform, "ToolTray") : null;

@@ -181,3 +181,10 @@
 ## D40 Unity 組件參照（asmdef）
 - 問題：自己檢查時發現 `MachineYard.Runtime.asmdef` 沒有參照 `MachineYard.Core`、Editor 沒有參照 Core 與 TextMeshPro；在 Unity 裡會編譯失敗（我原本的型別檢查把所有檔案放在同一個組件，所以沒抓到）。
 - 選擇：補上參照；型別檢查改成照 asmdef 分成 Core、Runtime、Editor、Tests 四個專案分開編譯。
+
+## D41 門的造型統一：拱形防爆鋼門（使用者選方案 1；只改 Unity，網站不改）
+- 選擇：玄關的圓形金庫門換成拱形防爆鋼門（`Runtime/ArchedBlastDoor.cs`，程序化網格）：門洞寬 2.4、拱頂 2.65 m，外框 2.84 × 2.87 m（避開兩側壓力錶與上方指示燈，見 docs/images/blast-door-preview.png）。開門特效全部保留：中央黃銅手輪轉 → 7 支門栓（右緣 3 支、拱頂 4 支）收回噴蒸汽 → 門往玄關方向轉開 100°。門洞後是黑色面（開門後看到黑暗的通道）。
+- 工作室出口拱門換成同一種鋼門（尺寸配合原本的石拱框：寬 2.22、拱頂 3.61 m），點門：手輪轉 → 門栓收回 → 門往外（通道）轉開 → 回玄關，玄關的鋼門在面前關上。兩邊都是拱形鋼門，和門外的拱形大門外形一致。
+- 站位：鋼門較寬（2.4 m），開門時退後的位置由 z 13.3 改成 13.6（D36）。
+- 原本的圓門零件（Frame、GearRing、DoorHinge）只是隱藏，壓力錶、指示燈、鎖住提示照用。
+- 回復：拿掉 LobbySceneBuilder 的 `UseBlastDoor` 與 WorkshopBuilder 建鋼門的兩行，重建場景即回到圓門與木門。

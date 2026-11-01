@@ -220,3 +220,4 @@
 | 自我檢查 | 選單 **5. Self-check** → `SelfCheck.md`；`Assets/Tests/EditMode` 6 個 Unity 測試 |
 | 減面（D39） | 選單 **Detail ▸ 100/50/25%**、**6. Bake occlusion culling** |
 | asmdef（D40） | Runtime／Editor 補上 Core、TextMeshPro 參照（原本在 Unity 裡會編譯失敗） |
+| 拱形防爆鋼門（D41） | `Runtime/ArchedBlastDoor.cs`：玄關圓門與工作室木拱門都換成同一種拱形鋼門，保留手輪、門栓、蒸汽、往外開的特效（正視圖：`docs/images/blast-door-preview.png`） |

@@ -79,7 +79,13 @@ namespace MachineYard.Editor
                 foreach (var c in flow.screen.clips) c.video = AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>($"Assets/Videos/preview_{c.id}.mp4");
             }
             var vaultT = ExteriorSceneBuilder.FindDeep(vInter.transform, "VaultDoor");
-            if (vaultT != null) { flow.vault = vaultT.gameObject.AddComponent<VaultDoorController>(); flow.vault.AutoWire(); }
+            if (vaultT != null)
+            {
+                flow.vault = vaultT.gameObject.AddComponent<VaultDoorController>(); flow.vault.AutoWire();
+                // 拱形防爆鋼門（D41）：寬 2.4、拱頂 2.65 m；外框 2.84 × 2.87 m，避開兩側壓力錶（|x| ≥ 1.74）與上方指示燈（y ≥ 2.91）
+                var blast = ArchedBlastDoor.Build(vaultT, new ArchedBlastDoor.Spec { halfWidth = 1.2f, spring = 1.45f, depthFront = 0.22f, frameWidth = 0.22f, frame = true, wheelY = 1.3f, wheelRadius = 0.32f, bottom = 0.012f });
+                flow.vault.UseBlastDoor(blast);
+            }
             var bootstrap = sys.AddComponent<LobbyBootstrap>();
             bootstrap.viewerWorldPos = viewer;
 

@@ -17,6 +17,8 @@ namespace MachineYard
         public Transform hinge, leaf, wheelPivot, gearRing, lamp, lockedHint;
         public Transform[] needles = new Transform[2]; // 0 = 工安、1 = 動畫
         public List<Transform> bolts = new List<Transform>();
+        /// <summary>拱形防爆鋼門的門栓收回方向（有值就沿直線收回；圓門是沿半徑收回）。</summary>
+        public Vector3[] boltDirs;
         public bool IsOpening { get; private set; }
         /// <summary>門已完全打開（開門動畫結束後）。</summary>
         public bool IsOpen { get; private set; }
@@ -127,10 +129,23 @@ namespace MachineYard
         {
             for (int i = 0; i < bolts.Count; i++)
             {
-                var s = boltStart[i]; var xy = new Vector2(s.x, s.y);
+                var s = boltStart[i];
+                if (boltDirs != null && i < boltDirs.Length) { bolts[i].localPosition = s + boltDirs[i] * (ArchedBlastDoor.BoltTravel * k); continue; }
+                var xy = new Vector2(s.x, s.y);
                 var n = xy.normalized * Mathf.Max(0, xy.magnitude - 0.2f * k);
                 bolts[i].localPosition = new Vector3(n.x, n.y, s.z);
             }
+        }
+
+        /// <summary>
+        /// 換成拱形防爆鋼門（D41）：隱藏原本的圓門（門框、齒輪環、圓門扇與其手輪門栓），改用 ArchedBlastDoor 的鉸鏈、門扇、手輪、門栓。
+        /// 兩側壓力錶、指示燈、鎖住提示不變。由場景建置（編輯器）呼叫，欄位會存進場景。
+        /// </summary>
+        public void UseBlastDoor(ArchedBlastDoor d)
+        {
+            foreach (var n in new[] { "Frame", "GearRing", "DoorHinge" }) { var t = XrUtil.FindDeep(transform, n); if (t != null && !t.IsChildOf(d.transform)) t.gameObject.SetActive(false); }
+            hinge = d.hinge; leaf = d.leaf; wheelPivot = d.wheel; gearRing = null;
+            bolts = new List<Transform>(d.bolts); boltDirs = d.boltDirs;
         }
 
         static float Ease(float t) => t * t * (3f - 2f * t);
