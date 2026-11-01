@@ -12,6 +12,23 @@ namespace MachineYard.Editor
     /// </summary>
     public static class QuestProjectSetup
     {
+        /// <summary>執行期用 Shader.Find 建材質的著色器：沒被任何材質資產參照時，打包會被剔除（Quest 上變粉紅）。加進 Always Included Shaders。</summary>
+        public static readonly string[] RuntimeShaders = { "Universal Render Pipeline/Lit", "Universal Render Pipeline/Unlit", "Sprites/Default", "MachineYard/LightShaft" };
+
+        public static void IncludeShaders()
+        {
+            var so = new SerializedObject(UnityEngine.Rendering.GraphicsSettings.GetGraphicsSettings());
+            var arr = so.FindProperty("m_AlwaysIncludedShaders");
+            foreach (var name in RuntimeShaders)
+            {
+                var sh = Shader.Find(name); if (sh == null) { Debug.LogWarning("[Machine Yard] 找不到著色器 " + name); continue; }
+                bool has = false; for (int i = 0; i < arr.arraySize; i++) if (arr.GetArrayElementAtIndex(i).objectReferenceValue == sh) has = true;
+                if (has) continue;
+                arr.InsertArrayElementAtIndex(arr.arraySize); arr.GetArrayElementAtIndex(arr.arraySize - 1).objectReferenceValue = sh;
+            }
+            so.ApplyModifiedProperties();
+        }
+
         [MenuItem("Machine Yard/1. Apply Quest Settings")]
         public static void Apply()
         {
@@ -27,6 +44,7 @@ namespace MachineYard.Editor
             PlayerSettings.productName = "Machine Yard";
             EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ASTC;
             PlayerSettings.gpuSkinning = true;
+            IncludeShaders();
             Debug.Log("[Machine Yard] Quest 設定已套用（只支援 Quest 3）。請再到 Project Settings ▸ XR Plug-in Management ▸ Android 勾選 OpenXR，啟用 Meta Quest Support，並在 Meta Quest Support 的齒輪 ▸ Target Devices 只勾 Quest 3。接著執行選單 0b 建立中文字型。");
         }
     }

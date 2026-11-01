@@ -224,3 +224,5 @@
 | 門的 3D 預覽（D44） | `npm run dev` 後開 http://localhost:5173/dev/door-preview.html（截圖：`docs/images/blast-door-3d.png`） |
 | 貼圖瘦身（D42） | `node scripts/slim-textures.mjs` → `exports/quest/`（500 → 144 MB）；匯入時選這個資料夾 |
 | 一鍵打包（D43） | 選單 **7. Build Quest 3 APK**／**7b. Build And Run on Quest 3** → `Builds/MachineYard-Quest3.apk` |
+| 環境特效（D45） | `Runtime/AmbientEffects.cs`：工作室 7 道穹頂光束（`Resources/Shaders/MachineYardLightShaft.shader`）、鍋爐火星、蒸汽噴口；玄關齒輪轉動、閥門手輪可抓、閥門蒸汽。位置資料 `Resources/workshop-effects.json`（`scripts/extract-effects.mjs`） |
+| 著色器保留 | 選單 1 會把執行期用到的著色器加進 Always Included Shaders（否則 Quest 上粉紅） |

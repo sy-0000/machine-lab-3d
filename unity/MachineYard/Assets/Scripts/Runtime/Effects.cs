@@ -66,6 +66,12 @@ namespace MachineYard
             return b;
         }
 
+        /// <summary>直接指定一顆粒子的速度、壽命、大小與顏色（環境特效用：爐火火星、蒸汽噴口）。</summary>
+        public void EmitRaw(Vector3 pos, Vector3 velocity, float life, float size, Color color)
+        {
+            ps.Emit(new ParticleSystem.EmitParams { position = pos, velocity = velocity, startLifetime = life, startSize = size, startColor = color }, 1);
+        }
+
         /// <summary>在世界座標 pos 噴出 count 顆粒子，主要方向 dir（單位向量），speed 為倍率。</summary>
         public void Emit(Vector3 pos, Vector3 dir, int count, float speed = 1f)
         {

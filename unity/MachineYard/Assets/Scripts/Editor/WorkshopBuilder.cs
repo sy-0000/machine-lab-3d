@@ -193,6 +193,8 @@ namespace MachineYard.Editor
             // ---- 特效與灰塵（粒子上限固定，見 Effects.cs）
             var fx = root.gameObject.AddComponent<MachineEffects>();
             DustMotes.Create(root, ThreeCoords.Position(0, 2.6f, 0), new Vector3(9f, 4.5f, 9f));
+            // 匯出時略過的環境特效：穹頂光束、鍋爐火星、蒸汽噴口（Resources/workshop-effects.json）
+            root.gameObject.AddComponent<WorkshopAmbience>().workshopRoot = root;
             LastFx = fx;
 
             // ---- 機台：每台各一組 MachineSlot(旋轉) → MachineOffset(位置) → MachineScene(static+interactive)；同一時間只啟用一台

@@ -38,6 +38,12 @@ namespace MachineYard.Editor
                 var missing = chars.Where(c => c > 0x7f && !font.HasCharacter(c)).Distinct().Take(20).ToArray();
                 if (missing.Length > 0) Warn($"字型資產缺字（前 20 個）：{new string(missing)}"); else Ok($"中文字型 {font.characterTable.Count} 字");
             }
+            {
+                var so = new SerializedObject(UnityEngine.Rendering.GraphicsSettings.GetGraphicsSettings()); var arr = so.FindProperty("m_AlwaysIncludedShaders");
+                var included = new HashSet<UnityEngine.Object>(); for (int i = 0; i < arr.arraySize; i++) included.Add(arr.GetArrayElementAtIndex(i).objectReferenceValue);
+                foreach (var name in QuestProjectSetup.RuntimeShaders) { var sh = Shader.Find(name); if (sh == null) Err("找不到著色器 " + name); else if (!included.Contains(sh)) Err($"著色器 {name} 不在 Always Included Shaders（打包後執行期建的材質會變粉紅；執行選單 1）"); }
+            }
+            if (Resources.Load<TextAsset>("workshop-effects") == null) Warn("缺 Resources/workshop-effects.json（工作室光束／火星／蒸汽噴口）");
             foreach (var id in new[] { "lathe", "milling", "drill" })
                 if (AssetDatabase.LoadAssetAtPath<UnityEngine.Video.VideoClip>($"Assets/Videos/preview_{id}.mp4") == null) Err($"缺放映幕影片 Assets/Videos/preview_{id}.mp4");
             foreach (var f in new[] { "workshop_static.glb", "workshop_interactive.glb", "toolbox_static.glb", "toolbox_interactive.glb", "machine_lathe_static.glb", "machine_milling_static.glb", "machine_drill_static.glb", "manifest.json" })

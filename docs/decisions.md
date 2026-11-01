@@ -201,3 +201,10 @@
 
 ## D44 門的 3D 預覽頁
 - 選擇：`dev/door-preview.html`（只在 `npm run dev` 時可開：/dev/door-preview.html，不進網站建置）用 three.js 照 `ArchedBlastDoor.cs` 同一組尺寸與零件重建，可轉視角、播開門／關門、切換玄關／工作室版本。手輪輪圈兩邊都改成圓環網格（原本 16 段圓柱拼接會看到接縫）。
+
+## D45 匯出時略過的特效與玄關動態裝飾
+- 光束、爐火火星、工作室蒸汽噴口的位置是網站執行期依穹頂玻璃、鍋爐等算出來的，匯出的 manifest 沒有。做法：`dev/extract-effects.html` 在瀏覽器跑網站原本的 buildWorld＋createEffects（不改網站程式），`scripts/extract-effects.mjs` 把結果存成 `Resources/workshop-effects.json`（7 道光束、5 個蒸汽噴口、火星、爐火位置）。不需要重新匯出 glb。
+- 光束：自訂著色器 `MachineYard/LightShaft`（移植網站的 ShaderMaterial：加法混合、正對視線最亮、兩端淡出、緩慢飄動、靠近相機淡出），含 Quest 單次繪製雙眼所需的巨集。
+- 火星、蒸汽噴口：照網站的隨機節奏（火星每 0.3–1.5 秒一顆、每 2–7 秒一陣；蒸汽等 3–10 秒噴 0.6–2.4 秒）。
+- 玄關：16 個牆面齒輪照網站的轉向與轉速轉動（開門時 6 倍）；3 個閥門手輪可 grip 抓住畫圈轉；閥門旁 3 個蒸汽噴口。
+- 另修正一個隱藏問題：執行期用 Shader.Find 建的材質（URP Lit／Unlit、Sprites/Default、光束）若沒被材質資產參照，打包時著色器會被剔除，在 Quest 上會是粉紅色。選單 1 現在會把它們加進 Always Included Shaders，自我檢查也會檢查。

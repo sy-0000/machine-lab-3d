@@ -86,6 +86,8 @@ namespace MachineYard.Editor
                 var blast = ArchedBlastDoor.Build(vaultT, new ArchedBlastDoor.Spec { halfWidth = 1.2f, spring = 1.45f, depthFront = 0.22f, frameWidth = 0.22f, frame = true, wheelY = 1.3f, wheelRadius = 0.32f, bottom = 0.012f });
                 flow.vault.UseBlastDoor(blast);
             }
+            // 玄關的動態裝飾：牆面齒輪轉動、閥門手輪可抓、閥門旁蒸汽
+            var amb = sys.AddComponent<VestibuleAmbience>(); amb.vestibuleRoot = vInter.transform; amb.vault = flow.vault;
             var bootstrap = sys.AddComponent<LobbyBootstrap>();
             bootstrap.viewerWorldPos = viewer;
 
