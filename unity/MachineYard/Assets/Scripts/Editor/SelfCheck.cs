@@ -17,7 +17,10 @@ namespace MachineYard.Editor
     public static class SelfCheck
     {
         [MenuItem("Machine Yard/5. Self-check (scene + assets)")]
-        public static void Run()
+        public static void Run() => RunAndCount();
+
+        /// <summary>執行檢查並回傳錯誤數（一鍵打包會先跑這個）。</summary>
+        public static int RunAndCount()
         {
             var sb = new StringBuilder(); int errors = 0, warnings = 0;
             void Err(string m) { errors++; sb.AppendLine("- ❌ " + m); }
@@ -109,10 +112,20 @@ namespace MachineYard.Editor
                     sb.AppendLine($"| {root.name}/{area.name} | {tris:N0} | {rend} | {lights} | {budget} |");
                 }
             }
+            // 貼圖記憶體（場景中啟用的渲染器用到的貼圖，執行期大小；Quest 3 建議全部 < 1 GB）
+            var texs = new HashSet<Texture>();
+            foreach (var r in UnityEngine.Object.FindObjectsOfType<Renderer>())
+                foreach (var mat in r.sharedMaterials)
+                    if (mat != null) foreach (var id in mat.GetTexturePropertyNameIDs()) { var t = mat.GetTexture(id); if (t != null) texs.Add(t); }
+            long texBytes = 0; int big = 0;
+            foreach (var t in texs) { texBytes += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(t); if (t.width > 1024 || t.height > 1024) big++; }
+            sb.AppendLine().AppendLine($"貼圖：{texs.Count} 張，約 {texBytes / 1048576.0:0} MB（含三台機台）；大於 1024 的 {big} 張" + (big > 0 ? "（匯入時選 exports/quest 會縮到 1024，見 scripts/slim-textures.mjs）" : ""));
+            if (texBytes > 1024L * 1048576) Warn($"貼圖記憶體約 {texBytes / 1048576} MB，偏高");
             sb.AppendLine().AppendLine($"**結果：{errors} 個錯誤、{warnings} 個警告。**");
             File.WriteAllText("SelfCheck.md", sb.ToString());
             var msg = $"[Machine Yard] 自我檢查：{errors} 個錯誤、{warnings} 個警告。完整結果在專案根目錄 SelfCheck.md。";
             if (errors > 0) Debug.LogError(msg + "\n" + sb); else if (warnings > 0) Debug.LogWarning(msg + "\n" + sb); else Debug.Log(msg + "\n" + sb);
+            return errors;
         }
 
         static string Path(Transform t) { var s = t.name; for (var p = t.parent; p != null; p = p.parent) s = p.name + "/" + s; return s; }

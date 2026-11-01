@@ -93,6 +93,17 @@ namespace MachineYard
             return mb.Build(name);
         }
 
+        // 圓環（在 three 局部 XY 平面、繞 Z 軸），用來做手輪輪圈
+        static Mesh Torus(float R, float r, int seg, int side)
+        {
+            var mb = new MeshBuilder();
+            Vector3 P(int i, int j) { float a = i * Mathf.PI * 2 / seg, b = j * Mathf.PI * 2 / side; float c = R + r * Mathf.Cos(b); return new Vector3(c * Mathf.Cos(a), c * Mathf.Sin(a), r * Mathf.Sin(b)); }
+            Vector3 N(int i, int j) { float a = i * Mathf.PI * 2 / seg, b = j * Mathf.PI * 2 / side; return new Vector3(Mathf.Cos(b) * Mathf.Cos(a), Mathf.Cos(b) * Mathf.Sin(a), Mathf.Sin(b)); }
+            for (int i = 0; i < seg; i++) for (int j = 0; j < side; j++)
+                mb.Quad(P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1), N(i, j) + N(i + 1, j + 1));
+            return mb.Build("WheelRim");
+        }
+
         static GameObject Part(Transform parent, string name, Mesh mesh, Material mat)
         {
             var go = new GameObject(name); go.transform.SetParent(parent, false);
@@ -138,12 +149,7 @@ namespace MachineYard
             d.wheel = new GameObject("BlastWheel").transform; d.wheel.SetParent(d.leaf, false);
             d.wheel.localPosition = ThreeCoords.Position(0, s.wheelY, zf + 0.09f);
             float r = s.wheelRadius;
-            for (int i = 0; i < 16; i++)
-            {
-                float a = i * Mathf.PI * 2 / 16, a2 = (i + 0.5f) * Mathf.PI * 2 / 16;
-                var seg = Prim(d.wheel, PrimitiveType.Cylinder, "Rim", new Vector3(r * Mathf.Cos(a2), r * Mathf.Sin(a2), 0), new Vector3(0.045f, r * Mathf.PI / 16 * 1.05f, 0.045f), Quaternion.identity, brass);
-                seg.localRotation = Quaternion.FromToRotation(Vector3.up, ThreeCoords.Direction(-Mathf.Sin(a2), Mathf.Cos(a2), 0));
-            }
+            Part(d.wheel, "Rim", Torus(r, 0.0225f, 48, 10), brass);
             for (int i = 0; i < 3; i++)
             {
                 float a = i * Mathf.PI / 3;

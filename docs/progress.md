@@ -58,3 +58,6 @@
 - [x] 網站選單回歸測試（tests/xr-menu.spec.js，突變檢查會失敗）
 - [x] 門的造型統一：拱形防爆鋼門（方案 1，只改 Unity，D41）
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）
+- [x] 門的 3D 預覽頁（dev/door-preview.html）、手輪改圓環網格
+- [x] 貼圖瘦身（exports/quest，500 → 144 MB）、自我檢查加貼圖記憶體
+- [x] 一鍵打包（選單 7／7b、命令列）

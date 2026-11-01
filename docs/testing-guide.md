@@ -343,3 +343,27 @@ node scripts/simplify-exports.mjs
 - [ ] 再點金庫手輪：完整開門動畫再播一次 → 回到工作室
 - [ ] 指到手輪、拉桿、按鈕會發亮（綠色光暈）
 - [ ] 車床裝上工件：工件左端插在三爪夾頭的爪子裡（約 4 cm），不是貼在夾頭前面
+
+
+## 13. 貼圖瘦身與一鍵打包（建議的完整上機流程）
+
+### 13-1 網站專案（一次）
+```bash
+node scripts/simplify-exports.mjs
+```
+```bash
+node scripts/slim-textures.mjs
+```
+**預期結果**：最後一行約 `合計 500 MB → 144 MB（貼圖 404 → 49 MB；最長邊 ≤ 1024）`，產生 `exports/quest/`。
+
+### 13-2 Unity
+1. 選單 `1. Apply Quest Settings` → XR Plug-in Management ▸ Android 勾 OpenXR → OpenXR ▸ Meta Quest Support（Target Devices 只勾 Quest 3）。
+2. 選單 `0b`（字型）→ `2` 與 `2b`，資料夾都選 **exports/quest** → `4` 建場景。
+3. 選單 `5. Self-check`：0 個錯誤；看 `SelfCheck.md` 的貼圖記憶體。
+4. Quest 3 用 USB 接電腦（開發者模式）→ 選單 **`7b. Build And Run on Quest 3`**。**預期結果**：對話框顯示 APK 大小與耗時，頭盔自動啟動 Machine Yard。只要 APK 就選 `7`。
+
+### 13-3 門的 3D 預覽（不需要頭盔）
+```bash
+npm run dev
+```
+開 http://localhost:5173/dev/door-preview.html：拖曳轉視角，按「開門／關門」看動畫，「工作室出口」切換到較高的版本。

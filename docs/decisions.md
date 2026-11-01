@@ -188,3 +188,16 @@
 - 站位：鋼門較寬（2.4 m），開門時退後的位置由 z 13.3 改成 13.6（D36）。
 - 原本的圓門零件（Frame、GearRing、DoorHinge）只是隱藏，壓力錶、指示燈、鎖住提示照用。
 - 回復：拿掉 LobbySceneBuilder 的 `UseBlastDoor` 與 WorkshopBuilder 建鋼門的兩行，重建場景即回到圓門與木門。
+
+## D42 Quest 版貼圖瘦身
+- 問題：匯出的貼圖是未壓縮 PNG（多半 2048²），全部 glb 約 500 MB，貼圖占 404 MB；三台機台同時載入很吃記憶體與 APK 大小。
+- 選擇：`scripts/slim-textures.mjs` 把所有 glb（含 tools/、lod/）的貼圖縮到最長邊 1024，不透明的轉 JPEG（品質 85、法線 92），用到透明的保留 PNG，寫到 `exports/quest/`（網格、節點不動）。實測 500 MB → 144 MB（貼圖 404 → 49 MB）。Unity 匯入（選單 2／2b）時選 `exports/quest` 資料夾。
+- GPU 記憶體：glTFast 在編輯器匯入的貼圖是否再壓成 ASTC 我沒法在這裡確認；自我檢查會列出貼圖張數與執行期記憶體（`SelfCheck.md`），實機前先看這個數字。
+- 回復：匯入時改選原本的 `exports` 資料夾；或 `MAX=2048 node scripts/slim-textures.mjs`。
+
+## D43 一鍵打包
+- 選擇：選單 7（打包）／7b（打包並安裝到接上的 Quest 3），也可命令列 `-executeMethod MachineYard.Editor.BuildQuest.CommandLine`。會先套用 Quest 設定、檢查 OpenXR 與 Meta Quest Support、開 Lobby 場景跑自我檢查（有錯誤先問／命令列直接失敗），輸出 `Builds/MachineYard-Quest3.apk`。
+- XR 設定用反射讀（不綁 XR Management／OpenXR 的套件版本），讀不到只警告，避免因 API 名稱不同讓整個 Editor 組件編譯失敗。
+
+## D44 門的 3D 預覽頁
+- 選擇：`dev/door-preview.html`（只在 `npm run dev` 時可開：/dev/door-preview.html，不進網站建置）用 three.js 照 `ArchedBlastDoor.cs` 同一組尺寸與零件重建，可轉視角、播開門／關門、切換玄關／工作室版本。手輪輪圈兩邊都改成圓環網格（原本 16 段圓柱拼接會看到接縫）。

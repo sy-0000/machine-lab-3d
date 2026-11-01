@@ -221,3 +221,6 @@
 | 減面（D39） | 選單 **Detail ▸ 100/50/25%**、**6. Bake occlusion culling** |
 | asmdef（D40） | Runtime／Editor 補上 Core、TextMeshPro 參照（原本在 Unity 裡會編譯失敗） |
 | 拱形防爆鋼門（D41） | `Runtime/ArchedBlastDoor.cs`：玄關圓門與工作室木拱門都換成同一種拱形鋼門，保留手輪、門栓、蒸汽、往外開的特效（正視圖：`docs/images/blast-door-preview.png`） |
+| 門的 3D 預覽（D44） | `npm run dev` 後開 http://localhost:5173/dev/door-preview.html（截圖：`docs/images/blast-door-3d.png`） |
+| 貼圖瘦身（D42） | `node scripts/slim-textures.mjs` → `exports/quest/`（500 → 144 MB）；匯入時選這個資料夾 |
+| 一鍵打包（D43） | 選單 **7. Build Quest 3 APK**／**7b. Build And Run on Quest 3** → `Builds/MachineYard-Quest3.apk` |
