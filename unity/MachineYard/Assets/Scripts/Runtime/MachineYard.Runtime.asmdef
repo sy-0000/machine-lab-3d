@@ -1,7 +1,12 @@
 {
   "name": "MachineYard.Runtime",
   "rootNamespace": "MachineYard",
-  "references": [ "Unity.XR.Interaction.Toolkit", "Unity.InputSystem", "Unity.TextMeshPro" ],
+  "references": [
+    "MachineYard.Core",
+    "Unity.XR.Interaction.Toolkit",
+    "Unity.InputSystem",
+    "Unity.TextMeshPro"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

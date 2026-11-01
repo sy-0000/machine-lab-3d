@@ -1,7 +1,15 @@
 {
   "name": "MachineYard.Editor",
   "rootNamespace": "MachineYard.Editor",
-  "references": [ "MachineYard.Runtime", "Unity.XR.Interaction.Toolkit" ],
-  "includePlatforms": [ "Editor" ],
+  "references": [
+    "MachineYard.Runtime",
+    "MachineYard.Core",
+    "Unity.TextMeshPro",
+    "Unity.InputSystem",
+    "Unity.XR.Interaction.Toolkit"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": []
 }

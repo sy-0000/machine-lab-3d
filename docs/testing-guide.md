@@ -311,3 +311,34 @@ node scripts/export-tools-json.mjs
 
 ### 11-3 網站版選單（已修正）
 在 Quest 瀏覽器開網站 VR：左手 Y 開選單，連續點不同的跳轉項目（例如回玄關、去工作室），每次都要有反應，不會再「點了沒反應、之後全部點不動」。
+
+
+## 12. 門、出口、自我檢查、減面、選單測試
+
+### 12-1 不需要 Unity
+```bash
+node scripts/check-geometry.mjs
+```
+**預期結果**：印出車床夾爪範圍（x 8–64 mm）與工件掛點（64.3 mm），以及鑽頭刀柄位置（在鑽夾頭內）。
+
+```bash
+npx playwright test tests/xr-menu.spec.js --workers=1
+```
+**預期結果**：`1 passed`（約 3 分鐘；網站 VR 選單的跳轉連點三次都成功）。
+
+```bash
+node scripts/simplify-exports.mjs
+```
+**預期結果**：表格列出每個檔案原始、50%、25% 的三角形數，檔案寫到 `exports/lod/`（需要先有完整匯出）。
+
+### 12-2 Unity
+1. 選單 `2b`（會一起匯入 `lod/`）→ `4` 建場景 → **`5. Self-check`**。**預期結果**：Console 顯示「0 個錯誤」；專案根目錄產生 `SelfCheck.md`（有錯誤或 fps 不夠時把這個檔案貼給我）。
+2. Window ▸ General ▸ Test Runner ▸ EditMode ▸ Run All。**預期結果**：6 個測試通過（沒匯入機台時 1 個 Inconclusive）。
+3. fps 不夠時：選單 `Detail ▸ 50%`（或 25%）→ `4` 重建 → `6. Bake occlusion culling` → 存檔 → Build。
+
+### 12-3 實機
+- [ ] 金庫門：在門前點手輪 → 畫面淡出、退後一步 → 手輪轉、門栓收回噴蒸汽、門**往自己這邊（玄關）**轉開 → 進工廠
+- [ ] 工作室：轉身看工作桌後方的拱門，trigger 點門 → 兩扇門往外推開 → 淡出 → 站在玄關金庫門外，門在面前關上（門栓伸出噴蒸汽、手輪反轉）
+- [ ] 再點金庫手輪：完整開門動畫再播一次 → 回到工作室
+- [ ] 指到手輪、拉桿、按鈕會發亮（綠色光暈）
+- [ ] 車床裝上工件：工件左端插在三爪夾頭的爪子裡（約 4 cm），不是貼在夾頭前面

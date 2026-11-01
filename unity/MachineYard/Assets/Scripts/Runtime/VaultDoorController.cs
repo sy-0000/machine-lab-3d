@@ -18,10 +18,12 @@ namespace MachineYard
         public Transform[] needles = new Transform[2]; // 0 = 工安、1 = 動畫
         public List<Transform> bolts = new List<Transform>();
         public bool IsOpening { get; private set; }
+        /// <summary>門已完全打開（開門動畫結束後）。</summary>
+        public bool IsOpen { get; private set; }
         /// <summary>蒸汽特效（門栓收回、壓力錶滿格時噴）；沒指定就不噴。</summary>
         public MachineEffects fx;
         float[] value = new float[2], target = new float[2];
-        float hingeSign = 1f, needleSign = -1f, hintTime, shake; Quaternion wheel0;
+        float hingeSign = 1f, needleSign = -1f, hintTime, shake; Quaternion wheel0, hinge0 = Quaternion.identity;
         Vector3[] boltStart;
 
         public void AutoWire()
@@ -44,9 +46,10 @@ namespace MachineYard
         {
             if (hinge == null) AutoWire();
             if (wheelPivot != null) wheel0 = wheelPivot.localRotation;
+            if (hinge != null) hinge0 = hinge.localRotation;
             boltStart = bolts.ConvertAll(b => b.localPosition).ToArray();
-            // 門往 -Z(three)＝玄關的反方向（朝工作室）轉開
-            if (hinge != null && leaf != null) hingeSign = XrUtil.SwingSign(hinge, leaf, ThreeCoords.Direction(0, 0, -1));
+            // 門往外開（+Z(three)＝朝玄關、朝玩家；網站版是往內朝工作室開，使用者要求改成往外，D36）。開門前 LobbyFlow 會先把玩家退到門板掃不到的位置
+            if (hinge != null && leaf != null) hingeSign = XrUtil.SwingSign(hinge, leaf, ThreeCoords.Direction(0, 0, 1));
             // 指針：初始(v=0)的 z 角是 +135° 或 -135°(=225°)，據此決定符號
             if (needles[0] != null)
             {
@@ -82,9 +85,42 @@ namespace MachineYard
                 if (wheelPivot != null) wheelPivot.Rotate(0, 0, -Time.deltaTime * Mathf.Min(1f, t / 0.6f) * 5f * Mathf.Rad2Deg, Space.Self);
                 if (t > 1.5f) PlaceBolts(Ease(Mathf.Min(1f, (t - 1.5f) / 0.6f)));
                 if (t > 1.5f && !bolted) { bolted = true; onBolts?.Invoke(); if (fx != null) foreach (var b in bolts) fx.Steam(b.position, leaf.forward, 6); }
-                if (t > 2.1f && hinge != null) hinge.localRotation = Quaternion.Euler(0, hingeSign * 100f * Ease(Mathf.Min(1f, (t - 2.1f) / 1.9f)), 0);
+                if (t > 2.1f && hinge != null) hinge.localRotation = hinge0 * Quaternion.Euler(0, hingeSign * 100f * Ease(Mathf.Min(1f, (t - 2.1f) / 1.9f)), 0);
                 yield return null;
             }
+            IsOpening = false; IsOpen = true;
+        }
+
+        /// <summary>關門（開門的倒放、較快）：門轉回 1.2 s → 門栓伸出（噴蒸汽）0.5 s → 手輪反轉 0.8 s。從工作室走出來時在玩家面前關上。</summary>
+        public IEnumerator Close()
+        {
+            if (!IsOpen || IsOpening) yield break;
+            IsOpening = true;
+            for (float t = 0; t < 1.2f; t += Time.deltaTime) { if (hinge != null) hinge.localRotation = hinge0 * Quaternion.Euler(0, hingeSign * 100f * Ease(1f - t / 1.2f), 0); yield return null; }
+            if (hinge != null) hinge.localRotation = hinge0;
+            if (fx != null) foreach (var b in bolts) fx.Steam(b.position, leaf.forward, 4);
+            for (float t = 0; t < 0.5f; t += Time.deltaTime) { PlaceBolts(Ease(1f - t / 0.5f)); yield return null; }
+            PlaceBolts(0);
+            for (float t = 0; t < 0.8f; t += Time.deltaTime) { if (wheelPivot != null) wheelPivot.Rotate(0, 0, Time.deltaTime * 5f * Mathf.Rad2Deg, Space.Self); yield return null; }
+            if (wheelPivot != null) wheelPivot.localRotation = wheel0;
+            IsOpening = false; IsOpen = false;
+        }
+
+        /// <summary>立刻回到關門狀態（從選單回玄關時）。</summary>
+        public void ResetClosed()
+        {
+            StopAllCoroutines(); IsOpening = false; IsOpen = false;
+            if (hinge != null) hinge.localRotation = hinge0;
+            if (boltStart != null) PlaceBolts(0);
+            if (wheelPivot != null) wheelPivot.localRotation = wheel0;
+        }
+
+        /// <summary>立刻變成開門狀態（從工作室走回玄關、門要在玩家面前關上之前）。</summary>
+        public void SetOpen()
+        {
+            StopAllCoroutines(); IsOpening = false; IsOpen = true;
+            if (hinge != null) hinge.localRotation = hinge0 * Quaternion.Euler(0, hingeSign * 100f, 0);
+            if (boltStart != null) PlaceBolts(1);
         }
 
         void PlaceBolts(float k)

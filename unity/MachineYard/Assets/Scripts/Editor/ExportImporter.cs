@@ -17,7 +17,7 @@ namespace MachineYard.Editor
 
         /// <summary>工作室（約 38 MB）、工具箱、三台機台（車床、銑床、鑽床）與其 runtime.json。檔案大（約 200 MB），需要時再匯入。</summary>
         [MenuItem("Machine Yard/2b. Import glb exports (workshop + machines)")]
-        public static void ImportWorkshop() => ImportMatching("workshop_", "toolbox_", "machine_");
+        public static void ImportWorkshop() => ImportMatching("workshop_", "toolbox_", "machine_", "lod/", "lod\\");
 
         static void ImportMatching(params string[] prefixes)
         {

@@ -158,3 +158,26 @@
 - 選擇：用無頭 Chromium 執行網站的 `AnimationScreen.js`（與 VR 版同一份繪圖與排版），固定 1/30 秒步進逐格擷取，ffmpeg 編成 H.264 MP4（1280×800、30 fps、CRF 24，三段共約 4 MB），commit 在 `unity/MachineYard/Assets/Videos/`。影片結尾已含網站的 1.6 秒停頓，所以 Unity 端播完不再另外停。
 - 「暫停中」字樣等互動狀態不在影片裡（暫停時畫面停住即可）。
 - 回復：網站動畫改了就重跑 `node scripts/record-previews.mjs`（需先 `npm run dev`）。
+
+## D36 金庫門往外開
+- 問題：使用者要求進工廠的門往外開（網站是往內、朝工作室開）。往外開時門扇（半徑 1.12 m、鉸鏈在左緣）會掃過站在門前（z 12.1，距門面 1.5 m）的玩家。
+- 選擇：開門前先淡出、把玩家退到 z 13.3（門扇掃不到），再播完整開門動畫（手輪轉 → 門栓收回噴蒸汽 → 門往玄關方向轉開 100°）→ 進工廠。從工作室走回來時門是開著的，在玩家面前關上（倒放、約 2.5 秒）；從選單回玄關則直接回到關閉，下次進去還能看完整開門。
+- 網站版沒有改（仍往內開）；要一致需你同意。
+- 回復：`VaultDoorController.Start` 的 `Direction(0, 0, 1)` 改回 `(0, 0, -1)`，並拿掉 `LobbyFlow.OpenVaultAndEnter` 的退後。
+
+## D37 工作室出口門
+- 選擇：工作室 +Z 端（工作桌後方）的拱門 ArchedDoor 可以 trigger 點擊：兩扇門往外推開 → 淡出 → 回到玄關金庫門外，金庫門在面前關上。門的零件在執行期依左右分到兩個鉸鏈樞軸下；整組排除在靜態合批之外。拱門太大，指到時不發亮。
+- 網站版沒有這個出口（用選單回玄關）。
+
+## D38 車床工件插進夾頭 40 mm
+- 問題：見 known-bugs #5。
+- 選擇：Unity 的工件掛點往夾頭內移 40 mm（`ClampInsertMm`），畫面上夾持區正好在夾爪內，和撞夾頭判斷一致。工件座標（Z、直徑）不變，DRO 與網站相同；刀具碰到工件自由端的位置比網站近 40 mm（縱向行程仍足夠）。
+- 回復：`ClampInsertMm = 0`。
+
+## D39 減面版本與遮擋剔除
+- 選擇：`scripts/simplify-exports.mjs` 用 meshoptimizer 產生 50%（誤差 0.5%）與 25%（誤差 2%）兩個版本到 `exports/lod/`，節點結構與名稱不變。Unity 選單 Detail 切換、重建場景即生效；選單 6 烘焙遮擋剔除。機台可以降到約一半／四分之一；工作室只降 15–30%（三角形分散在上千個小零件，例如 1,296 個殼板鉚釘、251 根欄杆），那部分靠 `TinyDetailMeters`。
+- 預設仍是 100%，等實機 fps 再決定。
+
+## D40 Unity 組件參照（asmdef）
+- 問題：自己檢查時發現 `MachineYard.Runtime.asmdef` 沒有參照 `MachineYard.Core`、Editor 沒有參照 Core 與 TextMeshPro；在 Unity 裡會編譯失敗（我原本的型別檢查把所有檔案放在同一個組件，所以沒抓到）。
+- 選擇：補上參照；型別檢查改成照 asmdef 分成 Core、Runtime、Editor、Tests 四個專案分開編譯。

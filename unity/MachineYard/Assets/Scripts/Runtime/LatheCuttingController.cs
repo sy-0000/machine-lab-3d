@@ -22,6 +22,8 @@ namespace MachineYard
 
         Transform mount, insert, toolRoot; Vector3 tip; TipMm? before; double beforeRpm;
         public double DatumX, DatumZ; // 工件座標零點（Zero 按鈕）
+        /// <summary>工件插進夾頭的長度（mm），＝夾持區長度。設 0 恢復網站的位置（工件從夾爪前端開始）。</summary>
+        public float ClampInsertMm = 40f;
 
         void Start() { machine.BeforeMove += OnBefore; machine.AfterMove += OnAfter; }
         void OnDestroy() { if (machine != null) { machine.BeforeMove -= OnBefore; machine.AfterMove -= OnAfter; } }
@@ -47,7 +49,9 @@ namespace MachineYard
                 mount = new GameObject("WorkpieceMount").transform; mount.SetParent(parent, false);
                 machine.Nodes["WorkpieceMount"] = mount;
             }
-            mount.localPosition = ThreeCoords.Position(cfg.position[0], cfg.position[1], cfg.position[2]);
+            // 工件往夾頭內推 ClampInsertMm（40 mm）：匯出的掛點在夾爪最前端，工件原本整根露在夾頭外；
+            // 夾持區（Z 0–40）與撞夾頭判斷（ChuckDanger 到 Z=40）都假設前 40 mm 在夾爪裡（scripts/check-geometry.mjs：夾爪沿軸向 x 8–64 mm）。
+            mount.localPosition = ThreeCoords.Position(cfg.position[0] - ClampInsertMm * 0.001f, cfg.position[1], cfg.position[2]);
             mount.localRotation = ThreeCoords.EulerXYZ(cfg.rotation[0], cfg.rotation[1], cfg.rotation[2]);
         }
 

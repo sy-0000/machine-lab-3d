@@ -49,3 +49,12 @@
 - [x] 中文字型（Noto Sans TC 子集 + TMP 建立選單）、只支援 Quest 3、放映幕影片（網站動畫錄製）
 - [x] 銑床握桿檢查：舊握桿 Head_Part_023 由設定檔刻意隱藏，現用握桿正常（known-bugs #4）
 - [ ] Unity 編譯與 Quest 實機驗收（需使用者）
+
+# 第二批修正（門、出口、自我檢查、減面、選單測試）
+- [x] 幾何離線檢查（scripts/check-geometry.mjs）：鑽頭位置正確；車床工件未插進夾頭 → Unity 往內推 40 mm（known-bugs #5）
+- [x] 金庫門往外開（含退後與回來時關門）、工作室拱門出口
+- [x] 指到發亮、Unity 自我檢查選單、EditMode 測試、asmdef 參照修正
+- [x] 減面版本（exports/lod）與 Detail 切換、遮擋剔除烘焙選單
+- [x] 網站選單回歸測試（tests/xr-menu.spec.js，突變檢查會失敗）
+- [ ] 門的造型統一（等使用者選方案）
+- [ ] Unity 編譯與 Quest 實機驗收（需使用者）

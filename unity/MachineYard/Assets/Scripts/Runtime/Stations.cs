@@ -23,6 +23,8 @@ namespace MachineYard
         public static readonly Station Board = new Station { Name = "board", Three = new Vector3(-2.0f, 0, 13.1f), YawRadians = Mathf.PI / 2, Area = Area.Lobby };
         public static readonly Station Screen = new Station { Name = "screen", Three = new Vector3(2.0f, 0, 13.1f), YawRadians = -Mathf.PI / 2, Area = Area.Lobby };
         public static readonly Station Vault = new Station { Name = "vault", Three = new Vector3(0, 0, 12.1f), YawRadians = 0, Area = Area.Lobby };
+        /// <summary>金庫門往外開時的觀看位置：門板半徑 1.12 m、鉸鏈在左緣，門扇掃過的範圍到門面 +1.94 m；門面在 z = 10.6，所以退到 13.3。</summary>
+        public static readonly Station VaultBack = new Station { Name = "vaultBack", Three = new Vector3(0, 0, 13.3f), YawRadians = 0, Area = Area.Lobby };
 
         /// <summary>佔位工作室的出生點（工作桌前，teleportDiscs.js 的 desk）。</summary>
         public static Station WorkshopDesk => Disc("desk", 0, 6.7f, 0);

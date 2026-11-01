@@ -51,6 +51,7 @@ namespace MachineYard.Editor
             var cam = rigGo.GetComponentInChildren<Camera>();
 
             // ---- 工作室：檔案齊全就建真的（階段 4：房間＋車床），否則用佔位工作室。放在遠處避免與玄關座標重疊
+            WorkshopBuilder.LastFx = null; WorkshopBuilder.LastSwitcher = null; WorkshopBuilder.LastExitDoor = null;
             if (WorkshopBuilder.HasAssets()) WorkshopBuilder.Build(root.transform, cam);
             else { Debug.LogWarning("[Machine Yard] 沒有 workshop／車床的 glb，使用佔位工作室。要真的工作室請先執行「2b. Import glb exports (workshop + lathe)」。"); BuildWorkshopPlaceholder(root.transform); }
 
@@ -95,6 +96,7 @@ namespace MachineYard.Editor
             menu.head = cam; menu.mover = mover; menu.flow = flow; menu.doors = doors;
             menu.switcher = WorkshopBuilder.LastSwitcher; if (WorkshopBuilder.LastSwitcher != null) WorkshopBuilder.LastSwitcher.mover = mover;
             if (flow.vault != null) flow.vault.fx = WorkshopBuilder.LastFx;
+            if (WorkshopBuilder.LastExitDoor != null) { WorkshopBuilder.LastExitDoor.flow = flow; WorkshopBuilder.LastExitDoor.mover = mover; }
 
             var path = "Assets/Scenes/Lobby.unity";
             EditorSceneManager.SaveScene(scene, path);

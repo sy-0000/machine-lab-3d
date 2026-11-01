@@ -40,6 +40,8 @@ namespace MachineYard
         public Func<PointerHand, bool> onGrab;
         public Action<bool> onHover;
         public Func<bool> enabledWhen;
+        /// <summary>指到時發亮（Highlighter）。工具箱的工具、大片的牆面門可關掉。</summary>
+        public bool highlight = true;
         public bool Usable => isActiveAndEnabled && (enabledWhen == null || enabledWhen());
     }
 
@@ -146,8 +148,8 @@ namespace MachineYard
             if (h.hovered == t) return;
             var old = h.hovered; h.hovered = t;
             bool stillHovered(PointerTarget x) => hands[0].hovered == x || hands[1].hovered == x;
-            if (old != null && !stillHovered(old)) old.onHover?.Invoke(false);
-            if (t != null) t.onHover?.Invoke(true);
+            if (old != null && !stillHovered(old)) { old.onHover?.Invoke(false); if (old.highlight) Highlighter.Set(old.gameObject, false); }
+            if (t != null) { t.onHover?.Invoke(true); if (t.highlight) Highlighter.Set(t.gameObject, true); }
         }
 
         void Release(int i)

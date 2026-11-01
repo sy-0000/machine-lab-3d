@@ -24,9 +24,30 @@ namespace MachineYard.Editor
             && AssetDatabase.LoadAssetAtPath<TextAsset>(Dir + "machine_lathe_runtime.json") != null;
 
         static bool Load(string f) => AssetDatabase.LoadAssetAtPath<GameObject>(Dir + f) != null;
+        /// <summary>模型細節：100＝原檔；50／25＝scripts/simplify-exports.mjs 產生的減面版本（Assets/Models/lod/，沒有就用原檔）。</summary>
+        public static int DetailPercent { get => EditorPrefs.GetInt("MachineYard.Detail", 100); set => EditorPrefs.SetInt("MachineYard.Detail", value); }
+        [MenuItem("Machine Yard/Detail/100% (original)")] static void D100() => SetDetail(100);
+        [MenuItem("Machine Yard/Detail/50% (simplified)")] static void D50() => SetDetail(50);
+        [MenuItem("Machine Yard/Detail/25% (simplified)")] static void D25() => SetDetail(25);
+        static void SetDetail(int p) { DetailPercent = p; Debug.Log($"[Machine Yard] 模型細節設為 {p}%：請重新執行選單 4 建場景。"); }
+
+        [MenuItem("Machine Yard/6. Bake occlusion culling")]
+        static void BakeOcclusion()
+        {
+            // 靜態物件（MarkStatic 已勾 Occluder/Occludee）參與；機台會動的部分不參與。數值以 Quest 室內場景為準
+            StaticOcclusionCulling.smallestOccluder = 0.5f; StaticOcclusionCulling.smallestHole = 0.15f; StaticOcclusionCulling.backfaceThreshold = 100;
+            if (StaticOcclusionCulling.Compute()) Debug.Log("[Machine Yard] 遮擋剔除烘焙完成（記得儲存場景）。");
+        }
+
         static GameObject Inst(string f, Transform parent, string name)
         {
-            var a = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + f);
+            GameObject a = null;
+            if (DetailPercent < 100 && f.EndsWith(".glb"))
+            {
+                a = AssetDatabase.LoadAssetAtPath<GameObject>($"{Dir}lod/{f.Substring(0, f.Length - 4)}_{DetailPercent}.glb");
+                if (a == null) Debug.LogWarning($"[Machine Yard] 沒有 {f} 的 {DetailPercent}% 減面版本，改用原檔（網站專案執行 node scripts/simplify-exports.mjs 後重新 2b 匯入）");
+            }
+            if (a == null) a = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + f);
             if (a == null) return null;
             var go = (GameObject)PrefabUtility.InstantiatePrefab(a, parent);
             go.name = name;
@@ -54,7 +75,7 @@ namespace MachineYard.Editor
             return saved;
         }
 
-        public static MachineEffects LastFx; public static MachineSwitcher LastSwitcher;
+        public static MachineEffects LastFx; public static MachineSwitcher LastSwitcher; public static WorkshopExitDoor LastExitDoor;
 
         static bool HasMachine(string id) =>
             Load($"machine_{id}_static.glb") && Load($"machine_{id}_interactive.glb") && AssetDatabase.LoadAssetAtPath<TextAsset>($"{Dir}machine_{id}_runtime.json") != null;
@@ -133,6 +154,16 @@ namespace MachineYard.Editor
             MarkStatic(room);
             DisableTiny(room, TinyDetailMeters);
             var roomI = Inst("workshop_interactive.glb", root, "workshop_interactive");
+
+            // ---- 出口：房間 +Z 端的拱門。門扇要能動，所以整組排除在靜態合批之外
+            var arched = room != null ? XrUtil.FindDeep(room.transform, "ArchedDoor") : null;
+            LastExitDoor = null;
+            if (arched != null)
+            {
+                foreach (var t in arched.GetComponentsInChildren<Transform>(true)) GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
+                LastExitDoor = arched.gameObject.AddComponent<WorkshopExitDoor>(); LastExitDoor.workshopRoot = root;
+            }
+            else Debug.LogWarning("[Machine Yard] workshop_static 裡找不到 ArchedDoor，工作室沒有出口門（可用左手 Y 選單回玄關）。");
 
             // ---- 工作桌與工具箱（階段 5 才做拿起展示流程；這裡只當擺設，13 件工具在箱內位置）
             var tb = Inst("toolbox_static.glb", root, "toolbox_static"); if (tb != null) MarkStatic(tb);

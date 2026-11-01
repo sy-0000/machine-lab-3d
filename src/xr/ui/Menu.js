@@ -220,6 +220,8 @@ export function createMenu({ input, player, camera, items, run, machine, nearMac
 
   return {
     get visible() { return root.visible; },
+    /** 開發模式（瀏覽器測試）用：目前按鈕的位置（畫布像素）與動作 */
+    get debugButtons() { return import.meta.env.DEV ? buttons.map(b => ({ x: b.x, y: b.y, w: b.w, h: b.h, action: typeof b.action === 'string' ? b.action : null })) : null; },
     get pinned() { return state.pinned; },
     canvas,
     /** 左手 Y：釘選中 → 放回左手；顯示中 → 關閉；關閉中 → 打開（機台旁預設「機台」頁） */

@@ -209,3 +209,14 @@
 | 銑鑽床新工件 | 主軸轉動中按「新工件」改為提示「停機後才能換新工件」（原本毛胚可能留在刀具裡） |
 
 步驟：選單 **1** → Target Devices 只勾 Quest 3 → **0b** → **2b**（若未匯入）→ **4** → Build And Run。驗收清單見 `docs/testing-guide.md` 第 11 節。
+
+## 門、出口與工具（第二批修正）
+| 項目 | 內容 |
+|---|---|
+| 金庫門往外開（D36） | 開門前先退到門扇掃不到的位置；從工作室回來時門在面前關上 |
+| 工作室出口（D37） | `Runtime/WorkshopExitDoor.cs`：點工作桌後方的拱門 → 雙門往外推開 → 回玄關 |
+| 指到發亮 | `Runtime/Highlighter.cs`：與網站相同的綠色光暈（#30a888 × 0.5） |
+| 工件插進夾頭（D38） | 車床工件往夾頭內推 40 mm |
+| 自我檢查 | 選單 **5. Self-check** → `SelfCheck.md`；`Assets/Tests/EditMode` 6 個 Unity 測試 |
+| 減面（D39） | 選單 **Detail ▸ 100/50/25%**、**6. Bake occlusion culling** |
+| asmdef（D40） | Runtime／Editor 補上 Core、TextMeshPro 參照（原本在 Unity 裡會編譯失敗） |
